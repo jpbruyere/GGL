@@ -1,0 +1,445 @@
+<<<<<<< local
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using OpenTK.Graphics.OpenGL;
+using System.Diagnostics;
+
+namespace OTKGL
+{
+    public class Shader
+    {
+        public static int mainProgram;
+
+        public int shaderProgram = 0;
+
+        string _vertSource =
+            @"
+                void main()
+                {
+                  gl_TexCoord[0] = gl_MultiTexCoord0;
+                  gl_Position = gl_ModelViewMatrix * gl_Vertex;
+                }
+            ";
+        string _fragSource =
+            @"
+            #version 130
+            uniform sampler2D MyTexture;
+ 
+            void main(void) {
+            // draw the texture
+                gl_FragColor = texture2D( MyTexture, gl_TexCoord[0].st);  
+            }";
+        string _geomSource = @"";
+
+        
+        public virtual string vertSource
+        {
+            get { return _vertSource;}
+            set { _vertSource = value; }
+        }
+        public virtual string fragSource 
+        {
+            get { return _fragSource;}
+            set { _fragSource = value; }
+        }
+        public virtual string geomSource
+        { 
+            get { return _geomSource; }          
+            set { _geomSource = value; }
+        }
+
+        int vertShaderID = 0,
+            fragShaderID = 0,
+            geomShaderID = 0;
+
+        public Shader()
+        {
+            shaderProgram = Shader.mainProgram;
+
+            Init();
+
+            
+        }
+
+        bool separateProgram = false;
+        bool isAttached = false;
+
+        public Shader(bool _separateProgram)
+        {
+            separateProgram = _separateProgram;
+            
+            if (!separateProgram)
+                shaderProgram = Shader.mainProgram;
+            
+            Init();
+        }
+
+        public void Init()
+        {
+            if (!GL.GetString(StringName.Extensions).Contains("EXT_geometry_shader4") && !string.IsNullOrEmpty(geomSource))
+            {
+                System.Windows.Forms.MessageBox.Show(
+                     "Your video card does not support EXT_geometry_shader4. Please update your drivers.",
+                     "EXT_geometry_shader4 not supported",
+                     System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+            }
+
+            if (shaderProgram == 0)
+            {
+                shaderProgram = GL.CreateProgram();
+                if (!separateProgram)
+                    Shader.mainProgram = shaderProgram;
+
+                //GL.UseProgram(shaderProgram);
+            }
+            
+        }
+
+        public virtual void attach()
+        {
+            if (!isAttached)
+            {
+                if (fragShaderID != 0)
+                    GL.AttachShader(shaderProgram, fragShaderID);
+                if (vertShaderID != 0)
+                    GL.AttachShader(shaderProgram, vertShaderID);
+                if (geomShaderID != 0)
+                    GL.AttachShader(shaderProgram, geomShaderID);
+
+                GL.LinkProgram(shaderProgram);
+                GL.ValidateProgram(shaderProgram);
+
+                //output link info log.
+                string info;
+                GL.GetProgramInfoLog(shaderProgram, out info);
+                Debug.WriteLine(info);
+                isAttached = true;
+            }
+
+            GL.UseProgram(shaderProgram);            
+        }
+        public virtual void dettach()
+        {
+            GL.UseProgram(0);
+
+            if (!separateProgram)
+            {
+                if (fragShaderID != 0)
+                    GL.DetachShader(shaderProgram, fragShaderID);
+                if (vertShaderID != 0)
+                    GL.DetachShader(shaderProgram, vertShaderID);
+                if (geomShaderID != 0)
+                    GL.DetachShader(shaderProgram, geomShaderID);
+
+                GL.LinkProgram(shaderProgram);
+
+                GL.UseProgram(shaderProgram);
+                isAttached = false;
+            }
+        }
+
+        public void Compile()
+        {
+
+            string s = vertSource;
+            if (!string.IsNullOrEmpty(s))
+            {
+                vertShaderID = GL.CreateShader(ShaderType.VertexShader);
+                compileShader(vertShaderID, s);
+            }
+            s = fragSource;
+            if (!string.IsNullOrEmpty(s))
+            {
+                fragShaderID = GL.CreateShader(ShaderType.FragmentShader);
+                compileShader(fragShaderID, s);
+                
+            }
+            s = geomSource;
+            if (!string.IsNullOrEmpty(s))
+            {
+                geomShaderID = GL.CreateShader(ShaderType.GeometryShader);
+                compileShader(geomShaderID,s);                
+            }
+
+            if (separateProgram)
+                attach();
+            //attach();
+
+            ////GL.LinkProgram(shaderProgram);
+
+            //// output link info log.
+            //string info;
+            //GL.GetProgramInfoLog(shaderProgram, out info);
+            //Debug.WriteLine(info);
+
+            //dettach();
+        }
+
+        /// <summary>
+        /// Helper method to avoid code duplication.
+        /// Compiles a shader and prints results using Debug.WriteLine.
+        /// </summary>
+        /// <param name="shader">A shader object, gotten from GL.CreateShader.</param>
+        /// <param name="source">The GLSL source to compile.</param>
+        void compileShader(int shader, string source)
+        {
+            GL.ShaderSource(shader, source);
+            GL.CompileShader(shader);
+
+            string info;
+            GL.GetShaderInfoLog(shader, out info);
+            Debug.WriteLine(info);
+
+            int compileResult;
+            GL.GetShader(shader, ShaderParameter.CompileStatus, out compileResult);
+            if (compileResult != 1)
+            {
+                Debug.WriteLine("Compile Error!");
+                Debug.WriteLine(source);
+            }
+        }
+
+        public static implicit operator int(Shader s)
+        {
+            return s == null ? 0 : s.shaderProgram;
+        }
+
+        ~Shader()
+        {
+            //GL.UseProgram(shaderProgram);
+
+            //// Clean up resources. Note the program object is not deleted.
+            //if (fragShaderID != 0)
+            //    GL.DeleteShader(fragShaderID);
+            //if (vertShaderID != 0)
+            //    GL.DeleteShader(vertShaderID);
+            //if (geomShaderID != 0)
+            //    GL.DeleteShader(geomShaderID);
+        }
+    }
+}
+=======
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using OpenTK.Graphics.OpenGL;
+using System.Diagnostics;
+
+namespace OTKGL
+{
+    public class Shader
+    {
+        public static int mainProgram;
+
+        public int shaderProgram = 0;
+
+        string _vertSource =
+            @"
+                void main()
+                {
+                  gl_TexCoord[0] = gl_MultiTexCoord0;
+                  gl_Position = gl_ModelViewMatrix * gl_Vertex;
+                }
+            ";
+        string _fragSource =
+            @"
+            #version 130
+            uniform sampler2D MyTexture;
+ 
+            void main(void) {
+            // draw the texture
+                gl_FragColor = texture2D( MyTexture, gl_TexCoord[0].st);  
+            }";
+        string _geomSource = @"";
+
+        
+        public virtual string vertSource
+        {
+            get { return _vertSource;}
+            set { _vertSource = value; }
+        }
+        public virtual string fragSource 
+        {
+            get { return _fragSource;}
+            set { _fragSource = value; }
+        }
+        public virtual string geomSource
+        { 
+            get { return _geomSource; }          
+            set { _geomSource = value; }
+        }
+
+        int vertShaderID = 0,
+            fragShaderID = 0,
+            geomShaderID = 0;
+
+        public Shader()
+        {
+            shaderProgram = Shader.mainProgram;
+
+            Init();
+
+            
+        }
+
+        bool separateProgram = false;
+        bool isAttached = false;
+
+        public Shader(bool _separateProgram)
+        {
+            separateProgram = _separateProgram;
+            
+            if (!separateProgram)
+                shaderProgram = Shader.mainProgram;
+            
+            Init();
+        }
+
+        public void Init()
+        {
+            if (!GL.GetString(StringName.Extensions).Contains("EXT_geometry_shader4") && !string.IsNullOrEmpty(geomSource))
+            {
+                System.Windows.Forms.MessageBox.Show(
+                     "Your video card does not support EXT_geometry_shader4. Please update your drivers.",
+                     "EXT_geometry_shader4 not supported",
+                     System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+            }
+
+            if (shaderProgram == 0)
+            {
+                shaderProgram = GL.CreateProgram();
+                if (!separateProgram)
+                    Shader.mainProgram = shaderProgram;
+
+                //GL.UseProgram(shaderProgram);
+            }
+            
+        }
+
+        public virtual void attach()
+        {
+            if (!isAttached)
+            {
+                if (fragShaderID != 0)
+                    GL.AttachShader(shaderProgram, fragShaderID);
+                if (vertShaderID != 0)
+                    GL.AttachShader(shaderProgram, vertShaderID);
+                if (geomShaderID != 0)
+                    GL.AttachShader(shaderProgram, geomShaderID);
+
+                GL.LinkProgram(shaderProgram);
+                GL.ValidateProgram(shaderProgram);
+
+                //output link info log.
+                string info;
+                GL.GetProgramInfoLog(shaderProgram, out info);
+                Debug.WriteLine(info);
+                isAttached = true;
+            }
+
+            GL.UseProgram(shaderProgram);            
+        }
+        public virtual void dettach()
+        {
+            GL.UseProgram(0);
+
+            if (!separateProgram)
+            {
+                if (fragShaderID != 0)
+                    GL.DetachShader(shaderProgram, fragShaderID);
+                if (vertShaderID != 0)
+                    GL.DetachShader(shaderProgram, vertShaderID);
+                if (geomShaderID != 0)
+                    GL.DetachShader(shaderProgram, geomShaderID);
+
+                GL.LinkProgram(shaderProgram);
+
+                GL.UseProgram(shaderProgram);
+                isAttached = false;
+            }
+        }
+
+        public void Compile()
+        {
+
+            string s = vertSource;
+            if (!string.IsNullOrEmpty(s))
+            {
+                vertShaderID = GL.CreateShader(ShaderType.VertexShader);
+                compileShader(vertShaderID, s);
+            }
+            s = fragSource;
+            if (!string.IsNullOrEmpty(s))
+            {
+                fragShaderID = GL.CreateShader(ShaderType.FragmentShader);
+                compileShader(fragShaderID, s);
+                
+            }
+            s = geomSource;
+            if (!string.IsNullOrEmpty(s))
+            {
+                geomShaderID = GL.CreateShader(ShaderType.GeometryShader);
+                compileShader(geomShaderID,s);                
+            }
+
+            if (separateProgram)
+                attach();
+            //attach();
+
+            ////GL.LinkProgram(shaderProgram);
+
+            //// output link info log.
+            //string info;
+            //GL.GetProgramInfoLog(shaderProgram, out info);
+            //Debug.WriteLine(info);
+
+            //dettach();
+        }
+
+        /// <summary>
+        /// Helper method to avoid code duplication.
+        /// Compiles a shader and prints results using Debug.WriteLine.
+        /// </summary>
+        /// <param name="shader">A shader object, gotten from GL.CreateShader.</param>
+        /// <param name="source">The GLSL source to compile.</param>
+        void compileShader(int shader, string source)
+        {
+            GL.ShaderSource(shader, source);
+            GL.CompileShader(shader);
+
+            string info;
+            GL.GetShaderInfoLog(shader, out info);
+            Debug.WriteLine(info);
+
+            int compileResult;
+            GL.GetShader(shader, ShaderParameter.CompileStatus, out compileResult);
+            if (compileResult != 1)
+            {
+                Debug.WriteLine("Compile Error!");
+                Debug.WriteLine(source);
+            }
+        }
+
+        public static implicit operator int(Shader s)
+        {
+            return s == null ? 0 : s.shaderProgram;
+        }
+
+        ~Shader()
+        {
+            //GL.UseProgram(shaderProgram);
+
+            //// Clean up resources. Note the program object is not deleted.
+            //if (fragShaderID != 0)
+            //    GL.DeleteShader(fragShaderID);
+            //if (vertShaderID != 0)
+            //    GL.DeleteShader(vertShaderID);
+            //if (geomShaderID != 0)
+            //    GL.DeleteShader(geomShaderID);
+        }
+    }
+}
+>>>>>>> other

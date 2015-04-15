@@ -1,0 +1,229 @@
+<<<<<<< local
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+using System.Diagnostics;
+
+namespace OTKGL
+{
+    public class ExternalShader : Shader
+    {
+        public static string shadersDirectory = directories.rootDir + @"Developpements/OpenGL/Shaders";
+
+        public string vertSourcePath;
+        public string fragSourcePath;
+        public string geomSourcePath;
+
+        public override string vertSource
+        {
+            get
+            {
+                try
+                {
+                    string tmp = "";
+                    
+                    using (StreamReader reader = new StreamReader(vertSourcePath))
+                    {
+                        Debug.WriteLine("Loading " + vertSourcePath + "...");
+                        tmp = reader.ReadToEnd();    
+                    }
+
+                    return tmp;
+                }
+                catch (Exception)
+                {
+                    return base.vertSource;    
+                }                
+            }
+        }
+        public override string fragSource
+        {
+            get
+            {
+                try
+                {
+                    string tmp = "";
+
+                    using (StreamReader reader = new StreamReader(fragSourcePath))
+                    {
+                        Debug.WriteLine("Loading " + fragSourcePath + "...");
+                        tmp = reader.ReadToEnd();
+                    }
+
+                    return tmp;
+                }
+                catch (Exception)
+                {
+                    return base.fragSource;
+                }
+            }
+        }
+        public override string geomSource
+        {
+            get
+            {
+                try
+                {
+                    string tmp = "";
+
+                    using (StreamReader reader = new StreamReader(geomSourcePath))
+                    {
+                        Debug.WriteLine("Loading " + geomSourcePath + "...");
+                        tmp = reader.ReadToEnd();
+                    }
+
+                    return tmp;
+                }
+                catch (Exception)
+                {
+                    return base.geomSource;
+                }
+            }
+        }
+
+        public ExternalShader(string _vsPath = "", string _fsPath = "", string _gsPath = "")
+            : base()
+        {
+            vertSourcePath = _vsPath;
+            fragSourcePath = _fsPath;
+            geomSourcePath = _gsPath;
+
+            Compile();
+        }
+
+        public ExternalShader(string _shaderName)
+            : base()
+        {
+            vertSourcePath = shadersDirectory + System.IO.Path.DirectorySeparatorChar + _shaderName + ".vert";
+            fragSourcePath = shadersDirectory + System.IO.Path.DirectorySeparatorChar + _shaderName + ".frag";
+            geomSourcePath = shadersDirectory + System.IO.Path.DirectorySeparatorChar + _shaderName + ".geom";
+
+            
+            Compile();
+        }
+
+        public void reload()
+        {
+            Init();
+            Compile();
+        }
+
+    }
+}
+=======
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+using System.Diagnostics;
+
+namespace OTKGL
+{
+    public class ExternalShader : Shader
+    {
+        public static string shadersDirectory = directories.rootDir + @"Developpements/OpenGL/Shaders";
+
+        public string vertSourcePath;
+        public string fragSourcePath;
+        public string geomSourcePath;
+
+        public override string vertSource
+        {
+            get
+            {
+                try
+                {
+                    string tmp = "";
+                    
+                    using (StreamReader reader = new StreamReader(vertSourcePath))
+                    {
+                        Debug.WriteLine("Loading " + vertSourcePath + "...");
+                        tmp = reader.ReadToEnd();    
+                    }
+
+                    return tmp;
+                }
+                catch (Exception)
+                {
+                    return base.vertSource;    
+                }                
+            }
+        }
+        public override string fragSource
+        {
+            get
+            {
+                try
+                {
+                    string tmp = "";
+
+                    using (StreamReader reader = new StreamReader(fragSourcePath))
+                    {
+                        Debug.WriteLine("Loading " + fragSourcePath + "...");
+                        tmp = reader.ReadToEnd();
+                    }
+
+                    return tmp;
+                }
+                catch (Exception)
+                {
+                    return base.fragSource;
+                }
+            }
+        }
+        public override string geomSource
+        {
+            get
+            {
+                try
+                {
+                    string tmp = "";
+
+                    using (StreamReader reader = new StreamReader(geomSourcePath))
+                    {
+                        Debug.WriteLine("Loading " + geomSourcePath + "...");
+                        tmp = reader.ReadToEnd();
+                    }
+
+                    return tmp;
+                }
+                catch (Exception)
+                {
+                    return base.geomSource;
+                }
+            }
+        }
+
+        public ExternalShader(string _vsPath = "", string _fsPath = "", string _gsPath = "")
+            : base()
+        {
+            vertSourcePath = _vsPath;
+            fragSourcePath = _fsPath;
+            geomSourcePath = _gsPath;
+
+            Compile();
+        }
+
+        public ExternalShader(string _shaderName)
+            : base()
+        {
+            vertSourcePath = shadersDirectory + System.IO.Path.DirectorySeparatorChar + _shaderName + ".vert";
+            fragSourcePath = shadersDirectory + System.IO.Path.DirectorySeparatorChar + _shaderName + ".frag";
+            geomSourcePath = shadersDirectory + System.IO.Path.DirectorySeparatorChar + _shaderName + ".geom";
+
+            
+            Compile();
+        }
+
+        public void reload()
+        {
+            Init();
+            Compile();
+        }
+
+    }
+}
+>>>>>>> other

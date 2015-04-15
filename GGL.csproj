@@ -1,0 +1,488 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">Linux_x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5490AD74-0BB3-438C-9DE4-EB7CFC68BCB5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GGL</RootNamespace>
+    <AssemblyName>GGL</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <NoStdLib>False</NoStdLib>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <OutputPath>bin</OutputPath>
+    <IntermediateOutputPath>obj</IntermediateOutputPath>
+    <WarningLevel>4</WarningLevel>
+    <NoWin32Manifest>False</NoWin32Manifest>
+    <SignAssembly>false</SignAssembly>
+    <DelaySign>False</DelaySign>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <DebugType>Full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>True</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <DebugType>None</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'Win_x86' ">
+    <DefineConstants>_WIN32</DefineConstants>
+    <BaseAddress>4194304</BaseAddress>
+    <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>False</Prefer32Bit>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'Linux_x86' ">
+    <DefineConstants>__linux__</DefineConstants>
+    <PlatformTarget>x86</PlatformTarget>
+    <BaseAddress>4194304</BaseAddress>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Linux_x86' ">
+    <PlatformTarget>anycpu</PlatformTarget>
+    <DefineConstants>__linux__;DEBUG</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Animation.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="BOQuad.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="TextureCopier.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Grid.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="VoronoiTexture.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="WaterErosionSimulation.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="SimpleTerrain.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Model2.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="ProceduralTexture.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="GaussianFilter.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="JitterDebugDrawer.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="PrimitiveModel.cs">
+      <SubType>Code</SubType>
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Roads\Bridge.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Building.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="cityPlate.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\ExternalShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Roads\GenericRoadSegment.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="imgHelpers.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="ModelInstance.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Mouse3d.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Path.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\Chunk.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\Cube.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\DrawableShape.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\IsoSphere.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\MengerCube.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\Plane.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\Shape.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\SlicedSphere.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\VboShape.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\VertexStructs.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="ProceduralBuilding.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="ProceduralGarage.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="ProceduralHouse.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Roads\Road.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Forest.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="HeightMap.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="perlin.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="SelectableObject.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <None Include="Shaders\RailRoadShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </None>
+    <Compile Include="Shaders\GeometryShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Mesh.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Model.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="ObjMeshLoader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\LambertShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\MouseShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\Shader1.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\shaderLight.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\Shader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\TerrainShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\ShadowMapShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\TerrainLightAndTexShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="SimpleModel.cs">
+      <SubType>Code</SubType>
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\TreePointSpriteShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\WaterShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Station.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\testShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <None Include="text.cs">
+      <LogicalName>
+      </LogicalName>
+    </None>
+    <Compile Include="Texture.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Roads\Track.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="tree.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Roads\tunnel.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="UnityQuad.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Vehicle.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <None Include="vehicles\CarObject.cs">
+      <LogicalName>
+      </LogicalName>
+    </None>
+    <Compile Include="vehicles\carModelInstance.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="vehicles\CarBody.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="vehicles\Wheel.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="World.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="directories.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Terrain.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\MaterialShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Light.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\MultiSpriteShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="MultiSpriteMaterial.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Particle.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="ParticleInstance.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <None Include="GGLWindow1.cs">
+      <LogicalName>
+      </LogicalName>
+    </None>
+    <Compile Include="AxesHelper.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Materials\Material.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <None Include="Materials\BlenderFullMaterial.cs">
+      <LogicalName>
+      </LogicalName>
+    </None>
+    <None Include="Materials\FullMaterial.cs">
+      <LogicalName>
+      </LogicalName>
+    </None>
+    <None Include="GGLSimpleTestWindow.cs">
+      <LogicalName>
+      </LogicalName>
+    </None>
+    <Compile Include="VertexArrayObject.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="primitive\SphereMesh.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="vaoMesh.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\ForestShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\SimpleVaoPTNShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\SingleLightSimpleShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\GameLib\Shader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\GameLib\GlowShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="Shaders\GameLib\EffectShader.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+    <Compile Include="3dArrow.cs">
+      <LogicalName>
+      </LogicalName>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="Mono.Cairo" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Jitter">
+      <HintPath>..\Jitter Physics 0.1.7.0\Jitter\bin\Debug\Jitter.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK">
+      <HintPath>..\..\src\opentk-git\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="golib">
+      <HintPath>..\GOLib\bin\Debug\golib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Materials\">
+      <LogicalName>
+      </LogicalName>
+    </Folder>
+    <Folder Include="Shaders\GameLib\">
+      <LogicalName>
+      </LogicalName>
+    </Folder>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Shaders\GameLib\effect0.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\wirlpool2.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\red.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect1.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect2.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect3.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect4.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect5.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect6.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect7.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect8.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect9.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\explode0.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\fire0.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\voronoi.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
+  </ItemGroup>
+</Project>
