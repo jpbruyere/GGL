@@ -62,14 +62,6 @@ namespace GGL
 
         public void Init()
         {
-            if (!GL.GetString(StringName.Extensions).Contains("EXT_geometry_shader4") && !string.IsNullOrEmpty(geomSource))
-            {
-                System.Windows.Forms.MessageBox.Show(
-                     "Your video card does not support EXT_geometry_shader4. Please update your drivers.",
-                     "EXT_geometry_shader4 not supported",
-                     System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-            }
-
             shaderProgram = GL.CreateProgram();
         }
 

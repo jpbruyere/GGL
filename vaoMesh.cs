@@ -5,12 +5,9 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 //using System.Drawing;
 using System.Drawing.Imaging;
-using GGL;
-using Examples.Shapes;
 using System.IO;
 using System.Threading;
 using System.Diagnostics;
-using go;
 using System.Linq;
 
 namespace GGL
@@ -27,7 +24,6 @@ namespace GGL
 		public Vector3[] normals;
 		public Vector2[] texCoords;
 		public int[] indices;
-		public Material[] materials;
 
 		public string Name = "Unamed";
 
@@ -347,13 +343,13 @@ namespace GGL
 			return tmp;
 		}
 
-		public static List<Material> LoadMtl(string fileName)
-		{
-			using (StreamReader streamReader = new StreamReader(fileName))
-			{
-				return LoadMtl(streamReader);
-			}
-		}
+//		public static List<Material> LoadMtl(string fileName)
+//		{
+//			using (StreamReader streamReader = new StreamReader(fileName))
+//			{
+//				return LoadMtl(streamReader);
+//			}
+//		}
 
 		static char[] splitCharacters = new char[] { ' ' };
 
@@ -414,89 +410,89 @@ namespace GGL
 			//    return objVertices.Count - 1;
 			//}
 		}
-		static List<Material> LoadMtl(TextReader textReader)
-		{
-			Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
-			List<Material> Materials = new List<Material>();
-			Material currentMat = null;
-
-			string line;
-			while ((line = textReader.ReadLine()) != null)
-			{
-				line = line.Trim(splitCharacters);
-				line = line.Replace("  ", " ");
-
-				string[] parameters = line.Split(splitCharacters);
-
-				switch (parameters[0])
-				{
-				case "newmtl":
-					if (currentMat != null)
-						Materials.Add(currentMat);
-					currentMat = new Material();
-					if (parameters.Length > 1)
-						currentMat.Name = parameters[1];
-					break;
-				case "Ka":
-					currentMat.Ambient = new Color (
-						float.Parse(parameters[1]),
-						float.Parse(parameters[2]),
-						float.Parse(parameters[3]),1.0f
-					);
-					break;
-				case "Kd":
-					currentMat.Diffuse = new Color (
-						float.Parse(parameters[1]),
-						float.Parse(parameters[2]),
-						float.Parse(parameters[3]),1.0f
-					);
-					break;
-				case "Ks":
-					currentMat.Specular = new Color (
-						float.Parse(parameters[1]),
-						float.Parse(parameters[2]),
-						float.Parse(parameters[3]),1.0f
-					);
-					break;
-				case "d":
-				case "Tr":
-					currentMat.Transparency = float.Parse(parameters[1]);
-					break;
-				case "map_Ka":
-					currentMat.AmbientMap = new Texture(parameters[parameters.Length - 1]);
-					break;
-				case "map_Kd":
-					currentMat.DiffuseMap = new Texture(parameters[parameters.Length - 1]);
-					break;
-				case "map_Ks":
-					currentMat.SpecularMap = new Texture(parameters[parameters.Length - 1]);
-					break;
-				case "map_Ns":
-					currentMat.SpecularHighlightMap = new Texture(parameters[parameters.Length - 1]);
-					break;
-				case "map_d":
-					currentMat.AlphaMap = new Texture(parameters[parameters.Length - 1]);
-					break;
-				case "map_bump":
-				case "bump":
-					currentMat.BumpMap = new Texture(parameters[parameters.Length - 1]);
-					break;
-				case "disp":
-					currentMat.DisplacementMap = new Texture(parameters[parameters.Length - 1]);
-					break;
-				case "decal":
-					currentMat.StencilDecalMap = new Texture(parameters[parameters.Length - 1]);
-					break;
-				}
-
-			}
-
-			if (currentMat != null)
-				Materials.Add(currentMat);
-
-			return Materials;
-		}
-
+//		static List<Material> LoadMtl(TextReader textReader)
+//		{
+//			Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+//			List<Material> Materials = new List<Material>();
+//			Material currentMat = null;
+//
+//			string line;
+//			while ((line = textReader.ReadLine()) != null)
+//			{
+//				line = line.Trim(splitCharacters);
+//				line = line.Replace("  ", " ");
+//
+//				string[] parameters = line.Split(splitCharacters);
+//
+//				switch (parameters[0])
+//				{
+//				case "newmtl":
+//					if (currentMat != null)
+//						Materials.Add(currentMat);
+//					currentMat = new Material();
+//					if (parameters.Length > 1)
+//						currentMat.Name = parameters[1];
+//					break;
+//				case "Ka":
+//					currentMat.Ambient = new Color (
+//						float.Parse(parameters[1]),
+//						float.Parse(parameters[2]),
+//						float.Parse(parameters[3]),1.0f
+//					);
+//					break;
+//				case "Kd":
+//					currentMat.Diffuse = new Color (
+//						float.Parse(parameters[1]),
+//						float.Parse(parameters[2]),
+//						float.Parse(parameters[3]),1.0f
+//					);
+//					break;
+//				case "Ks":
+//					currentMat.Specular = new Color (
+//						float.Parse(parameters[1]),
+//						float.Parse(parameters[2]),
+//						float.Parse(parameters[3]),1.0f
+//					);
+//					break;
+//				case "d":
+//				case "Tr":
+//					currentMat.Transparency = float.Parse(parameters[1]);
+//					break;
+//				case "map_Ka":
+//					currentMat.AmbientMap = new Texture(parameters[parameters.Length - 1]);
+//					break;
+//				case "map_Kd":
+//					currentMat.DiffuseMap = new Texture(parameters[parameters.Length - 1]);
+//					break;
+//				case "map_Ks":
+//					currentMat.SpecularMap = new Texture(parameters[parameters.Length - 1]);
+//					break;
+//				case "map_Ns":
+//					currentMat.SpecularHighlightMap = new Texture(parameters[parameters.Length - 1]);
+//					break;
+//				case "map_d":
+//					currentMat.AlphaMap = new Texture(parameters[parameters.Length - 1]);
+//					break;
+//				case "map_bump":
+//				case "bump":
+//					currentMat.BumpMap = new Texture(parameters[parameters.Length - 1]);
+//					break;
+//				case "disp":
+//					currentMat.DisplacementMap = new Texture(parameters[parameters.Length - 1]);
+//					break;
+//				case "decal":
+//					currentMat.StencilDecalMap = new Texture(parameters[parameters.Length - 1]);
+//					break;
+//				}
+//
+//			}
+//
+//			if (currentMat != null)
+//				Materials.Add(currentMat);
+//
+//			return Materials;
+//		}
+//
 
 		static char[] faceParamaterSplitter = new char[] { '/' };
     
