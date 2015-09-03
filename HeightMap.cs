@@ -341,7 +341,8 @@ namespace GGL
         }
 
         #endregion
-        public System.Drawing.Bitmap heightMapBMP
+        
+		public System.Drawing.Bitmap heightMapBMP
         {
             get
             {

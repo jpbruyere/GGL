@@ -30,12 +30,6 @@ namespace GGL
 
 		public virtual void Enable()
 		{
-			GL.PushAttrib (
-				AttribMask.EnableBit|
-				AttribMask.LightingBit|
-				AttribMask.TextureBit| 
-				AttribMask.ColorBufferBit);
-				
 			Shader.Enable (shader);
 			GL.Disable (EnableCap.DepthTest);
 
@@ -62,8 +56,7 @@ namespace GGL
 			GL.Material(MaterialFace.FrontAndBack, MaterialParameter.Shininess, material_Se);
 		}
 		public virtual void Disable()
-		{
-			GL.PopAttrib ();
+		{			
 			Shader.Disable (shader);
 		}
     }

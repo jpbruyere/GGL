@@ -14,7 +14,7 @@ namespace GameLib
 		{
 			Compile ();
 		}
-		public Shader (string vertResId, string fragResId)
+		public Shader (string vertResId, string fragResId = null)
 		{
 			Assembly assembly = Assembly.GetExecutingAssembly ();
 

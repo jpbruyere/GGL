@@ -442,5 +442,17 @@ namespace GGL
         {
             return false;
         }
+
+		public bool Contains(Vector3 pt)
+		{
+			if (pt.X < x0 || pt.X > x1)
+				return false;
+			if (pt.Y < y0 || pt.Y > y1)
+				return false;
+			if (pt.Z < z0 || pt.Z > z1)
+				return false;
+
+			return true;
+		}
     }
 }

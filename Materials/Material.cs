@@ -22,7 +22,7 @@ namespace GGL
 			phong = new MaterialShader ("phong0", "phong0");
 			phongDiffuseTex = new MaterialShader ("phong1", "phong1");
 			phongNormalShader = new MaterialShader ("phong1", "phong2");
-			//multiSpriteShader = new MultiSpriteShader ("simple.vert", "multiSprite1.frag");
+			multiSpriteShader = new MultiSpriteShader ("simple.vert", "multiSprite1.frag");
 			simpleShader = new MaterialShader ("simple.vert", "simpleTex.frag");
 		}
 
@@ -103,12 +103,6 @@ namespace GGL
 
 		public virtual void Enable()
 		{
-			GL.PushAttrib (
-				AttribMask.EnableBit|
-				AttribMask.LightingBit|
-				AttribMask.TextureBit| 
-				AttribMask.ColorBufferBit);
-				
 			Shader.Enable (shader);
 			GL.Disable (EnableCap.DepthTest);
 
@@ -135,8 +129,7 @@ namespace GGL
 			GL.Material(MaterialFace.FrontAndBack, MaterialParameter.Shininess, material_Se);
 		}
 		public virtual void Disable()
-		{
-			GL.PopAttrib ();
+		{			
 			Shader.Disable (shader);
 		}
     }

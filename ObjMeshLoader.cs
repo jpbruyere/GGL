@@ -353,7 +353,9 @@ public class ObjMeshLoader
                 case "map_d":
                     currentMat.AlphaMap = new Texture(parameters[parameters.Length - 1]);
                     break;
-                case "map_bump":
+				case "map_Bump":
+					currentMat.NormalMap = new Texture (parameters [parameters.Length - 1]);
+					break;
                 case "bump":
                     currentMat.BumpMap = new Texture(parameters[parameters.Length - 1]);
                     break;

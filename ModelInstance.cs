@@ -23,6 +23,12 @@ namespace GGL
         public static bool trackView = false;
         public static ModelInstance trackedObject;
 
+		public static void AnimateModels()
+		{
+			foreach (ModelInstance am in AnimatedModelInstance)
+				am.Anim ();
+		}
+
         public string Name
         {
             get { return Model.modelList[ModelIndex].Name + "_" + id; }
@@ -91,6 +97,8 @@ namespace GGL
         public float xAngle = 0.0f;
         public float yAngle = 0.0f;
         public float zAngle = 0.0f;
+
+		public Vector3 LinearSpeed = Vector3.Zero;
         
         public bool IsFrozen
         {
@@ -210,7 +218,7 @@ namespace GGL
                 r.M31, r.M32, r.M33, 0,
                 p.X, p.Y, p.Z, 1);
         }
-        Matrix4 Transformations
+        public Matrix4 Transformations
         {
             get
             {
@@ -241,7 +249,9 @@ namespace GGL
         }
         public virtual void Anim()
         { 
-        
+			if (LinearSpeed == Vector3.Zero)
+				return;
+			Position += LinearSpeed ;
         }
         public virtual void Render()
         {
@@ -325,7 +335,11 @@ namespace GGL
                 AnimatedModelInstance.Remove(this);
         }
 
-
+		public bool PointIsIn(Vector3 pt)
+		{			
+			Vector4 pCubeSpace = Vector4.Transform(new Vector4 (pt, 1f), Transformations.Inverted());
+			return (model.bounds.Contains (new Vector3 (pCubeSpace)));
+		}
         
     }
 }
