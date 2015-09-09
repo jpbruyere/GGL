@@ -203,6 +203,7 @@ namespace GGL
 			string name = "unamed";
 			using (StreamReader Reader = new StreamReader(fileName))
 			{
+				System.Globalization.CultureInfo savedCulture = Thread.CurrentThread.CurrentCulture;
 				Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 
 				string line;
@@ -325,6 +326,7 @@ namespace GGL
 //					faces.Add(currentMesh);
 //				}
 //				model.meshes.Add(faces.ToArray());
+				Thread.CurrentThread.CurrentCulture = savedCulture;
 			}
 
 			vaoMesh tmp = new vaoMesh(lPositions.ToArray (),lTexCoords.ToArray (),

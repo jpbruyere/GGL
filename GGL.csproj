@@ -57,50 +57,17 @@
     <DefineConstants>__linux__;DEBUG</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="imgHelpers.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="Path.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="Shaders\Shader.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="Texture.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="VertexArrayObject.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="vaoMesh.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="Shaders\SingleLightSimpleShader.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="Shaders\GameLib\Shader.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="Shaders\GameLib\GlowShader.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="Shaders\GameLib\EffectShader.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
-    <Compile Include="3dArrow.cs">
-      <LogicalName>
-      </LogicalName>
-    </Compile>
+    <Compile Include="imgHelpers.cs" />
+    <Compile Include="Path.cs" />
+    <Compile Include="Shaders\Shader.cs" />
+    <Compile Include="Texture.cs" />
+    <Compile Include="VertexArrayObject.cs" />
+    <Compile Include="vaoMesh.cs" />
+    <Compile Include="Shaders\SingleLightSimpleShader.cs" />
+    <Compile Include="Shaders\GameLib\Shader.cs" />
+    <Compile Include="Shaders\GameLib\GlowShader.cs" />
+    <Compile Include="Shaders\GameLib\EffectShader.cs" />
+    <Compile Include="3dArrow.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -116,12 +83,12 @@
     <Reference Include="System.Drawing" />
     <Reference Include="Mono.Cairo" />
     <Reference Include="System.Xml" />
+    <Reference Include="OpenTK">
+      <HintPath>..\..\opentk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Shaders\GameLib\">
-      <LogicalName>
-      </LogicalName>
-    </Folder>
+    <Folder Include="Shaders\GameLib\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\GameLib\effect0.frag" />
@@ -140,15 +107,6 @@
     <EmbeddedResource Include="Shaders\GameLib\fire0.frag" />
     <EmbeddedResource Include="Shaders\GameLib\voronoi.frag" />
     <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\data2\devel\GOLib\GOLib.csproj">
-      <Project>{C2980F9B-4798-4C05-99E2-E174810F7C7B}</Project>
-      <Name>GOLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OpenTK\Source\OpenTK\OpenTK.csproj">
-      <Project>{A37A7E14-0000-0000-0000-000000000000}</Project>
-      <Name>OpenTK</Name>
-    </ProjectReference>
+    <EmbeddedResource Include="Shaders\GameLib\classicnoise2D.frag" />
   </ItemGroup>
 </Project>
