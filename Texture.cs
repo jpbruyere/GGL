@@ -18,7 +18,9 @@ namespace GGL
     public class Texture
     {
         public string Map;
-        public int texRef;        
+        public int texRef;
+		public int Width;
+		public int Height;
 		        
 		public Texture(string _mapPath, bool flipY = true)
         {
@@ -26,6 +28,8 @@ namespace GGL
 	            Map = _mapPath;
 
 				Bitmap bitmap = new Bitmap(Map);
+				Width = bitmap.Width;
+				Height = bitmap.Height;
 
 				if(flipY)
 					bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
@@ -50,6 +54,8 @@ namespace GGL
 
 		public Texture(int width, int height)
 		{
+			Width = width;
+			Height = height;
 			createTexture (IntPtr.Zero, width, height);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
