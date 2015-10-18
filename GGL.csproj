@@ -2,9 +2,6 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">Linux_x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{5490AD74-0BB3-438C-9DE4-EB7CFC68BCB5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -22,9 +19,10 @@
     <DelaySign>False</DelaySign>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>__linux__;TRACE;DEBUG</DefineConstants>
     <Optimize>False</Optimize>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
@@ -32,29 +30,11 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>__linux__</DefineConstants>
     <Optimize>True</Optimize>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
     <DebugType>None</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Platform)' == 'Win_x86' ">
-    <DefineConstants>_WIN32</DefineConstants>
-    <BaseAddress>4194304</BaseAddress>
-    <PlatformTarget>x86</PlatformTarget>
-    <Prefer32Bit>False</Prefer32Bit>
-    <RegisterForComInterop>False</RegisterForComInterop>
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Platform)' == 'Linux_x86' ">
-    <DefineConstants>__linux__</DefineConstants>
-    <PlatformTarget>x86</PlatformTarget>
-    <BaseAddress>4194304</BaseAddress>
-    <RegisterForComInterop>False</RegisterForComInterop>
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Linux_x86' ">
-    <PlatformTarget>anycpu</PlatformTarget>
-    <DefineConstants>__linux__;DEBUG</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="imgHelpers.cs" />
@@ -68,6 +48,12 @@
     <Compile Include="Shaders\GameLib\GlowShader.cs" />
     <Compile Include="Shaders\GameLib\EffectShader.cs" />
     <Compile Include="3dArrow.cs" />
+    <Compile Include="Geo2D\Point.cs" />
+    <Compile Include="Geo2D\Rectangle.cs" />
+    <Compile Include="Geo2D\Size.cs" />
+    <Compile Include="glHelper.cs" />
+    <Compile Include="ExtensionsMethods.cs" />
+    <Compile Include="Animation.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -108,5 +94,11 @@
     <EmbeddedResource Include="Shaders\GameLib\voronoi.frag" />
     <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
     <EmbeddedResource Include="Shaders\GameLib\classicnoise2D.frag" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MiscUtil\MiscUtil.csproj">
+      <Project>{4FC1D5F4-661F-48DC-B397-4CDCB7D61ABE}</Project>
+      <Name>MiscUtil</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

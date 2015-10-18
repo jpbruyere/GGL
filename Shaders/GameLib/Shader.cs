@@ -16,27 +16,33 @@ namespace GameLib
 		}
 		public Shader (string vertResId, string fragResId)
 		{
-			Assembly assembly = Assembly.GetExecutingAssembly ();
 
-			if (!string.IsNullOrEmpty (vertResId)) {
-				Stream s = assembly.GetManifestResourceStream (vertResId);
-				if (s != null) {
-					using (StreamReader sr = new StreamReader (s)) {				
-						vertSource = sr.ReadToEnd ();
-					}
+			Stream s = tryGetStreamForResource (vertResId);
+			if (s != null) {
+				using (StreamReader sr = new StreamReader (s)) {				
+					vertSource = sr.ReadToEnd ();
 				}
 			}
 
-			if (!string.IsNullOrEmpty (fragResId)) {
-				Stream s = System.Reflection.Assembly.GetExecutingAssembly ().GetManifestResourceStream (fragResId);
-				if (s != null) {
-					using (StreamReader sr = new StreamReader (s)) {				
-						fragSource = sr.ReadToEnd ();
-					}
+			s = tryGetStreamForResource (fragResId);
+			if (s != null) {
+				using (StreamReader sr = new StreamReader (s)) {				
+					fragSource = sr.ReadToEnd ();
 				}
 			}
 
 			Compile ();
+		}
+		Stream tryGetStreamForResource(string resId){
+			if (string.IsNullOrEmpty (resId))
+				return null;
+			
+			Stream s = Assembly.GetEntryAssembly ().
+				GetManifestResourceStream (resId);
+			return s == null ?
+				Assembly.GetExecutingAssembly ().
+					GetManifestResourceStream (resId) :
+				s;
 		}
 		#endregion
 
