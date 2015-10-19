@@ -54,6 +54,7 @@
     <Compile Include="glHelper.cs" />
     <Compile Include="ExtensionsMethods.cs" />
     <Compile Include="Animation.cs" />
+    <Compile Include="FileSystemHelpers.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

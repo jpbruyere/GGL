@@ -21,13 +21,16 @@ namespace GGL
         public int texRef;
 		public int Width;
 		public int Height;
-		        
-		public Texture(string _mapPath, bool flipY = true)
+		 
+		public Texture(string _mapPath, bool flipY = true) : 
+			this(FileSystemHelpers.GetStreamFromPath(_mapPath), flipY)
+		{
+			Map = _mapPath;
+		}
+		public Texture(Stream _mapStream, bool flipY = true)
         {
 			try {
-	            Map = _mapPath;
-
-				Bitmap bitmap = new Bitmap(Map);
+				Bitmap bitmap = new Bitmap(_mapStream);
 
 				if(flipY)
 					bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
@@ -48,6 +51,11 @@ namespace GGL
 			} catch (Exception ex) {
 				Debug.WriteLine ("Error loading texture: " + Map + ":" + ex.Message); 
 			}
+		}
+
+
+		void createTextureFromStream(Stream s, bool flipY){
+			
 		}
 
 		public Texture(int width, int height)
