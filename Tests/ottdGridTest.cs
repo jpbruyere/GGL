@@ -313,7 +313,8 @@ namespace ottdGridTest
 		protected override void OnLoad (EventArgs e)
 		{
 			base.OnLoad (e);
-			LoadInterface("ui/fps.goml", out g);
+			LoadInterface("ui/fps.goml").DataSource = this;
+
 
 
 			voronoiShader = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",2048,2048);
@@ -338,15 +339,14 @@ namespace ottdGridTest
 			Mouse.WheelChanged += new EventHandler<MouseWheelEventArgs>(Mouse_WheelChanged);
 			Mouse.Move += new EventHandler<MouseMoveEventArgs>(Mouse_Move);
 		}
-		protected override void OnRenderFrame (FrameEventArgs e)
+		public override void GLClear ()
 		{
-			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-				drawGrid ();
-
-
-			base.OnRenderFrame (e);
-			SwapBuffers ();
+			GL.ClearColor(0.1f, 0.1f, 0.3f, 1.0f);
+			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+		}
+		public override void OnRender (FrameEventArgs e)
+		{
+			drawGrid ();
 		}
 
 		private int frameCpt = 0;

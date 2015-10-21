@@ -48,18 +48,12 @@ namespace test
 			: base(800, 600,"test")
 		{}
 
-		Container g;
-		Label labFps, labFpsMin, labFpsMax, labUpdate;
 
 		protected override void OnLoad (EventArgs e)
 		{
 			base.OnLoad (e);
-			LoadInterface("ui/fps.goml", out g);
+			LoadInterface("ui/fps.goml");
 
-			labFps = g.FindByName ("labFps") as Label;
-			labFpsMin = g.FindByName ("labFpsMin") as Label;
-			labFpsMax = g.FindByName ("labFpsMax") as Label;
-			labUpdate = g.FindByName ("labUpdate") as Label;
 
 		}
 		protected override void OnRenderFrame (FrameEventArgs e)
@@ -76,11 +70,7 @@ namespace test
 
 			fps = (int)RenderFrequency;
 
-			labFps.Text = fps.ToString();
-			labUpdate.Text = this.updateTime.ElapsedMilliseconds.ToString() + " ms";
 			if (frameCpt > 200) {
-				labFpsMin.Text = fpsMin.ToString();
-				labFpsMax.Text = fpsMax.ToString();
 				resetFps ();
 				frameCpt = 0;
 

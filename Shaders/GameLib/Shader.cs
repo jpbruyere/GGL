@@ -241,9 +241,13 @@ namespace GameLib
 
 		public virtual void Enable(){
 			GL.GetInteger (GetPName.CurrentProgram, out savedPgmId);
+			if (savedPgmId == pgmId)
+				return;
 			GL.UseProgram (pgmId);
 		}
 		public virtual void Disable(){
+			if (savedPgmId == pgmId)
+				return;
 			GL.UseProgram (savedPgmId);
 		}
 		public static void Enable(Shader s)

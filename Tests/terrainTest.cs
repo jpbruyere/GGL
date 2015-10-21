@@ -17,33 +17,49 @@ using GGL;
 
 namespace terrainTest
 {
-	class GameWin : OpenTKGameWindow
+	class GameWin : OpenTKGameWindow, IValueChange
 	{
-		#region FPS
-		static int _fps = 0;
+		#region IValueChange implementation
+		public event EventHandler<ValueChangeEventArgs> ValueChanged;
+		#endregion
 
-		public static int fps {
+		#region FPS
+		int _fps = 0;
+
+		public int fps {
 			get { return _fps; }
 			set {
-				_fps = value;
-				if (_fps > fpsMax)
-					fpsMax = _fps;
-				else if (_fps < fpsMin)
-					fpsMin = _fps;
-			}
+				if (_fps == value)
+					return;
 
+				_fps = value;
+
+				if (_fps > fpsMax) {
+					fpsMax = _fps;
+					ValueChanged.Raise(this, new ValueChangeEventArgs ("fpsMax", fpsMax));
+				} else if (_fps < fpsMin) {
+					fpsMin = _fps;
+					ValueChanged.Raise(this, new ValueChangeEventArgs ("fpsMin", fpsMin));
+				}
+
+				ValueChanged.Raise(this, new ValueChangeEventArgs ("fps", _fps));
+				ValueChanged.Raise (this, new ValueChangeEventArgs ("update",
+					this.updateTime.ElapsedMilliseconds.ToString () + " ms"));
+			}
 		}
 
-		public static int fpsMin = int.MaxValue;
-		public static int fpsMax = 0;
+		public int fpsMin = int.MaxValue;
+		public int fpsMax = 0;
+		public string update = "";
 
-		static void resetFps ()
+		void resetFps ()
 		{
 			fpsMin = int.MaxValue;
 			fpsMax = 0;
 			_fps = 0;
 		}
 		#endregion
+
 
 		#region  scene matrix and vectors
 		public static Matrix4 modelview;
@@ -79,9 +95,6 @@ namespace terrainTest
 		public GameWin ()
 			: base(800, 600,"test")
 		{}
-
-		Container g;
-		Label labFps, labFpsMin, labFpsMax, labUpdate;
 
 		#region table
 		vaoMesh plane;
@@ -202,12 +215,8 @@ namespace terrainTest
 		protected override void OnLoad (EventArgs e)
 		{
 			base.OnLoad (e);
-			LoadInterface("ui/fps.goml", out g);
+			LoadInterface("ui/fps.goml").DataSource = this;
 
-			labFps = g.FindByName ("labFps") as Label;
-			labFpsMin = g.FindByName ("labFpsMin") as Label;
-			labFpsMax = g.FindByName ("labFpsMax") as Label;
-			labUpdate = g.FindByName ("labUpdate") as Label;
 
 			voronoiShader = new GameLib.EffectShader ("GGL.Shaders.GameLib.voronoi",2048,2048);
 			mainShader = new GameLib.Shader ();
@@ -229,17 +238,15 @@ namespace terrainTest
 			Mouse.WheelChanged += new EventHandler<MouseWheelEventArgs>(Mouse_WheelChanged);
 			Mouse.Move += new EventHandler<MouseMoveEventArgs>(Mouse_Move);
 		}
-		protected override void OnRenderFrame (FrameEventArgs e)
+		public override void GLClear ()
 		{
-			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-
-			drawPlane ();
-
-			base.OnRenderFrame (e);
-			SwapBuffers ();
+			GL.ClearColor(0.1f, 0.1f, 0.3f, 1.0f);
+			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 		}
-
+		public override void OnRender (FrameEventArgs e)
+		{
+			drawPlane ();
+		}
 		private int frameCpt = 0;
 		protected override void OnUpdateFrame (FrameEventArgs e)
 		{

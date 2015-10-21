@@ -10,7 +10,7 @@
     <RootNamespace>Tests</RootNamespace>
     <AssemblyName>Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <StartupObject>test.Shoothemup</StartupObject>
+    <StartupObject>ottdGridTest.GameWin</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Linux_x86' ">
     <DebugSymbols>true</DebugSymbols>

@@ -18,7 +18,9 @@ namespace GGL
     public class Texture
     {
         public string Map;
-        public int texRef;        
+        public int texRef;
+		public int Width;
+		public int Height;
 		        
 		public Texture(string _mapPath, bool flipY = true)
         {
@@ -59,6 +61,9 @@ namespace GGL
 
 		void createTexture(IntPtr data, int width, int height)
 		{
+			Width = width;
+			Height = height;
+
 			GL.GenTextures(1, out texRef);
 			GL.BindTexture(TextureTarget.Texture2D, texRef);
 			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0,

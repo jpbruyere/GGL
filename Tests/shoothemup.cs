@@ -35,7 +35,7 @@ namespace test
 		Stopped,
 		Run
 	}
-	class Shoothemup : GameWindow
+	class Shoothemup : OpenTKGameWindow
 	{
 		#if _WIN32 || _WIN64
 		public const string rootDir = @"d:\";
@@ -575,16 +575,17 @@ namespace test
 			#endregion
             
 		}
-		/// <summary>
-		/// Called when it is time to render the next frame. Add your rendering code here.
-		/// </summary>
-		/// <param name="e">Contains timing information.</param>
-		protected override void OnRenderFrame (FrameEventArgs e)
-		{
-			base.OnRenderFrame (e);
 
+		public override void GLClear ()
+		{
+			GL.ClearColor(0.1f, 0.1f, 0.3f, 1.0f);
+			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+		}
+		public override void OnRender (FrameEventArgs e)
+		{			
 			Draw ();
 		}
+
         #endregion
 
         #region Mouse Handling
@@ -764,8 +765,7 @@ namespace test
 
 		/// <summary>Creates a 800x600 window with the specified title.</summary>
 		public Shoothemup ()
-			: base(800, 600, new OpenTK.Graphics.GraphicsMode(32, 24, 0, 8),
-				"OTKGL simple")
+			: base(1024, 800,"test")
 		{
 			VSync = VSyncMode.On;
 		}
