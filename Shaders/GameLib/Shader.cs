@@ -242,7 +242,7 @@ namespace GameLib
 
 		}
 		protected virtual void BindSamplesSlots(){
-			GL.Uniform1(GL.GetUniformLocation (pgmId, "tex"),0);
+			GL.Uniform1(GL.GetUniformLocation (pgmId, "tex"), 0);
 		}
 
 		public virtual void Enable(){

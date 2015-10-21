@@ -55,6 +55,9 @@
     <Compile Include="ExtensionsMethods.cs" />
     <Compile Include="Animation.cs" />
     <Compile Include="FileSystemHelpers.cs" />
+    <Compile Include="MiscUtil\Operator.cs" />
+    <Compile Include="MiscUtil\NullOp.cs" />
+    <Compile Include="MiscUtil\ExpressionUtil.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -76,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaders\GameLib\" />
+    <Folder Include="MiscUtil\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\GameLib\effect0.frag" />
@@ -95,11 +99,5 @@
     <EmbeddedResource Include="Shaders\GameLib\voronoi.frag" />
     <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
     <EmbeddedResource Include="Shaders\GameLib\classicnoise2D.frag" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MiscUtil\MiscUtil.csproj">
-      <Project>{4FC1D5F4-661F-48DC-B397-4CDCB7D61ABE}</Project>
-      <Name>MiscUtil</Name>
-    </ProjectReference>
   </ItemGroup>
 </Project>
