@@ -53,11 +53,15 @@
     <Compile Include="Geo2D\Size.cs" />
     <Compile Include="glHelper.cs" />
     <Compile Include="ExtensionsMethods.cs" />
-    <Compile Include="Animation.cs" />
     <Compile Include="FileSystemHelpers.cs" />
     <Compile Include="MiscUtil\Operator.cs" />
     <Compile Include="MiscUtil\NullOp.cs" />
     <Compile Include="MiscUtil\ExpressionUtil.cs" />
+    <Compile Include="Animation\Animation.cs" />
+    <Compile Include="Animation\ShakeAnimation.cs" />
+    <Compile Include="Animation\FloatAnimation.cs" />
+    <Compile Include="Animation\AngleAnimation.cs" />
+    <Compile Include="Animation\AnimationTemplate.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -74,12 +78,14 @@
     <Reference Include="Mono.Cairo" />
     <Reference Include="System.Xml" />
     <Reference Include="OpenTK">
-      <HintPath>..\..\opentk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+      <HintPath>..\opentk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaders\GameLib\" />
     <Folder Include="MiscUtil\" />
+    <Folder Include="Animation\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\GameLib\effect0.frag" />

@@ -34,22 +34,6 @@ namespace GGL
     public delegate float GetterDelegate();
     public delegate void SetterDelegate(float value);
 
-//	public class AnimationList : List<AnimationList> ,IAnimatable
-//	{
-//		#region IAnimatable implementation
-//
-//		public event EventHandler<EventArgs> AnimationFinished;
-//
-//		public void Animate (float ellapseTime = 0f)
-//		{
-//			throw new NotImplementedException ();
-//		}
-//
-//		#endregion
-//
-//
-//	}
-
     public class Animation
     {
 		public event AnimationEventHandler AnimationFinished;
@@ -78,8 +62,12 @@ namespace GGL
 			propertyName = _propertyName;
 			AnimatedInstance = instance;
 			PropertyInfo pi = instance.GetType().GetProperty(propertyName);
-			getValue = (GetterDelegate)Delegate.CreateDelegate(typeof(GetterDelegate), instance, pi.GetGetMethod());
-			setValue = (SetterDelegate)Delegate.CreateDelegate(typeof(SetterDelegate), instance, pi.GetSetMethod());
+			try {
+				getValue = (GetterDelegate)Delegate.CreateDelegate(typeof(GetterDelegate), instance, pi.GetGetMethod());
+				setValue = (SetterDelegate)Delegate.CreateDelegate(typeof(SetterDelegate), instance, pi.GetSetMethod());
+			} catch (Exception ex) {
+				
+			}
 		}
 
 		public static void StartAnimation(Animation a, int delayMs = 0, AnimationEventHandler OnEnd = null)
@@ -184,142 +172,5 @@ namespace GGL
 		}
 
 
-    }
-	public class ShakeAnimation : Animation
-	{
-		public float LowBound;
-		public float HighBound;
-
-		bool rising = true;
-
-		public ShakeAnimation(
-			Object instance, 
-			string _propertyName, 
-			float lowBound, float highBound)
-			: base(instance, _propertyName)
-		{
-			
-			LowBound = Math.Min (lowBound, highBound);
-			HighBound = Math.Max (lowBound, highBound);
-
-			float value = getValue ();
-
-			if (value > HighBound)
-				rising = false;
-		}
-		const float stepMin = 0.001f, stepMax = 0.005f;
-		public override void Process ()
-		{
-			float value = getValue ();	
-			float step = stepMin + (float)random.NextDouble () * stepMax;
-
-			if (rising) {				
-				value += step;
-				if (value > HighBound) {
-					value = HighBound;
-					rising = false;
-				}
-			} else {
-				value -= step;
-				if (value < LowBound) {
-					value = LowBound;
-					rising = true;
-				} else if (value > HighBound)
-					value -= step * 10f;
-			}
-			setValue (value);
-		}
-
-	}
-    public class FloatAnimation : Animation
-    {
-
-        public float TargetValue;
-		float initialValue;
-        public float Step;
-		public bool Cycle;
-
-
-        public FloatAnimation(Object instance, string _propertyName, float Target, float step = 0.2f)
-			: base(instance, _propertyName)
-        {
-            
-            TargetValue = Target;
-
-            float value = getValue();
-			initialValue = value;
-
-            Step = step;
-
-            if (value < TargetValue)
-            {
-                if (Step < 0)
-                    Step = -Step;
-            }
-            else if (Step > 0)
-                Step = -Step;            
-        }
-
-        /// <summary>
-        /// process one frame
-        /// </summary>
-        public override void Process()
-        {
-            float value = getValue();
-
-			//Debug.WriteLine ("Anim: {0} <= {1}", value, this.ToString ());
-
-            if (Step > 0f)
-            {
-                value += Step;
-                setValue(value);
-                //Debug.WriteLine(value);
-                if (TargetValue > value)
-                    return;
-            }
-            else
-            {
-                value += Step;
-                setValue(value);
-
-                if (TargetValue < value)
-                    return;
-            }
-
-			if (Cycle) {
-				Step = -Step;
-				TargetValue = initialValue;
-				Cycle = false;
-				return;
-			}
-
-            setValue(TargetValue);
-            AnimationList.Remove(this);
-
-			RaiseAnimationFinishedEvent ();
-        }
-
-		public override string ToString ()
-		{
-			return string.Format ("{0}:->{1}:{2}",base.ToString(),TargetValue,Step);
-		}
-    }
-
-    public class AngleAnimation : FloatAnimation
-    {
-        public AngleAnimation(Object instance, string PropertyName, float Target, float step = 0.1f) : 
-            base(instance,PropertyName,Target,step)
-        {
-        }
-        public override void Process()
-        {
-            base.Process();
-
-            float value = getValue();
-            if (value < -MathHelper.TwoPi)
-                setValue(value + MathHelper.TwoPi);
-            else if (value >= MathHelper.TwoPi)
-                setValue(value - MathHelper.TwoPi);
-        }
     }
 }
