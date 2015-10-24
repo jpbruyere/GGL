@@ -161,7 +161,7 @@ namespace ottdGridTest
 			} catch (Exception ex) {
 				Debug.WriteLine ("UpdateViewMatrices: failed to set shader matrices: " + ex.Message);
 			}
-		}
+		}			
 
 		#region Mouse
 		void Mouse_Move(object sender, MouseMoveEventArgs e)
@@ -169,10 +169,13 @@ namespace ottdGridTest
 			if (e.XDelta != 0 || e.YDelta != 0)
 			{
 				if (e.Mouse.MiddleButton == OpenTK.Input.ButtonState.Pressed) {
+					Vector3 v = new Vector3 (
+						            Vector2.Normalize (vLook.Xy.PerpendicularLeft));
 					Vector3 tmp = Vector3.Transform (vLook, 
-						Matrix4.CreateRotationX (-e.YDelta * RotationSpeed));
+						Matrix4.CreateRotationZ (-e.XDelta * RotationSpeed) *
+						Matrix4.CreateFromAxisAngle (v, -e.YDelta * RotationSpeed));
 					tmp.Normalize();
-					if (tmp.Y >= 0f || tmp.Z <= 0f)
+					if (tmp.Z <= 0f)
 						return;
 					vLook = tmp;
 					UpdateViewMatrix ();
@@ -182,8 +185,10 @@ namespace ottdGridTest
 					
 				}
 				if (e.Mouse.RightButton == ButtonState.Pressed) {
-					Matrix4 m = Matrix4.CreateTranslation (-e.XDelta, e.YDelta, 0);
-					vEyeTarget = Vector3.Transform (vEyeTarget, m);
+					Vector3 vH = new Vector3(Vector2.Normalize(vLook.Xy.PerpendicularLeft) * e.XDelta * MoveSpeed);
+					Vector3 vV = new Vector3(Vector2.Normalize(vLook.Xy) * e.YDelta * MoveSpeed);
+					vEyeTarget += vH + vV;
+						
 					UpdateViewMatrix();
 					return;
 				}
