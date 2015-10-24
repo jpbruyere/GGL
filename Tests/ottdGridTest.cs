@@ -72,7 +72,7 @@ namespace ottdGridTest
 		public static Vector3 vLook = new Vector3(0.5f, 0.5f, -0.2f);  // Camera vLook Vector
 		public static Vector3 vMouse = Vector3.Zero;
 
-		float _zFar = 200.0f;
+		float _zFar = 300.0f;
 
 		public float zFar {
 			get { return _zFar; }
@@ -114,8 +114,8 @@ namespace ottdGridTest
 		public int[] indicesVboData;
 		Vector2[] texVboData;
 
-		const int _width = 128;
-		const int _height = 128;
+		const int _width = 64;
+		const int _height = 64;
 
 		public void initGrid()
 		{
@@ -163,10 +163,10 @@ namespace ottdGridTest
 
 			GL.BindVertexArray(vaoHandle);
 
-			GL.DrawElementsInstanced(PrimitiveType.TriangleStrip, indicesVboData.Length,
-				DrawElementsType.UnsignedInt, IntPtr.Zero,16);	
-			//			GL.DrawElements(PrimitiveType.TriangleStrip, indicesVboData.Length,
-			//				DrawElementsType.UnsignedInt, IntPtr.Zero);	
+//			GL.DrawElementsInstanced(PrimitiveType.TriangleStrip, indicesVboData.Length,
+//				DrawElementsType.UnsignedInt, IntPtr.Zero,1);	
+						GL.DrawElements(PrimitiveType.TriangleStrip, indicesVboData.Length,
+							DrawElementsType.UnsignedInt, IntPtr.Zero);	
 
 			GL.BindVertexArray (0);
 
@@ -317,9 +317,10 @@ namespace ottdGridTest
 
 
 
-			voronoiShader = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",2048,2048);
+			voronoiShader = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",512,512);
 			//mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDispInstanced.vert","GGL.Shaders.GameLib.VertDispNormFilt.frag");
-			mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDispInstancedSingleLight.vert","GGL.Shaders.GameLib.VertDispSingleLight.frag");
+			//mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDispInstancedSingleLight.vert","GGL.Shaders.GameLib.VertDispSingleLight.frag");
+			mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDisp.vert","GGL.Shaders.GameLib.Texture.frag");
 			redShader = new GameLib.EffectShader ("GGL.Shaders.GameLib.red");
 
 			GL.ClearColor(0.0f, 0.0f, 0.2f, 1.0f);

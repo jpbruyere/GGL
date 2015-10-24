@@ -62,6 +62,7 @@
     <Compile Include="shoothemup.cs" />
     <Compile Include="terrainTest.cs" />
     <Compile Include="ottdGridTest.cs" />
+    <Compile Include="GeometryShader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ui\fps.goml">

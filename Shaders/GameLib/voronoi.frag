@@ -33,6 +33,6 @@ float worley(vec2 p) {
 }
 
 void main() {
-	float t = 0.9 * worley(texCoord.xy * 10.0);
+	float t = 0.9 * worley(texCoord.xy * 6.0);
 	out_frag_color = vec4(vec3(t,sqrt(t),t), 1.0);
 }

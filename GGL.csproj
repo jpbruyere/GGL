@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">Linux_x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{5490AD74-0BB3-438C-9DE4-EB7CFC68BCB5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -22,6 +20,8 @@
     <DelaySign>False</DelaySign>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>TRACE;DEBUG</DefineConstants>
@@ -211,5 +211,6 @@
     <EmbeddedResource Include="Shaders\GameLib\red.frag" />
     <EmbeddedResource Include="Shaders\GameLib\VertDispSingleLight.frag" />
     <EmbeddedResource Include="Shaders\GameLib\VertDispInstancedSingleLight.vert" />
+    <EmbeddedResource Include="Shaders\GameLib\Texture.frag" />
   </ItemGroup>
 </Project>
