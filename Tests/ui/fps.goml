@@ -1,0 +1,32 @@
+﻿<?xml version="1.0"?>
+<Container Name="MainGrp" Background="DimGray"
+	HorizontalAlignment="Left" VerticalAlignment="Top"
+	Margin="10" Focusable="True" Fit="True">
+
+		<VerticalStack Fit="True" BorderWidth="1" Margin="5" WidgetSpacing="4">
+			<HorizontalStack>
+				<Label Text="Update:" FontColor="White" VerticalAlignment="Center" />
+				<Label Name="labUpdate" Text="{update}" FontSize="12" Width="60" TextAlignment="Center" Background="DarkGreen"/>
+			</HorizontalStack>
+			<HorizontalStack>
+				<Label Text="Fps:" Width = "30" VerticalAlignment="Center"  TextAlignment="LeftCenter"/>
+				<Label Text="{fps}" Font="droid bold, 12"
+					TextAlignment="Center" Background="AoEnglish"/>
+			</HorizontalStack>
+			<HorizontalStack>
+				<Label Text="Min:" Width = "30" />
+				<Label Text="{fpsMin}" Font="droid bold, 12"
+					TextAlignment="Center" Background="AoEnglish"/>
+			</HorizontalStack>
+			<HorizontalStack>
+				<Label Text="Max:" Width = "30"/>
+				<Label Text="{fpsMax}" Font="droid bold, 12"
+					TextAlignment="Center" Background="AoEnglish"/>
+			</HorizontalStack>
+			<Popper Width="100">
+				<Border Margin="10" Fit="True" Background="ArmyGreen">
+					<Image Fit="true" Path="{imgVoronoi}"/>
+				</Border>
+			</Popper>
+		</VerticalStack>				
+</Container>

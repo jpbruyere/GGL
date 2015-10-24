@@ -20,6 +20,8 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>__linux__;TRACE;DEBUG</DefineConstants>
@@ -62,6 +64,8 @@
     <Compile Include="Animation\FloatAnimation.cs" />
     <Compile Include="Animation\AngleAnimation.cs" />
     <Compile Include="Animation\AnimationTemplate.cs" />
+    <Compile Include="Shaders\GameLib\ShadedTexture.cs" />
+    <Compile Include="Shaders\GameLib\VertexDispShader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -79,7 +83,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="OpenTK">
       <HintPath>..\opentk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
-      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -105,5 +108,7 @@
     <EmbeddedResource Include="Shaders\GameLib\voronoi.frag" />
     <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
     <EmbeddedResource Include="Shaders\GameLib\classicnoise2D.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\VertDisp.vert" />
+    <EmbeddedResource Include="Shaders\GameLib\Texture.frag" />
   </ItemGroup>
 </Project>
