@@ -204,12 +204,13 @@ namespace ottdGridTest
 
 			selMesh.Render(PrimitiveType.LineLoop);
 		}
+
 		#region Grid Cache
 		bool gridCacheIsUpToDate = false;
 		QuadVAO cacheQuad;
 		Matrix4 cacheProjection;
 		int gridCacheTex, gridSelectionTex;
-		int fboGrid;
+		int fboGrid, depthRenderbuffer;
 		DrawBuffersEnum[] dbe = new DrawBuffersEnum[]
 		{
 			DrawBuffersEnum.ColorAttachment0 ,
@@ -255,6 +256,11 @@ namespace ottdGridTest
 			gridCacheTex = new Texture (cz.Width, cz.Height);
 			gridSelectionTex = new Texture (cz.Width, cz.Height);
 
+			// Create Depth Renderbuffer
+			GL.GenRenderbuffers( 1, out depthRenderbuffer );
+			GL.BindRenderbuffer( RenderbufferTarget.Renderbuffer, depthRenderbuffer );
+			GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, (RenderbufferStorage)All.DepthComponent32, cz.Width, cz.Height);
+
 			GL.GenFramebuffers(1, out fboGrid);
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, fboGrid);
@@ -262,6 +268,8 @@ namespace ottdGridTest
 				TextureTarget.Texture2D, gridCacheTex, 0);
 			GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment1,
 				TextureTarget.Texture2D, gridSelectionTex, 0);
+			GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, depthRenderbuffer );
+
 
 			if (GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete)
 			{
@@ -275,7 +283,7 @@ namespace ottdGridTest
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, fboGrid);
 			GL.DrawBuffers(2, dbe);
 
-			GL.Clear (ClearBufferMask.ColorBufferBit);
+			GL.Clear (ClearBufferMask.ColorBufferBit|ClearBufferMask.DepthBufferBit);
 			activateGridShader ();
 
 			grid.Render(PrimitiveType.TriangleStrip, grid.indices);
