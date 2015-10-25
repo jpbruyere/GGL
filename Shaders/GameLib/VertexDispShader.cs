@@ -31,12 +31,15 @@ namespace GameLib
 		{
 		}
 
-		protected int   mapSizeLoc;
+		protected int   mapSizeLoc, heightScaleLoc;
 		public int DisplacementMap;
 		public int DiffuseTexture;
 
 		public Vector2 MapSize {
 			set { GL.Uniform2 (mapSizeLoc, value); }
+		}
+		public float HeightScale {
+			set { GL.Uniform1 (heightScaleLoc, value); }
 		}
 
 		protected override void GetUniformLocations ()
@@ -44,6 +47,7 @@ namespace GameLib
 			base.GetUniformLocations ();
 
 			mapSizeLoc = GL.GetUniformLocation (pgmId, "mapSize");
+			heightScaleLoc = GL.GetUniformLocation (pgmId, "heightScale");
 		}
 		protected override void BindSamplesSlots ()
 		{

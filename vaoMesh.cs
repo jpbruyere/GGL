@@ -101,12 +101,13 @@ namespace GGL
 					new IntPtr (texCoords.Length * Vector2.SizeInBytes),
 					texCoords, BufferUsageHint.StaticDraw);
 			}
-			eboHandle = GL.GenBuffer();
-			GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
-			GL.BufferData(BufferTarget.ElementArrayBuffer,
-				new IntPtr(sizeof(uint) * indices.Length),
-				indices, BufferUsageHint.StaticDraw);
-
+			if (indices != null) {
+				eboHandle = GL.GenBuffer ();
+				GL.BindBuffer (BufferTarget.ElementArrayBuffer, eboHandle);
+				GL.BufferData (BufferTarget.ElementArrayBuffer,
+					new IntPtr (sizeof(uint) * indices.Length),
+					indices, BufferUsageHint.StaticDraw);
+			}
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 		}
@@ -129,7 +130,8 @@ namespace GGL
 				GL.BindBuffer (BufferTarget.ArrayBuffer, normalsVboHandle);
 				GL.VertexAttribPointer (2, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 			}
-			GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
+			if (indices != null)
+				GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
 
 			GL.BindVertexArray(0);
 		}
@@ -140,7 +142,12 @@ namespace GGL
 				DrawElementsType.UnsignedInt, IntPtr.Zero);	
 			GL.BindVertexArray (0);
 		}
-
+		public void Render(PrimitiveType _primitiveType, int[] _customIndices){
+			GL.BindVertexArray(vaoHandle);
+			GL.DrawElements(_primitiveType, _customIndices.Length,
+				DrawElementsType.UnsignedInt, _customIndices);	
+			GL.BindVertexArray (0);
+		}
 		public static vaoMesh operator +(vaoMesh m1, vaoMesh m2){
 			if (m1 == null)
 				return m2;

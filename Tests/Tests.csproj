@@ -73,5 +73,10 @@
   <ItemGroup>
     <Folder Include="ui\" />
     <Folder Include="images\" />
+    <Folder Include="Shaders\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Shaders\Grid.frag" />
+    <EmbeddedResource Include="Shaders\VertDisp.vert" />
   </ItemGroup>
 </Project>

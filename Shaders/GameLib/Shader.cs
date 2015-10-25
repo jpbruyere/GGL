@@ -203,12 +203,17 @@ namespace GameLib
 
 			BindVertexAttributes ();
 
-			GL.LinkProgram(pgmId);
-			GL.ValidateProgram(pgmId);
-
 			string info;
+			GL.LinkProgram(pgmId);
 			GL.GetProgramInfoLog(pgmId, out info);
+			Debug.WriteLine("Linkage:");
 			Debug.WriteLine(info);
+
+			GL.ValidateProgram(pgmId);
+			GL.GetProgramInfoLog(pgmId, out info);
+			Debug.WriteLine("Validation:");
+			Debug.WriteLine(info);
+
 
 			Enable ();
 
