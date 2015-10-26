@@ -236,6 +236,7 @@ namespace ottdGridTest
 
 		#region Grid Cache
 		bool gridCacheIsUpToDate = false;
+		bool heightMapIsUpToDate = true;
 		QuadVAO cacheQuad;
 		Matrix4 cacheProjection;
 		int gridCacheTex, gridSelectionTex;
@@ -415,34 +416,40 @@ namespace ottdGridTest
 
 		protected override void OnKeyDown (KeyboardKeyEventArgs e)
 		{
+			int ptrHM = (int)(SelectionPos.X + SelectionPos.Y * _hmSize) * 4 + 1;
+			int ptrHM2 = (int)(SelectionPos.X + (SelectionPos.Y + 1) * _hmSize) * 4 + 1;
+
 			base.OnKeyDown (e);
 			switch (e.Key) {
-			case Key.Space:
-				getHeightMapData ();
-
-				int ptrHM = (int)(SelectionPos.X + SelectionPos.Y * _hmSize) * 4 + 1;
-				int ptrHM2 = (int)(SelectionPos.X + (SelectionPos.Y + 1) * _hmSize) * 4 + 1;
+			case Key.Space:				
 				byte up = 10;
 
 				hmData [ptrHM] += up;
 				hmData [ptrHM+4] += up;
 				hmData [ptrHM2] += up;
 				hmData [ptrHM2+4] += up;
-//				hmData [1] += up;
-//				hmData [5] += up;
-//				hmData [_hmSize*4+41] += up;
-//				hmData [_hmSize*4+45] += up;
-
-				updateHeightMap ();
 				break;
-			case Key.Delete:
-				getHeightMapData ();
+			case Key.Keypad2:
+				byte nh = 
+					Math.Min(
+						Math.Min(
+							Math.Min(hmData [ptrHM],
+								hmData [ptrHM+4]),
+							hmData [ptrHM2]),
+						hmData [ptrHM2+4]);
+				hmData [ptrHM] = nh;
+				hmData [ptrHM+4] = nh;
+				hmData [ptrHM2] = nh;
+				hmData [ptrHM2+4] = nh;
+				break;
+			case Key.Delete:				
 				hmData = new byte[_hmSize * _hmSize * 4];
-				updateHeightMap ();
 				break;
 			default:
 				break;
 			}
+			heightMapIsUpToDate = false;
+
 		}
 
 		protected override void OnLoad (EventArgs e)
@@ -516,6 +523,11 @@ namespace ottdGridTest
 				gridCacheIsUpToDate = false;
 				//GL.Light (LightName.Light0, LightParameter.Position, vLight);
 			}
+
+			if (heightMapIsUpToDate)
+				return;
+			
+			updateHeightMap ();
 		}
 
 		protected override void OnResize (EventArgs e)
