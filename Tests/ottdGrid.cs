@@ -86,6 +86,8 @@ namespace ottdGridTest
 		float eyeDistTarget = 30f;
 		float MoveSpeed = 1.0f;
 		float RotationSpeed = 0.02f;
+
+		public Vector4 vLight = new Vector4 (-1, -1, -1, 0);
 		#endregion
 
 		Vector3 selPos = Vector3.Zero;
@@ -108,7 +110,8 @@ namespace ottdGridTest
 
 		const int _width = 256;
 		const int _height = 256;
-		const float heightScale = 15.0f;
+		const int _hmSize = 256;
+		const float heightScale = 5.0f;
 
 		vaoMesh grid;
 		vaoMesh selMesh;
@@ -124,22 +127,22 @@ namespace ottdGridTest
 		{
 			const float z = 0.0f;
 
-			positionVboData = new Vector3[(_width + 1) * (_height + 1)];
-			texVboData = new Vector2[(_width + 1) * (_height + 1)];
-			indicesVboData = new int[((_width + 1) * 2 + 1) * (_height + 1)];
+			positionVboData = new Vector3[_width * _height];
+			texVboData = new Vector2[_width * _height];
+			indicesVboData = new int[(_width * 2 + 1) * _height];
 
-			for (int y = 0; y < _height + 1; y++) {
-				for (int x = 0; x < _width + 1; x++) {				
-					positionVboData [(_width + 1) * y + x] = new Vector3 (x, y, z);
-					texVboData [(_width + 1) * y + x] = new Vector2 ((float)x, (float)y);
+			for (int y = 0; y < _height; y++) {
+				for (int x = 0; x < _width; x++) {				
+					positionVboData [_width * y + x] = new Vector3 (x, y, z);
+					texVboData [_width * y + x] = new Vector2 ((float)x, (float)y);
 
-					if (y < _height) {
-						indicesVboData [((_width + 1) * 2 + 1) * y + x*2] = (_width + 1) * (y ) + x;
-						indicesVboData [((_width + 1) * 2 + 1) * y + x*2 + 1] = (_width + 1) * (y+1 ) + x;
+					if (y < _height-1) {
+						indicesVboData [(_width * 2 + 1) * y + x*2] = _width * y + x;
+						indicesVboData [(_width * 2 + 1) * y + x*2 + 1] = _width * (y+1) + x;
 					}
 
-					if (x == _width) {
-						indicesVboData [((_width + 1) * 2 + 1) * y + x*2 + 2] = IdxPrimitiveRestart;
+					if (x == _width-1) {
+						indicesVboData [(_width * 2 + 1) * y + x*2 + 2] = IdxPrimitiveRestart;
 					}
 				}
 			}
@@ -153,6 +156,7 @@ namespace ottdGridTest
 		{
 			gridShader.DisplacementMap = voronoiShader.Texture;
 			gridShader.Enable ();
+			gridShader.LightPos = vLight;
 			gridShader.MapSize = new Vector2 (_width, _height);
 			gridShader.HeightScale = heightScale;
 			gridShader.ProjectionMatrix = projection;
@@ -177,17 +181,17 @@ namespace ottdGridTest
 
 			GL.LineWidth (2);
 
-			int x = (int)(selPos.X -1);
-			int y = (int)(selPos.Y -1);
+			int x = (int)(selPos.X);
+			int y = (int)(selPos.Y);
 
-			if (x < 0 || y < 0)
+			if (x < 0 || y < 0 || hmData == null)
 				return;
 			
 			int[] sel = new int[] {
-				x + y * (_width + 1),
-				x + 1 + y * (_width + 1), 
-				x + 1 + (y + 1) * (_width + 1),
-				x + (y + 1) * (_width + 1)
+				x + y * _width ,
+				x + 1 + y * _width, 
+				x + 1 + (y + 1) * _width,
+				x + (y + 1) * _width
 			};
 
 			Vector3[] selMeshPosition = new Vector3[] {
@@ -196,13 +200,38 @@ namespace ottdGridTest
 				grid.positions [sel [2]],
 				grid.positions [sel [3]]
 			};
-			for (int i = 0; i < selMeshPosition.Length; i++) 
-				selMeshPosition [i].Z = selPos.Z / 256f * heightScale;
+			//for (int i = 0; i < selMeshPosition.Length; i++) 
+			selMeshPosition [0].Z = hmData[(y*_hmSize + x)*4 + 1] / 256f * heightScale;
+			selMeshPosition [1].Z = hmData[(y*_hmSize + x)*4 + 5] / 256f * heightScale;
+			selMeshPosition [2].Z = hmData[((y+1)*_hmSize + x)*4 + 5] / 256f * heightScale;
+			selMeshPosition [3].Z = hmData[((y+1)*_hmSize + x)*4 + 1] / 256f * heightScale;
 			
 			selMesh = new vaoMesh(selMeshPosition, 
 				null, new int[] {0,1,2,3});
 
 			selMesh.Render(PrimitiveType.LineLoop);
+		}
+
+		byte[] hmData;
+		void getHeightMapData()
+		{
+			hmData = new byte[_hmSize*_hmSize*4];
+			GL.BindTexture (TextureTarget.Texture2D, voronoiShader.Texture);
+
+			GL.GetTexImage (TextureTarget.Texture2D, 0, 
+				PixelFormat.Rgba, PixelType.UnsignedByte, hmData);
+
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+		}
+		void updateHeightMap()
+		{
+			GL.BindTexture (TextureTarget.Texture2D, voronoiShader.Texture);
+
+			GL.TexSubImage2D (TextureTarget.Texture2D,
+				0, 0, 0, _hmSize, _hmSize, PixelFormat.Bgra, PixelType.UnsignedByte, hmData);
+
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+			gridCacheIsUpToDate = false;
 		}
 
 		#region Grid Cache
@@ -255,6 +284,10 @@ namespace ottdGridTest
 
 			gridCacheTex = new Texture (cz.Width, cz.Height);
 			gridSelectionTex = new Texture (cz.Width, cz.Height);
+			GL.BindTexture (TextureTarget.Texture2D, gridSelectionTex);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			GL.BindTexture (TextureTarget.Texture2D, 0);
 
 			// Create Depth Renderbuffer
 			GL.GenRenderbuffers( 1, out depthRenderbuffer );
@@ -380,6 +413,38 @@ namespace ottdGridTest
 		}
 		#endregion
 
+		protected override void OnKeyDown (KeyboardKeyEventArgs e)
+		{
+			base.OnKeyDown (e);
+			switch (e.Key) {
+			case Key.Space:
+				getHeightMapData ();
+
+				int ptrHM = (int)(SelectionPos.X + SelectionPos.Y * _hmSize) * 4 + 1;
+				int ptrHM2 = (int)(SelectionPos.X + (SelectionPos.Y + 1) * _hmSize) * 4 + 1;
+				byte up = 10;
+
+				hmData [ptrHM] += up;
+				hmData [ptrHM+4] += up;
+				hmData [ptrHM2] += up;
+				hmData [ptrHM2+4] += up;
+//				hmData [1] += up;
+//				hmData [5] += up;
+//				hmData [_hmSize*4+41] += up;
+//				hmData [_hmSize*4+45] += up;
+
+				updateHeightMap ();
+				break;
+			case Key.Delete:
+				getHeightMapData ();
+				hmData = new byte[_hmSize * _hmSize * 4];
+				updateHeightMap ();
+				break;
+			default:
+				break;
+			}
+		}
+
 		protected override void OnLoad (EventArgs e)
 		{
 			base.OnLoad (e);
@@ -387,7 +452,11 @@ namespace ottdGridTest
 
 
 
-			voronoiShader = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",512,512);
+			voronoiShader = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",_hmSize, _hmSize);
+			GL.BindTexture (TextureTarget.Texture2D, voronoiShader.Texture);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			GL.BindTexture (TextureTarget.Texture2D, 0);
 			//mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDispInstanced.vert","GGL.Shaders.GameLib.VertDispNormFilt.frag");
 			//mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDispInstancedSingleLight.vert","GGL.Shaders.GameLib.VertDispSingleLight.frag");
 			gridShader = new GameLib.VertexDispShader ("Tests.Shaders.VertDisp.vert", "Tests.Shaders.Grid.frag");
@@ -409,7 +478,7 @@ namespace ottdGridTest
 			createCache ();
 
 			voronoiShader.Update ();
-
+			getHeightMapData ();
 			this.MouseWheelChanged += new EventHandler<MouseWheelEventArgs>(Mouse_WheelChanged);
 			this.MouseMove += new EventHandler<MouseMoveEventArgs>(Mouse_Move);
 		}
@@ -427,6 +496,26 @@ namespace ottdGridTest
 			frameCpt++;
 
 			Animation.ProcessAnimations ();
+
+
+			if (Keyboard [Key.ShiftLeft]) {
+				float MoveSpeed = 1f;
+				//light movment
+				if (Keyboard [Key.Up])
+					vLight.X -= MoveSpeed;
+				else if (Keyboard [Key.Down])
+					vLight.X += MoveSpeed;
+				else if (Keyboard [Key.Left])
+					vLight.Y -= MoveSpeed;
+				else if (Keyboard [Key.Right])
+					vLight.Y += MoveSpeed;
+				else if (Keyboard [Key.PageUp])
+					vLight.Z += MoveSpeed;
+				else if (Keyboard [Key.PageDown])
+					vLight.Z -= MoveSpeed;
+				gridCacheIsUpToDate = false;
+				//GL.Light (LightName.Light0, LightParameter.Position, vLight);
+			}
 		}
 
 		protected override void OnResize (EventArgs e)

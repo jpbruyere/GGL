@@ -6,6 +6,7 @@ uniform mat4 Projection;
 uniform mat4 ModelView;
 uniform mat4 Model;
 uniform mat4 Normal;
+uniform vec4 lightPos;
 
 uniform vec2 mapSize;
 uniform float heightScale;
@@ -18,29 +19,51 @@ in vec2 in_tex;
 
 out vec2 texCoord;
 out vec3 v;
-out vec3 normal;
-flat out vec4 vertex;
+out vec3 n;
+out vec3 lpos;
+
+out vec4 vertex;
 
 void main(void)
 {
 	vec2[] offsets = vec2[]
 	(
 		vec2(0,0),
-		vec2(1,0),
 		vec2(0,1),
-		vec2(1,1)
+		vec2(1,0),
+		vec2(0,-1),
+		vec2(-1,0)
 	);
-	vec4[4] pos;
+	vec3[5] pos;
 
 	texCoord = in_tex;
 
-	for(int i = 0; i < 4; i++){
+	for(int i = 0; i < 5; i++){
 		vec2 xy = in_position.xy + offsets[i];
 		float h = texture2D( heightMap, xy / mapSize).g * heightScale;
-		pos[i] = vec4(xy.x, xy.y, h, 1.0);
+		pos[i] = vec3(xy, h);
 	}
-	normal = normalize(cross(pos[0].xyz - pos[1].xyz, pos[0].xyz - pos[2].xyz));
-	v = vec3(Model * pos[0]);
-	vertex = vec4(pos[0].xy / mapSize, pos[0].z / heightScale, pos[0].w);
-	gl_Position = Projection * ModelView * Model * pos[0];
+
+	//if (mod(gl_VertexID, 2)==0)
+	/*
+		n = normalize(
+			cross(pos[2] - pos[0], pos[1] - pos[0])
+		  + cross(pos[3] - pos[0], pos[2] - pos[0]) 
+		  + cross(pos[4] - pos[0], pos[3] - pos[2]) 
+		  + cross(pos[1] - pos[0], pos[4] - pos[2]) );
+	*/
+		n = normalize(
+			normalize(cross(pos[2] - pos[0], pos[1] - pos[0]))
+		  + normalize(cross(pos[3] - pos[0], pos[2] - pos[0])) 
+		  + normalize(cross(pos[4] - pos[0], pos[3] - pos[2])) 
+		  + normalize(cross(pos[1] - pos[0], pos[4] - pos[2])) / 4.0);
+	//else
+	//	n = normalize(cross(pos[3] - pos[1], pos[2] - pos[1]));
+
+	//n = normalize(vec3(Normal * Model * vec4(0.0,0.0,1.0, 0.0)));
+	//v = normalize(vec3(Model * pos[0]));
+	v = vec3(ModelView * Model * vec4(pos[0], 1));
+	lpos = vec3(ModelView * lightPos);
+	vertex = vec4((pos[0].xy-vec2(0.5,0.5)) / (mapSize-vec2(1.0,1.0)), pos[0].z / heightScale, 1.0);
+	gl_Position = Projection * ModelView * Model * vec4(pos[0], 1.0);
 }
