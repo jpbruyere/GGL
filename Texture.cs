@@ -53,11 +53,6 @@ namespace GGL
 			}
 		}
 
-
-		void createTextureFromStream(Stream s, bool flipY){
-			
-		}
-
 		public Texture(int width, int height)
 		{
 			createTexture (IntPtr.Zero, width, height);

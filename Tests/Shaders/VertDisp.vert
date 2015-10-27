@@ -18,6 +18,7 @@ in vec2 in_tex;
 
 
 out vec2 texCoord;
+flat out float layer;
 out vec3 v;
 out vec3 n;
 out vec3 lpos;
@@ -38,7 +39,11 @@ void main(void)
 
 	texCoord = in_tex;
 
-	for(int i = 0; i < 5; i++){
+	vec4 hm0 = texture2D(heightMap, in_position.xy / mapSize);
+	pos[0] = vec3(in_position.xy, hm0.g * heightScale);
+	layer = hm0.b * 255.0;
+
+	for(int i = 1; i < 5; i++){
 		vec2 xy = in_position.xy + offsets[i];
 		float h = texture2D( heightMap, xy / mapSize).g * heightScale;
 		pos[i] = vec3(xy, h);

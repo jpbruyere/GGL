@@ -66,6 +66,7 @@
     <Compile Include="Animation\AnimationTemplate.cs" />
     <Compile Include="Shaders\GameLib\ShadedTexture.cs" />
     <Compile Include="Shaders\GameLib\VertexDispShader.cs" />
+    <Compile Include="TextureArray.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -64,10 +64,6 @@
     <None Include="ui\fps.goml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\..\..\data\Images\texture\terrain\grass4.png">
-      <Link>images\grass4.png</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="ottdGridTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -78,5 +74,22 @@
   <ItemGroup>
     <EmbeddedResource Include="Shaders\Grid.frag" />
     <EmbeddedResource Include="Shaders\VertDisp.vert" />
+    <EmbeddedResource Include="images\grass_green_d.jpg" />
+    <EmbeddedResource Include="images\grass_rocky_d.jpg" />
+    <EmbeddedResource Include="..\..\..\..\data\Images\texture\terrain\grass4.png">
+      <Link>images\grass4.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\grass_autumn_orn_d.jpg" />
+    <EmbeddedResource Include="images\grass_autumn_red_d.jpg" />
+    <EmbeddedResource Include="images\grass_green2y_d.jpg" />
+    <EmbeddedResource Include="images\grass_ground2y_d.jpg" />
+    <EmbeddedResource Include="images\grass_ground_d.jpg" />
+    <EmbeddedResource Include="images\grass_mix_d.jpg" />
+    <EmbeddedResource Include="images\grass_mix_ylw_d.jpg" />
+    <EmbeddedResource Include="images\ground_crackedo_d.jpg" />
+    <EmbeddedResource Include="images\ground_crackedv_d.jpg" />
+    <EmbeddedResource Include="images\ground_cracks2v_d.jpg" />
+    <EmbeddedResource Include="images\ground_cracks2y_d.jpg" />
   </ItemGroup>
 </Project>

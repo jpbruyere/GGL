@@ -66,7 +66,7 @@ namespace GameLib
 			GL.ActiveTexture (TextureUnit.Texture1);
 			GL.BindTexture(TextureTarget.Texture2D, DisplacementMap);
 			GL.ActiveTexture (TextureUnit.Texture0);
-			GL.BindTexture(TextureTarget.Texture2D, DiffuseTexture);
+			GL.BindTexture(TextureTarget.Texture2DArray, DiffuseTexture);
 		}
 	}
 }

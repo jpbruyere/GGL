@@ -111,7 +111,7 @@ namespace ottdGridTest
 		const int _width = 256;
 		const int _height = 256;
 		const int _hmSize = 256;
-		const float heightScale = 5.0f;
+		const float heightScale = 100.0f;
 
 		vaoMesh grid;
 		vaoMesh selMesh;
@@ -150,8 +150,30 @@ namespace ottdGridTest
 			grid = new vaoMesh (positionVboData, texVboData, null);
 			grid.indices = indicesVboData;
 
-			gridShader.DiffuseTexture = new Texture ("images/grass4.png");
+			gridShader.DiffuseTexture = new TextureArray (
+				"#Tests.images.grass_green_d.jpg",
+				"#Tests.images.grass_autumn_orn_d.jpg",
+				"#Tests.images.grass_autumn_red_d.jpg",
+				"#Tests.images.grass_ground2y_d.jpg",
+				"#Tests.images.grass_ground_d.jpg",
+				"#Tests.images.grass_mix_d.jpg",
+				"#Tests.images.grass_mix_ylw_d.jpg",
+				"#Tests.images.ground_crackedo_d.jpg",
+				"#Tests.images.ground_crackedv_d.jpg",
+				"#Tests.images.ground_cracks2v_d.jpg",
+				"#Tests.images.ground_cracks2y_d.jpg",
+				"#Tests.images.grass_rocky_d.jpg"
+			);
+			//2048
+			//"#Tests.images.grass_green2y_d.jpg",
+//			GL.BindTexture (TextureTarget.Texture2D, gridShader.DiffuseTexture);
+//			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+//			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+//			GL.GenerateMipmap (GenerateMipmapTarget.Texture2D);
+//			GL.BindTexture (TextureTarget.Texture2D, 0);
+
 		}
+
 		void activateGridShader()
 		{
 			gridShader.DisplacementMap = voronoiShader.Texture;
@@ -416,34 +438,40 @@ namespace ottdGridTest
 
 		protected override void OnKeyDown (KeyboardKeyEventArgs e)
 		{
-			int ptrHM = (int)(SelectionPos.X + SelectionPos.Y * _hmSize) * 4 + 1;
-			int ptrHM2 = (int)(SelectionPos.X + (SelectionPos.Y + 1) * _hmSize) * 4 + 1;
+			int ptrHM = (int)(SelectionPos.X + SelectionPos.Y * _hmSize) * 4 ;
+			int ptrHM2 = (int)(SelectionPos.X + (SelectionPos.Y + 1) * _hmSize) * 4;
 
 			base.OnKeyDown (e);
 			switch (e.Key) {
 			case Key.Space:				
-				byte up = 10;
+				byte up = 1;
 
-				hmData [ptrHM] += up;
-				hmData [ptrHM+4] += up;
-				hmData [ptrHM2] += up;
-				hmData [ptrHM2+4] += up;
+				hmData [ptrHM+1] += up;
+				hmData [ptrHM+5] += up;
+				hmData [ptrHM2+1] += up;
+				hmData [ptrHM2+5] += up;
 				break;
 			case Key.Keypad2:
 				byte nh = 
 					Math.Min(
 						Math.Min(
-							Math.Min(hmData [ptrHM],
-								hmData [ptrHM+4]),
-							hmData [ptrHM2]),
-						hmData [ptrHM2+4]);
-				hmData [ptrHM] = nh;
-				hmData [ptrHM+4] = nh;
-				hmData [ptrHM2] = nh;
-				hmData [ptrHM2+4] = nh;
+							Math.Min(hmData [ptrHM+1],
+								hmData [ptrHM+5]),
+							hmData [ptrHM2+1]),
+						hmData [ptrHM2+5]);
+				hmData [ptrHM+1] = nh;
+				hmData [ptrHM+5] = nh;
+				hmData [ptrHM2+1] = nh;
+				hmData [ptrHM2+5] = nh;
 				break;
 			case Key.Delete:				
 				hmData = new byte[_hmSize * _hmSize * 4];
+				break;
+			case Key.G:
+				hmData [ptrHM] += 1;
+//				hmData [ptrHM + 4] += 1;
+//				hmData [ptrHM2] += 1;
+//				hmData [ptrHM2 + 4] += 1;
 				break;
 			default:
 				break;
