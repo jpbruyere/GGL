@@ -34,6 +34,7 @@ namespace GameLib
 		protected int   mapSizeLoc, heightScaleLoc, lightPosLoc;
 		public int DisplacementMap;
 		public int DiffuseTexture;
+		public int SplatTexture;
 
 		public Vector2 MapSize {
 			set { GL.Uniform2 (mapSizeLoc, value); }
@@ -58,11 +59,14 @@ namespace GameLib
 			base.BindSamplesSlots ();
 
 			GL.Uniform1(GL.GetUniformLocation (pgmId, "heightMap"),1);
+			GL.Uniform1(GL.GetUniformLocation (pgmId, "splatTex"),2);
 		}
 		public override void Enable ()
 		{
 			base.Enable ();
 
+			GL.ActiveTexture (TextureUnit.Texture2);
+			GL.BindTexture(TextureTarget.Texture2D, SplatTexture);
 			GL.ActiveTexture (TextureUnit.Texture1);
 			GL.BindTexture(TextureTarget.Texture2D, DisplacementMap);
 			GL.ActiveTexture (TextureUnit.Texture0);

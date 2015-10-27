@@ -111,6 +111,7 @@ namespace ottdGridTest
 		const int _width = 256;
 		const int _height = 256;
 		const int _hmSize = 256;
+		const int _splatingSize = 2048;
 		const float heightScale = 100.0f;
 
 		vaoMesh grid;
@@ -152,25 +153,27 @@ namespace ottdGridTest
 
 			gridShader.DiffuseTexture = new TextureArray (
 				"#Tests.images.grass_green_d.jpg",
+				"#Tests.images.grass_ground_d.jpg",
+				"#Tests.images.grass_ground2y_d.jpg",
+				"#Tests.images.grass_mix_ylw_d.jpg",
+				"#Tests.images.grass_mix_d.jpg",
 				"#Tests.images.grass_autumn_orn_d.jpg",
 				"#Tests.images.grass_autumn_red_d.jpg",
-				"#Tests.images.grass_ground2y_d.jpg",
-				"#Tests.images.grass_ground_d.jpg",
-				"#Tests.images.grass_mix_d.jpg",
-				"#Tests.images.grass_mix_ylw_d.jpg",
-				"#Tests.images.ground_crackedo_d.jpg",
-				"#Tests.images.ground_crackedv_d.jpg",
+				"#Tests.images.grass_rocky_d.jpg",
 				"#Tests.images.ground_cracks2v_d.jpg",
+				"#Tests.images.ground_crackedv_d.jpg",
 				"#Tests.images.ground_cracks2y_d.jpg",
-				"#Tests.images.grass_rocky_d.jpg"
+				"#Tests.images.ground_crackedo_d.jpg"
 			);
+			gridShader.SplatTexture = new Texture (_splatingSize, _splatingSize);
+			getSplatData ();
 			//2048
 			//"#Tests.images.grass_green2y_d.jpg",
-//			GL.BindTexture (TextureTarget.Texture2D, gridShader.DiffuseTexture);
-//			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-//			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-//			GL.GenerateMipmap (GenerateMipmapTarget.Texture2D);
-//			GL.BindTexture (TextureTarget.Texture2D, 0);
+			GL.BindTexture (TextureTarget.Texture2D, gridShader.SplatTexture);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+
 
 		}
 
@@ -235,6 +238,28 @@ namespace ottdGridTest
 		}
 
 		byte[] hmData;
+		byte[] splatData;
+
+		void getSplatData()
+		{
+			splatData = new byte[_splatingSize*_splatingSize*4];
+			GL.BindTexture (TextureTarget.Texture2D, gridShader.SplatTexture);
+
+			GL.GetTexImage (TextureTarget.Texture2D, 0, 
+				PixelFormat.Rgba, PixelType.UnsignedByte, splatData);
+
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+		}
+		void updateSplat()
+		{
+			GL.BindTexture (TextureTarget.Texture2D, gridShader.SplatTexture);
+
+			GL.TexSubImage2D (TextureTarget.Texture2D,
+				0, 0, 0, _splatingSize, _splatingSize, PixelFormat.Bgra, PixelType.UnsignedByte, splatData);
+
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+			gridCacheIsUpToDate = false;
+		}
 		void getHeightMapData()
 		{
 			hmData = new byte[_hmSize*_hmSize*4];
@@ -258,7 +283,8 @@ namespace ottdGridTest
 
 		#region Grid Cache
 		bool gridCacheIsUpToDate = false;
-		bool heightMapIsUpToDate = true;
+		bool heightMapIsUpToDate = true,
+			splatTextureIsUpToDate = true;
 		QuadVAO cacheQuad;
 		Matrix4 cacheProjection;
 		int gridCacheTex, gridSelectionTex;
@@ -440,7 +466,9 @@ namespace ottdGridTest
 		{
 			int ptrHM = (int)(SelectionPos.X + SelectionPos.Y * _hmSize) * 4 ;
 			int ptrHM2 = (int)(SelectionPos.X + (SelectionPos.Y + 1) * _hmSize) * 4;
-
+			int ptrSplat = (int)(SelectionPos.X + SelectionPos.Y * _splatingSize) * 4 *4;
+			if (Keyboard [Key.ShiftLeft])
+				ptrSplat += _splatingSize * 4;
 			base.OnKeyDown (e);
 			switch (e.Key) {
 			case Key.Space:				
@@ -450,6 +478,7 @@ namespace ottdGridTest
 				hmData [ptrHM+5] += up;
 				hmData [ptrHM2+1] += up;
 				hmData [ptrHM2+5] += up;
+				heightMapIsUpToDate = false;
 				break;
 			case Key.Keypad2:
 				byte nh = 
@@ -463,20 +492,50 @@ namespace ottdGridTest
 				hmData [ptrHM+5] = nh;
 				hmData [ptrHM2+1] = nh;
 				hmData [ptrHM2+5] = nh;
+				heightMapIsUpToDate = false;
 				break;
 			case Key.Delete:				
 				hmData = new byte[_hmSize * _hmSize * 4];
+				heightMapIsUpToDate = false;
+				break;
+			case Key.Keypad0:
+				splatData = new byte[_splatingSize * _splatingSize * 4];
+				splatTextureIsUpToDate = false;
+				break;
+			case Key.Keypad7:
+				splatData[ptrSplat] += 10;
+				splatTextureIsUpToDate = false;
+				break;
+			case Key.Keypad8:
+				splatData[ptrSplat+1] += 1;
+				splatTextureIsUpToDate = false;
+				break;
+			case Key.Keypad9:
+				splatData[ptrSplat+2] += 1;
+				splatTextureIsUpToDate = false;
+				break;
+			case Key.Keypad4:
+				splatData[ptrSplat] -= 10;
+				splatTextureIsUpToDate = false;
+				break;
+			case Key.Keypad5:
+				splatData[ptrSplat+1] -= 1;
+				splatTextureIsUpToDate = false;
+				break;
+			case Key.Keypad6:
+				splatData[ptrSplat+2] -= 1;
+				splatTextureIsUpToDate = false;
 				break;
 			case Key.G:
 				hmData [ptrHM] += 1;
 //				hmData [ptrHM + 4] += 1;
 //				hmData [ptrHM2] += 1;
 //				hmData [ptrHM2 + 4] += 1;
+				heightMapIsUpToDate = false;
 				break;
 			default:
 				break;
 			}
-			heightMapIsUpToDate = false;
 
 		}
 
@@ -551,7 +610,8 @@ namespace ottdGridTest
 				gridCacheIsUpToDate = false;
 				//GL.Light (LightName.Light0, LightParameter.Position, vLight);
 			}
-
+			if (!splatTextureIsUpToDate)
+				updateSplat ();
 			if (heightMapIsUpToDate)
 				return;
 			
