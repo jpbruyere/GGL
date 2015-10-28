@@ -61,9 +61,6 @@
     <Compile Include="ottdGrid.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ottdGridTest.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="ui\" />
     <Folder Include="images\" />
     <Folder Include="Shaders\" />
@@ -90,5 +87,7 @@
     <EmbeddedResource Include="images\ground_cracks2y_d.jpg" />
     <EmbeddedResource Include="ui\fps.goml" />
     <EmbeddedResource Include="ui\menu.goml" />
+    <EmbeddedResource Include="images\grass.jpg" />
+    <EmbeddedResource Include="Shaders\circle.frag" />
   </ItemGroup>
 </Project>

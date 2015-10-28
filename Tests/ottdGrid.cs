@@ -96,6 +96,7 @@ namespace ottdGridTest
 			get { return selPos; }
 			set {
 				selPos = value;
+				selPos.Z = hmData[((int)selPos.Y * _hmSize + (int)selPos.X) * 4 + 1] / 256f * heightScale;
 				NotifyValueChange ("SelectionPos", selPos);
 			}
 		}
@@ -104,8 +105,9 @@ namespace ottdGridTest
 		}
 
 		public static GameLib.ShadedTexture voronoiShader;
+		public static GameLib.ShadedTexture circleShader;
 		public static GameLib.VertexDispShader gridShader;
-		public static GameLib.EffectShader redShader;
+		public static GameLib.Shader redShader;
 		public static go.GLBackend.TexturedShader CacheRenderingShader;
 
 		const int _width = 256;
@@ -152,6 +154,7 @@ namespace ottdGridTest
 			grid.indices = indicesVboData;
 
 			gridShader.DiffuseTexture = new TextureArray (
+				"#Tests.images.grass.jpg",
 				"#Tests.images.grass_green_d.jpg",
 				"#Tests.images.grass_ground_d.jpg",
 				"#Tests.images.grass_ground2y_d.jpg",
@@ -204,37 +207,42 @@ namespace ottdGridTest
 			redShader.ModelViewMatrix = modelview;
 			redShader.ModelMatrix = Matrix4.Identity;
 
-			GL.LineWidth (2);
+//			GL.LineWidth (2);
+//
 
-			int x = (int)(selPos.X);
-			int y = (int)(selPos.Y);
+//
+//			if (x < 0 || y < 0 || hmData == null)
+//				return;
+//			
+//			int[] sel = new int[] {
+//				x + y * _width ,
+//				x + 1 + y * _width, 
+//				x + 1 + (y + 1) * _width,
+//				x + (y + 1) * _width
+//			};
+//
+//			Vector3[] selMeshPosition = new Vector3[] {
+//				grid.positions [sel [0]],
+//				grid.positions [sel [1]],
+//				grid.positions [sel [2]],
+//				grid.positions [sel [3]]
+//			};
+//			//for (int i = 0; i < selMeshPosition.Length; i++) 
+//			selMeshPosition [0].Z = hmData[(y*_hmSize + x)*4 + 1] / 256f * heightScale;
+//			selMeshPosition [1].Z = hmData[(y*_hmSize + x)*4 + 5] / 256f * heightScale;
+//			selMeshPosition [3].Z = hmData[((y+1)*_hmSize + x)*4 + 5] / 256f * heightScale;
+//			selMeshPosition [2].Z = hmData[((y+1)*_hmSize + x)*4 + 1] / 256f * heightScale;
+//			
+//			selMesh = new vaoMesh(selMeshPosition, 
+//				null, new int[] {0,1,2,3});
 
-			if (x < 0 || y < 0 || hmData == null)
-				return;
-			
-			int[] sel = new int[] {
-				x + y * _width ,
-				x + 1 + y * _width, 
-				x + 1 + (y + 1) * _width,
-				x + (y + 1) * _width
-			};
 
-			Vector3[] selMeshPosition = new Vector3[] {
-				grid.positions [sel [0]],
-				grid.positions [sel [1]],
-				grid.positions [sel [2]],
-				grid.positions [sel [3]]
-			};
-			//for (int i = 0; i < selMeshPosition.Length; i++) 
-			selMeshPosition [0].Z = hmData[(y*_hmSize + x)*4 + 1] / 256f * heightScale;
-			selMeshPosition [1].Z = hmData[(y*_hmSize + x)*4 + 5] / 256f * heightScale;
-			selMeshPosition [2].Z = hmData[((y+1)*_hmSize + x)*4 + 5] / 256f * heightScale;
-			selMeshPosition [3].Z = hmData[((y+1)*_hmSize + x)*4 + 1] / 256f * heightScale;
-			
-			selMesh = new vaoMesh(selMeshPosition, 
-				null, new int[] {0,1,2,3});
 
-			selMesh.Render(PrimitiveType.LineLoop);
+			selMesh = new vaoMesh (selPos.X, selPos.Y, selPos.Z, 20.0f, 20.0f);
+
+			GL.BindTexture (TextureTarget.Texture2D, circleShader.Texture);
+			selMesh.Render(PrimitiveType.TriangleStrip);
+			GL.BindTexture (TextureTarget.Texture2D, 0);
 		}
 
 		byte[] hmData;
@@ -565,12 +573,18 @@ namespace ottdGridTest
 		protected override void OnLoad (EventArgs e)
 		{
 			base.OnLoad (e);
+
+			this.MouseWheelChanged += new EventHandler<MouseWheelEventArgs>(Mouse_WheelChanged);
+			this.MouseMove += new EventHandler<MouseMoveEventArgs>(Mouse_Move);
+
 			LoadInterface("#Tests.ui.fps.goml").DataSource = this;
 			LoadInterface("#Tests.ui.menu.goml").DataSource = this;
 
 
 
+			circleShader = new GameLib.ShadedTexture ("Tests.Shaders.circle",512, 512);
 			voronoiShader = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",_hmSize, _hmSize);
+
 			GL.BindTexture (TextureTarget.Texture2D, voronoiShader.Texture);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
@@ -578,7 +592,8 @@ namespace ottdGridTest
 			//mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDispInstanced.vert","GGL.Shaders.GameLib.VertDispNormFilt.frag");
 			//mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDispInstancedSingleLight.vert","GGL.Shaders.GameLib.VertDispSingleLight.frag");
 			gridShader = new GameLib.VertexDispShader ("Tests.Shaders.VertDisp.vert", "Tests.Shaders.Grid.frag");
-			redShader = new GameLib.EffectShader ("GGL.Shaders.GameLib.red");
+			redShader = new GameLib.Shader ();
+
 			CacheRenderingShader = new go.GLBackend.TexturedShader();
 
 			GL.ClearColor(0.0f, 0.0f, 0.2f, 1.0f);
@@ -595,10 +610,11 @@ namespace ottdGridTest
 
 			createCache ();
 
+			circleShader.Update ();
 			voronoiShader.Update ();
+
 			getHeightMapData ();
-			this.MouseWheelChanged += new EventHandler<MouseWheelEventArgs>(Mouse_WheelChanged);
-			this.MouseMove += new EventHandler<MouseMoveEventArgs>(Mouse_Move);
+
 		}
 		private int frameCpt = 0;
 		protected override void OnUpdateFrame (FrameEventArgs e)
