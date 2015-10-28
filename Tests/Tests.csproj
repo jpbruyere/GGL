@@ -61,9 +61,6 @@
     <Compile Include="ottdGrid.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ui\fps.goml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="ottdGridTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -91,5 +88,7 @@
     <EmbeddedResource Include="images\ground_crackedv_d.jpg" />
     <EmbeddedResource Include="images\ground_cracks2v_d.jpg" />
     <EmbeddedResource Include="images\ground_cracks2y_d.jpg" />
+    <EmbeddedResource Include="ui\fps.goml" />
+    <EmbeddedResource Include="ui\menu.goml" />
   </ItemGroup>
 </Project>

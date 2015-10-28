@@ -71,6 +71,6 @@ void main(void)
 	//v = normalize(vec3(Model * pos[0]));
 	v = vec3(ModelView * Model * vec4(pos[0], 1));
 	lpos = vec3(ModelView * lightPos);
-	vertex = vec4((pos[0].xy-vec2(0.5,0.5)) / (mapSize-vec2(1.0,1.0)), pos[0].z / heightScale, 1.0);
+	vertex = vec4((pos[0].xy) / (mapSize-vec2(1.0,1.0)), pos[0].z / heightScale, 1.0);
 	gl_Position = Projection * ModelView * Model * vec4(pos[0], 1.0);
 }

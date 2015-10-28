@@ -259,6 +259,7 @@ namespace ottdGridTest
 
 			GL.BindTexture (TextureTarget.Texture2D, 0);
 			gridCacheIsUpToDate = false;
+			splatTextureIsUpToDate = true;
 		}
 		void getHeightMapData()
 		{
@@ -279,6 +280,7 @@ namespace ottdGridTest
 
 			GL.BindTexture (TextureTarget.Texture2D, 0);
 			gridCacheIsUpToDate = false;
+			heightMapIsUpToDate = true;
 		}
 
 		#region Grid Cache
@@ -368,12 +370,18 @@ namespace ottdGridTest
 			GL.Clear (ClearBufferMask.ColorBufferBit|ClearBufferMask.DepthBufferBit);
 			activateGridShader ();
 
+			GL.Disable (EnableCap.AlphaTest);
+			GL.Disable (EnableCap.Blend);
+
 			grid.Render(PrimitiveType.TriangleStrip, grid.indices);
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 			GL.DrawBuffer(DrawBufferMode.Back);
 			getSelectionTextureData ();
-			
+
+			GL.Enable (EnableCap.AlphaTest);
+			GL.Enable (EnableCap.Blend);
+
 			gridCacheIsUpToDate = true;
 		}
 		void getSelectionTextureData()
@@ -414,8 +422,11 @@ namespace ottdGridTest
 			{
 				NotifyValueChange("MousePos", new Vector2 (Mouse.X, Mouse.Y));
 				int selPtr = (e.X * 4 + (ClientRectangle.Height - e.Y) * ClientRectangle.Width * 4);
-				SelectionPos = new Vector3 (selectionMap [selPtr], 
-					selectionMap [selPtr + 1], selectionMap [selPtr + 2]);
+//				SelectionPos = new Vector3 (selectionMap [selPtr], 
+//					selectionMap [selPtr + 1], selectionMap [selPtr + 2]);
+				SelectionPos = new Vector3 (
+					(float)selectionMap [selPtr] + (float)selectionMap [selPtr + 1] / 255f, 
+					(float)selectionMap [selPtr + 2] + (float)selectionMap [selPtr + 3] / 255f, 0f);
 
 				if (e.Mouse.MiddleButton == OpenTK.Input.ButtonState.Pressed) {					
 					Vector3 v = new Vector3 (
@@ -464,9 +475,16 @@ namespace ottdGridTest
 
 		protected override void OnKeyDown (KeyboardKeyEventArgs e)
 		{
-			int ptrHM = (int)(SelectionPos.X + SelectionPos.Y * _hmSize) * 4 ;
+			int ptrHM = (int)(SelectionPos.X + (int)SelectionPos.Y * _hmSize) * 4 ;
+
 			int ptrHM2 = (int)(SelectionPos.X + (SelectionPos.Y + 1) * _hmSize) * 4;
-			int ptrSplat = (int)(SelectionPos.X + SelectionPos.Y * _splatingSize) * 4 *4;
+			int splatyDisp = (int)Math.Floor((SelectionPos.Y - Math.Truncate (SelectionPos.Y)) * 4.0f);
+			//int ptrSplat = (int)((SelectionPos.X + (int)SelectionPos.Y * (float)_splatingSize) * 16f);
+			int xDisp = (int)(SelectionPos.X * 16f);
+			int yDisp = (int)SelectionPos.Y * _splatingSize * 16 + splatyDisp * _splatingSize * 4;
+			int ptrSplat = xDisp+yDisp;
+			//ptrSplat += _splatingSize *16;
+			int ptrSplat2 = (int)((SelectionPos.X + SelectionPos.Y * (float)_splatingSize) * 16f);
 			if (Keyboard [Key.ShiftLeft])
 				ptrSplat += _splatingSize * 4;
 			base.OnKeyDown (e);
@@ -475,9 +493,9 @@ namespace ottdGridTest
 				byte up = 1;
 
 				hmData [ptrHM+1] += up;
-				hmData [ptrHM+5] += up;
-				hmData [ptrHM2+1] += up;
-				hmData [ptrHM2+5] += up;
+//				hmData [ptrHM+5] += up;
+//				hmData [ptrHM2+1] += up;
+//				hmData [ptrHM2+5] += up;
 				heightMapIsUpToDate = false;
 				break;
 			case Key.Keypad2:
@@ -542,7 +560,8 @@ namespace ottdGridTest
 		protected override void OnLoad (EventArgs e)
 		{
 			base.OnLoad (e);
-			LoadInterface("ui/fps.goml").DataSource = this;
+			LoadInterface("#Tests.ui.fps.goml").DataSource = this;
+			LoadInterface("#Tests.ui.menu.goml").DataSource = this;
 
 
 
