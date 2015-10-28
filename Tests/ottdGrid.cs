@@ -428,6 +428,8 @@ namespace ottdGridTest
 					(float)selectionMap [selPtr] + (float)selectionMap [selPtr + 1] / 255f, 
 					(float)selectionMap [selPtr + 2] + (float)selectionMap [selPtr + 3] / 255f, 0f);
 
+				UpdatePtrSplat ();
+
 				if (e.Mouse.MiddleButton == OpenTK.Input.ButtonState.Pressed) {					
 					Vector3 v = new Vector3 (
 						            Vector2.Normalize (vLook.Xy.PerpendicularLeft));
@@ -473,20 +475,23 @@ namespace ottdGridTest
 		}
 		#endregion
 
+		int ptrSplat = 0;
+		public int PtrSplat{ get { return ptrSplat; } }
+		public void UpdatePtrSplat(){
+			int splatXDisp = (int)Math.Floor((SelectionPos.X - Math.Truncate (SelectionPos.X)) * 4.0f);
+			int splatyDisp = (int)Math.Floor((SelectionPos.Y - Math.Truncate (SelectionPos.Y)) * 4.0f);
+			//int ptrSplat = (int)((SelectionPos.X + (int)SelectionPos.Y * (float)_splatingSize) * 16f);
+			int xDisp = (int)SelectionPos.X * 16 + splatXDisp * 4;
+			int yDisp = (int)SelectionPos.Y * _splatingSize * 16 + splatyDisp * _splatingSize * 4;
+			ptrSplat = xDisp+yDisp;
+			NotifyValueChange ("PtrSplat", ptrSplat);				
+		}
+
 		protected override void OnKeyDown (KeyboardKeyEventArgs e)
 		{
 			int ptrHM = (int)(SelectionPos.X + (int)SelectionPos.Y * _hmSize) * 4 ;
-
 			int ptrHM2 = (int)(SelectionPos.X + (SelectionPos.Y + 1) * _hmSize) * 4;
-			int splatyDisp = (int)Math.Floor((SelectionPos.Y - Math.Truncate (SelectionPos.Y)) * 4.0f);
-			//int ptrSplat = (int)((SelectionPos.X + (int)SelectionPos.Y * (float)_splatingSize) * 16f);
-			int xDisp = (int)(SelectionPos.X * 16f);
-			int yDisp = (int)SelectionPos.Y * _splatingSize * 16 + splatyDisp * _splatingSize * 4;
-			int ptrSplat = xDisp+yDisp;
-			//ptrSplat += _splatingSize *16;
-			int ptrSplat2 = (int)((SelectionPos.X + SelectionPos.Y * (float)_splatingSize) * 16f);
-			if (Keyboard [Key.ShiftLeft])
-				ptrSplat += _splatingSize * 4;
+
 			base.OnKeyDown (e);
 			switch (e.Key) {
 			case Key.Space:				

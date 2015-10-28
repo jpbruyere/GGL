@@ -5,6 +5,10 @@
 
 		<VerticalStack Fit="True" BorderWidth="1" Margin="5" WidgetSpacing="4">
 			<HorizontalStack>
+				<Label Text="ptrSplat:" Width = "30"/>
+				<Label Text="{PtrSplat}" Font="droid bold, 12" Background="AoEnglish"/>
+			</HorizontalStack>
+			<HorizontalStack>
 				<Label Text="Mouse:" Width = "30"/>
 				<Label Text="{MousePos}" Font="droid bold, 12" Background="AoEnglish"/>
 			</HorizontalStack>
