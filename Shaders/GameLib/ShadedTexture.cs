@@ -82,8 +82,9 @@ namespace GameLib
 		protected void updateFbo()
 		{				
 			GL.Viewport(0, 0, width, height);
-			GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
 			GL.ClearColor (0, 0, 0, 0);
+
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
 			GL.Clear (ClearBufferMask.ColorBufferBit);
 			quad.Render (PrimitiveType.TriangleStrip);
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
