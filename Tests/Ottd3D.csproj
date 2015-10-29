@@ -7,10 +7,10 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{2D1D500E-469C-410B-A331-F1FD93820234}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Tests</RootNamespace>
+    <RootNamespace>Ottd3D</RootNamespace>
     <AssemblyName>Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <StartupObject>ottdGridTest.GameWin</StartupObject>
+    <StartupObject>Ottd3D.Ottd3DWindow</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Linux_x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ottdGrid.cs" />
+    <Compile Include="Shaders\CircleShader.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ui\" />
@@ -74,20 +75,50 @@
       <Link>images\grass4.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="images\grass_autumn_orn_d.jpg" />
-    <EmbeddedResource Include="images\grass_autumn_red_d.jpg" />
-    <EmbeddedResource Include="images\grass_green2y_d.jpg" />
-    <EmbeddedResource Include="images\grass_ground2y_d.jpg" />
-    <EmbeddedResource Include="images\grass_ground_d.jpg" />
-    <EmbeddedResource Include="images\grass_mix_d.jpg" />
-    <EmbeddedResource Include="images\grass_mix_ylw_d.jpg" />
-    <EmbeddedResource Include="images\ground_crackedo_d.jpg" />
-    <EmbeddedResource Include="images\ground_crackedv_d.jpg" />
-    <EmbeddedResource Include="images\ground_cracks2v_d.jpg" />
-    <EmbeddedResource Include="images\ground_cracks2y_d.jpg" />
-    <EmbeddedResource Include="ui\fps.goml" />
-    <EmbeddedResource Include="ui\menu.goml" />
-    <EmbeddedResource Include="images\grass.jpg" />
-    <EmbeddedResource Include="Shaders\circle.frag" />
+    <EmbeddedResource Include="images\grass_autumn_orn_d.jpg">
+      <LogicalName>Ottd3D.images.grass_autumn_orn_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\grass_autumn_red_d.jpg">
+      <LogicalName>Ottd3D.images.grass_autumn_red_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\grass_green2y_d.jpg">
+      <LogicalName>Ottd3D.images.grass_green2y_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\grass_ground2y_d.jpg">
+      <LogicalName>Ottd3D.images.grass_ground2y_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\grass_ground_d.jpg">
+      <LogicalName>Ottd3D.images.grass_ground_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\grass_mix_d.jpg">
+      <LogicalName>Ottd3D.images.grass_mix_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\grass_mix_ylw_d.jpg">
+      <LogicalName>Ottd3D.images.grass_mix_ylw_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\ground_crackedo_d.jpg">
+      <LogicalName>Ottd3D.images.ground_crackedo_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\ground_crackedv_d.jpg">
+      <LogicalName>Ottd3D.images.ground_crackedv_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\ground_cracks2v_d.jpg">
+      <LogicalName>Ottd3D.images.ground_cracks2v_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\ground_cracks2y_d.jpg">
+      <LogicalName>Ottd3D.images.ground_cracks2y_d.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ui\fps.goml">
+      <LogicalName>Ottd3D.ui.fps.goml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ui\menu.goml">
+      <LogicalName>Ottd3D.ui.menu.goml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\grass.jpg">
+      <LogicalName>Ottd3D.images.grass.jpg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Shaders\circle.frag">
+      <LogicalName>Ottd3D.Shaders.circle.frag</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

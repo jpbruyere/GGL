@@ -15,9 +15,9 @@ using System.Threading;
 using GGL;
 
 
-namespace ottdGridTest
+namespace Ottd3D
 {
-	class GameWin : OpenTKGameWindow, IValueChange
+	class Ottd3DWindow : OpenTKGameWindow, IValueChange
 	{
 		public enum GameState
 		{
@@ -130,15 +130,15 @@ namespace ottdGridTest
 
 		#region Shaders
 		public static GameLib.ShadedTexture voronoiShader;
-		public static GameLib.ShadedTexture circleShader;
+		public static CircleShader circleShader;
 		public static GameLib.VertexDispShader gridShader;
 		public static GameLib.Shader simpleTexturedShader;
 		public static go.GLBackend.TexturedShader CacheRenderingShader;
 
 		void initShaders()
 		{
-			circleShader = new GameLib.ShadedTexture ("Tests.Shaders.circle",512, 512);
-			gridShader = new GameLib.VertexDispShader ("Tests.Shaders.VertDisp.vert", "Tests.Shaders.Grid.frag");
+			circleShader = new CircleShader ("Ottd3D.Shaders.circle",512, 512);
+			gridShader = new GameLib.VertexDispShader ("Ottd3D.Shaders.VertDisp.vert", "Ottd3D.Shaders.Grid.frag");
 			simpleTexturedShader = new GameLib.Shader ();
 			CacheRenderingShader = new go.GLBackend.TexturedShader();			
 
@@ -179,19 +179,19 @@ namespace ottdGridTest
 
 		string[] groundTextures = new string[]
 		{
-			"#Tests.images.grass.jpg",
-			"#Tests.images.grass_green_d.jpg",
-			"#Tests.images.grass_ground_d.jpg",
-			"#Tests.images.grass_ground2y_d.jpg",
-			"#Tests.images.grass_mix_ylw_d.jpg",
-			"#Tests.images.grass_mix_d.jpg",
-			"#Tests.images.grass_autumn_orn_d.jpg",
-			"#Tests.images.grass_autumn_red_d.jpg",
-			"#Tests.images.grass_rocky_d.jpg",
-			"#Tests.images.ground_cracks2v_d.jpg",
-			"#Tests.images.ground_crackedv_d.jpg",
-			"#Tests.images.ground_cracks2y_d.jpg",
-			"#Tests.images.ground_crackedo_d.jpg"			
+			"#Ottd3D.images.grass.jpg",
+			"#Ottd3D.images.grass_green_d.jpg",
+			"#Ottd3D.images.grass_ground_d.jpg",
+			"#Ottd3D.images.grass_ground2y_d.jpg",
+			"#Ottd3D.images.grass_mix_ylw_d.jpg",
+			"#Ottd3D.images.grass_mix_d.jpg",
+			"#Ottd3D.images.grass_autumn_orn_d.jpg",
+			"#Ottd3D.images.grass_autumn_red_d.jpg",
+			"#Ottd3D.images.grass_rocky_d.jpg",
+			"#Ottd3D.images.ground_cracks2v_d.jpg",
+			"#Ottd3D.images.ground_crackedv_d.jpg",
+			"#Ottd3D.images.ground_cracks2y_d.jpg",
+			"#Ottd3D.images.ground_crackedo_d.jpg"			
 		};
 
 		vaoMesh grid;
@@ -233,7 +233,7 @@ namespace ottdGridTest
 			gridShader.SplatTexture = new Texture (_splatingSize, _splatingSize);
 			getSplatData ();
 			//2048
-			//"#Tests.images.grass_green2y_d.jpg",
+			//"#Ottd3D.images.grass_green2y_d.jpg",
 			GL.BindTexture (TextureTarget.Texture2D, gridShader.SplatTexture);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
@@ -581,8 +581,8 @@ namespace ottdGridTest
 			this.MouseWheelChanged += new EventHandler<MouseWheelEventArgs>(Mouse_WheelChanged);
 			this.MouseMove += new EventHandler<MouseMoveEventArgs>(Mouse_Move);
 
-			LoadInterface("#Tests.ui.fps.goml").DataSource = this;
-			LoadInterface("#Tests.ui.menu.goml").DataSource = this;			
+			LoadInterface("#Ottd3D.ui.fps.goml").DataSource = this;
+			LoadInterface("#Ottd3D.ui.menu.goml").DataSource = this;			
 		}
 		#region Mouse
 		void Mouse_Move(object sender, MouseMoveEventArgs e)
@@ -808,11 +808,11 @@ namespace ottdGridTest
 		{
 			Console.WriteLine ("starting example");
 
-			using (GameWin win = new GameWin( )) {
+			using (Ottd3DWindow win = new Ottd3DWindow( )) {
 				win.Run (30.0);
 			}
 		}
-		public GameWin ()
+		public Ottd3DWindow ()
 			: base(1024, 800,"test")
 		{}
 		#endregion

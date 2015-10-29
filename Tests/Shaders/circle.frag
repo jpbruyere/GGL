@@ -4,9 +4,10 @@ precision highp float;
 in vec2 texCoord;
 out vec4 out_frag_color;
 
+uniform float radius;
+uniform vec4 color;
+
 float border = 0.01;
-float circle_radius = 0.002;
-vec4 circle_color = vec4(1.0, 1.0, 1.0, 1.0);
 vec4 bkg_color = vec4(0.0, 0.0, 0.0, 0.0);
 vec2 circle_center = vec2(0.5, 0.5);   
 
@@ -16,8 +17,8 @@ void main ()
 
   float dist =  sqrt(dot(uv, uv));
 
-  float t = 1.0 + smoothstep(circle_radius, circle_radius+border, dist) 
-                - smoothstep(circle_radius-border, circle_radius, dist);
+  float t = 1.0 + smoothstep(radius, radius + border, dist) 
+                - smoothstep(radius - border, radius, dist);
 
-  gl_FragColor = mix(circle_color, bkg_color, t);
+  gl_FragColor = mix(color, bkg_color, t);
 }
