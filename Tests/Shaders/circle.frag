@@ -5,7 +5,7 @@ in vec2 texCoord;
 out vec4 out_frag_color;
 
 float border = 0.01;
-float circle_radius = 0.45;
+float circle_radius = 0.002;
 vec4 circle_color = vec4(1.0, 1.0, 1.0, 1.0);
 vec4 bkg_color = vec4(0.0, 0.0, 0.0, 0.0);
 vec2 circle_center = vec2(0.5, 0.5);   

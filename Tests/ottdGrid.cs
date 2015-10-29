@@ -19,6 +19,18 @@ namespace ottdGridTest
 {
 	class GameWin : OpenTKGameWindow, IValueChange
 	{
+		public enum GameState
+		{
+			Playing,
+			GroundLeveling,
+			GroundTexturing
+		}
+
+		public GameState CurrentState = GameState.Playing;
+		public byte CurrentTexture = 1;
+		public int splatPressure = 10;
+		public int BrushRadius = 5;
+
 		#region IValueChange implementation
 		public event EventHandler<ValueChangeEventArgs> ValueChanged;
 		public void NotifyValueChange(string propName, object newValue)
@@ -78,14 +90,15 @@ namespace ottdGridTest
 		}
 		public Vector3 vEyeTarget = new Vector3(32, 32, 0f);
 		public Vector3 vLook = Vector3.Normalize(new Vector3(-1f, -1f, 1f));  // Camera vLook Vector
-		public float zFar = 1000.0f;
-		public float zNear = 1.0f;
+		public float zFar = 512.0f;
+		public float zNear = 0.1f;
 		public float fovY = (float)Math.PI / 4;
 
 		float eyeDist = 30;
 		float eyeDistTarget = 30f;
-		float MoveSpeed = 1.0f;
-		float RotationSpeed = 0.02f;
+		float MoveSpeed = 0.01f;
+		float ZoomSpeed = 0.2f;
+		float RotationSpeed = 0.01f;
 
 		public Vector4 vLight = new Vector4 (-1, -1, -1, 0);
 		#endregion
@@ -97,6 +110,17 @@ namespace ottdGridTest
 			set {
 				selPos = value;
 				selPos.Z = hmData[((int)selPos.Y * _hmSize + (int)selPos.X) * 4 + 1] / 256f * heightScale;
+				switch (CurrentState) {
+				case GameState.GroundLeveling:
+					selMesh = new vaoMesh ((int)Math.Round(selPos.X), (int)Math.Round(selPos.Y), selPos.Z, 20.0f, 20.0f);
+					break;
+				case GameState.GroundTexturing:
+				case GameState.Playing:
+					selMesh = new vaoMesh (selPos.X, selPos.Y, selPos.Z, 20.0f, 20.0f);
+					break;
+				default:
+					break;
+				}
 				NotifyValueChange ("SelectionPos", selPos);
 			}
 		}
@@ -104,11 +128,48 @@ namespace ottdGridTest
 			get { return new Vector2 (Mouse.X, Mouse.Y); }
 		}
 
+		#region Shaders
 		public static GameLib.ShadedTexture voronoiShader;
 		public static GameLib.ShadedTexture circleShader;
 		public static GameLib.VertexDispShader gridShader;
-		public static GameLib.Shader redShader;
+		public static GameLib.Shader simpleTexturedShader;
 		public static go.GLBackend.TexturedShader CacheRenderingShader;
+
+		void initShaders()
+		{
+			circleShader = new GameLib.ShadedTexture ("Tests.Shaders.circle",512, 512);
+			gridShader = new GameLib.VertexDispShader ("Tests.Shaders.VertDisp.vert", "Tests.Shaders.Grid.frag");
+			simpleTexturedShader = new GameLib.Shader ();
+			CacheRenderingShader = new go.GLBackend.TexturedShader();			
+
+			voronoiShader = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",_hmSize, _hmSize);
+			GL.BindTexture (TextureTarget.Texture2D, voronoiShader.Texture);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+		}
+
+		void activateGridShader()
+		{
+			gridShader.DisplacementMap = voronoiShader.Texture;
+			gridShader.Enable ();
+			gridShader.LightPos = vLight;
+			gridShader.MapSize = new Vector2 (_width, _height);
+			gridShader.HeightScale = heightScale;
+			gridShader.ProjectionMatrix = projection;
+			gridShader.ModelViewMatrix = modelview;
+			gridShader.ModelMatrix = Matrix4.Identity;
+
+		}
+		void activateSimpleTexturedShader()
+		{
+			simpleTexturedShader.Enable ();
+			simpleTexturedShader.ProjectionMatrix = projection;
+			simpleTexturedShader.ModelViewMatrix = modelview;
+			simpleTexturedShader.ModelMatrix = Matrix4.Identity;
+		}
+		#endregion
+
 
 		const int _width = 256;
 		const int _height = 256;
@@ -116,19 +177,34 @@ namespace ottdGridTest
 		const int _splatingSize = 2048;
 		const float heightScale = 100.0f;
 
+		string[] groundTextures = new string[]
+		{
+			"#Tests.images.grass.jpg",
+			"#Tests.images.grass_green_d.jpg",
+			"#Tests.images.grass_ground_d.jpg",
+			"#Tests.images.grass_ground2y_d.jpg",
+			"#Tests.images.grass_mix_ylw_d.jpg",
+			"#Tests.images.grass_mix_d.jpg",
+			"#Tests.images.grass_autumn_orn_d.jpg",
+			"#Tests.images.grass_autumn_red_d.jpg",
+			"#Tests.images.grass_rocky_d.jpg",
+			"#Tests.images.ground_cracks2v_d.jpg",
+			"#Tests.images.ground_crackedv_d.jpg",
+			"#Tests.images.ground_cracks2y_d.jpg",
+			"#Tests.images.ground_crackedo_d.jpg"			
+		};
+
 		vaoMesh grid;
 		vaoMesh selMesh;
-
-		int IdxPrimitiveRestart = int.MaxValue;
-
-		Vector3[] positionVboData;
-		public int[] indicesVboData;
-		Vector2[] texVboData;
-
 
 		public void initGrid()
 		{
 			const float z = 0.0f;
+			const int IdxPrimitiveRestart = int.MaxValue;
+
+			Vector3[] positionVboData;
+			int[] indicesVboData;
+			Vector2[] texVboData;
 
 			positionVboData = new Vector3[_width * _height];
 			texVboData = new Vector2[_width * _height];
@@ -153,21 +229,7 @@ namespace ottdGridTest
 			grid = new vaoMesh (positionVboData, texVboData, null);
 			grid.indices = indicesVboData;
 
-			gridShader.DiffuseTexture = new TextureArray (
-				"#Tests.images.grass.jpg",
-				"#Tests.images.grass_green_d.jpg",
-				"#Tests.images.grass_ground_d.jpg",
-				"#Tests.images.grass_ground2y_d.jpg",
-				"#Tests.images.grass_mix_ylw_d.jpg",
-				"#Tests.images.grass_mix_d.jpg",
-				"#Tests.images.grass_autumn_orn_d.jpg",
-				"#Tests.images.grass_autumn_red_d.jpg",
-				"#Tests.images.grass_rocky_d.jpg",
-				"#Tests.images.ground_cracks2v_d.jpg",
-				"#Tests.images.ground_crackedv_d.jpg",
-				"#Tests.images.ground_cracks2y_d.jpg",
-				"#Tests.images.ground_crackedo_d.jpg"
-			);
+			gridShader.DiffuseTexture = new TextureArray (groundTextures);
 			gridShader.SplatTexture = new Texture (_splatingSize, _splatingSize);
 			getSplatData ();
 			//2048
@@ -177,19 +239,6 @@ namespace ottdGridTest
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
 			GL.BindTexture (TextureTarget.Texture2D, 0);
 
-
-		}
-
-		void activateGridShader()
-		{
-			gridShader.DisplacementMap = voronoiShader.Texture;
-			gridShader.Enable ();
-			gridShader.LightPos = vLight;
-			gridShader.MapSize = new Vector2 (_width, _height);
-			gridShader.HeightScale = heightScale;
-			gridShader.ProjectionMatrix = projection;
-			gridShader.ModelViewMatrix = modelview;
-			gridShader.ModelMatrix = Matrix4.Identity;
 
 		}
 		void drawGrid()
@@ -202,11 +251,10 @@ namespace ottdGridTest
 		}
 		void drawHoverCase()
 		{
-			redShader.Enable ();
-			redShader.ProjectionMatrix = projection;
-			redShader.ModelViewMatrix = modelview;
-			redShader.ModelMatrix = Matrix4.Identity;
-
+			if (selMesh == null)
+				return;
+			
+			activateSimpleTexturedShader ();
 //			GL.LineWidth (2);
 //
 
@@ -238,15 +286,15 @@ namespace ottdGridTest
 
 
 
-			selMesh = new vaoMesh (selPos.X, selPos.Y, selPos.Z, 20.0f, 20.0f);
 
 			GL.BindTexture (TextureTarget.Texture2D, circleShader.Texture);
 			selMesh.Render(PrimitiveType.TriangleStrip);
 			GL.BindTexture (TextureTarget.Texture2D, 0);
 		}
 
-		byte[] hmData;
-		byte[] splatData;
+		byte[] hmData;//height map
+		byte[] splatData;//ground texture splatting
+		byte[] selectionMap;//has grid positions as colors
 
 		void getSplatData()
 		{
@@ -289,11 +337,23 @@ namespace ottdGridTest
 			GL.BindTexture (TextureTarget.Texture2D, 0);
 			gridCacheIsUpToDate = false;
 			heightMapIsUpToDate = true;
+
+			//force update of selection mesh
+			SelectionPos = selPos;
+		}
+		void getSelectionTextureData()
+		{
+			GL.BindTexture (TextureTarget.Texture2D, gridSelectionTex);
+
+			GL.GetTexImage (TextureTarget.Texture2D, 0, 
+				PixelFormat.Rgba, PixelType.UnsignedByte, selectionMap);
+
+			GL.BindTexture (TextureTarget.Texture2D, 0);
 		}
 
 		#region Grid Cache
-		bool gridCacheIsUpToDate = false;
-		bool heightMapIsUpToDate = true,
+		bool gridCacheIsUpToDate = false,
+			heightMapIsUpToDate = true,
 			splatTextureIsUpToDate = true;
 		QuadVAO cacheQuad;
 		Matrix4 cacheProjection;
@@ -304,7 +364,6 @@ namespace ottdGridTest
 			DrawBuffersEnum.ColorAttachment0 ,
 			DrawBuffersEnum.ColorAttachment1};
 		
-		byte[] selectionMap;
 
 		void createCache(){
 			selectionMap = new byte[ClientRectangle.Width*ClientRectangle.Height*4];
@@ -334,7 +393,6 @@ namespace ottdGridTest
 			if (depthTest)
 				GL.Enable (EnableCap.DepthTest);
 		}
-		#endregion
 
 		#region FBO
 		void initGridFbo()
@@ -378,6 +436,7 @@ namespace ottdGridTest
 			GL.Clear (ClearBufferMask.ColorBufferBit|ClearBufferMask.DepthBufferBit);
 			activateGridShader ();
 
+			//4th component of selection texture is used as coordinate, not as alpha
 			GL.Disable (EnableCap.AlphaTest);
 			GL.Disable (EnableCap.Blend);
 
@@ -392,16 +451,11 @@ namespace ottdGridTest
 
 			gridCacheIsUpToDate = true;
 		}
-		void getSelectionTextureData()
-		{
-			GL.BindTexture (TextureTarget.Texture2D, gridSelectionTex);
-
-			GL.GetTexImage (TextureTarget.Texture2D, 0, 
-				PixelFormat.Rgba, PixelType.UnsignedByte, selectionMap);
-
-			GL.BindTexture (TextureTarget.Texture2D, 0);
-		}
 		#endregion
+
+		#endregion
+
+
 
 
 		public void UpdateViewMatrix()
@@ -423,68 +477,14 @@ namespace ottdGridTest
 			gridCacheIsUpToDate = false;
 		}			
 
-		#region Mouse
-		void Mouse_Move(object sender, MouseMoveEventArgs e)
-		{			
-			if (e.XDelta != 0 || e.YDelta != 0)
-			{
-				NotifyValueChange("MousePos", new Vector2 (Mouse.X, Mouse.Y));
-				int selPtr = (e.X * 4 + (ClientRectangle.Height - e.Y) * ClientRectangle.Width * 4);
-//				SelectionPos = new Vector3 (selectionMap [selPtr], 
-//					selectionMap [selPtr + 1], selectionMap [selPtr + 2]);
-				SelectionPos = new Vector3 (
-					(float)selectionMap [selPtr] + (float)selectionMap [selPtr + 1] / 255f, 
-					(float)selectionMap [selPtr + 2] + (float)selectionMap [selPtr + 3] / 255f, 0f);
 
-				UpdatePtrSplat ();
-
-				if (e.Mouse.MiddleButton == OpenTK.Input.ButtonState.Pressed) {					
-					Vector3 v = new Vector3 (
-						            Vector2.Normalize (vLook.Xy.PerpendicularLeft));
-					Vector3 tmp = Vector3.Transform (vLook, 
-						Matrix4.CreateRotationZ (-e.XDelta * RotationSpeed) *
-						Matrix4.CreateFromAxisAngle (v, -e.YDelta * RotationSpeed));
-					tmp.Normalize();
-					if (tmp.Z <= 0f)
-						return;
-					vLook = tmp;
-					UpdateViewMatrix ();
-					return;
-				}
-				if (e.Mouse.LeftButton == ButtonState.Pressed) {
-					
-				}
-				if (e.Mouse.RightButton == ButtonState.Pressed) {
-					Vector3 vH = new Vector3(Vector2.Normalize(vLook.Xy.PerpendicularLeft) * e.XDelta * MoveSpeed);
-					Vector3 vV = new Vector3(Vector2.Normalize(vLook.Xy) * e.YDelta * MoveSpeed);
-					vEyeTarget -= vH + vV;
-						
-					UpdateViewMatrix();
-					return;
-				}
-
-			}
-
-		}			
-		void Mouse_WheelChanged(object sender, MouseWheelEventArgs e)
-		{
-			float speed = MoveSpeed;
-			if (Keyboard[Key.ShiftLeft])
-				speed *= 0.1f;
-			else if (Keyboard[Key.ControlLeft])
-				speed *= 20.0f;
-
-			eyeDistTarget -= e.Delta * speed;
-//			if (eyeDistTarget < zNear+10)
-//				eyeDistTarget = zNear+10;
-//			else if (eyeDistTarget > zFar-100)
-//				eyeDistTarget = zFar-100;
-			Animation.StartAnimation(new Animation<float> (this, "EyeDist", eyeDistTarget, (eyeDistTarget - eyeDist) * 0.2f));
-		}
-		#endregion
 
 		int ptrSplat = 0;
+		int ptrHM = 0;
+
 		public int PtrSplat{ get { return ptrSplat; } }
+		public int PtrHM{ get { return ptrHM; } }
+
 		public void UpdatePtrSplat(){
 			int splatXDisp = (int)Math.Floor((SelectionPos.X - Math.Truncate (SelectionPos.X)) * 4.0f);
 			int splatyDisp = (int)Math.Floor((SelectionPos.Y - Math.Truncate (SelectionPos.Y)) * 4.0f);
@@ -493,6 +493,11 @@ namespace ottdGridTest
 			int yDisp = (int)SelectionPos.Y * _splatingSize * 16 + splatyDisp * _splatingSize * 4;
 			ptrSplat = xDisp+yDisp;
 			NotifyValueChange ("PtrSplat", ptrSplat);				
+		}
+		void updatePtrHm()
+		{
+			ptrHM = ((int)Math.Round(SelectionPos.X) + (int)Math.Round(SelectionPos.Y) * _hmSize) * 4 ;
+			NotifyValueChange ("PtrHM", ptrHM);
 		}
 
 		protected override void OnKeyDown (KeyboardKeyEventArgs e)
@@ -569,32 +574,129 @@ namespace ottdGridTest
 			}
 
 		}
+		#region Interface
+		void initInterface()
+		{
+			this.MouseButtonUp += Mouse_ButtonUp;
+			this.MouseWheelChanged += new EventHandler<MouseWheelEventArgs>(Mouse_WheelChanged);
+			this.MouseMove += new EventHandler<MouseMoveEventArgs>(Mouse_Move);
+
+			LoadInterface("#Tests.ui.fps.goml").DataSource = this;
+			LoadInterface("#Tests.ui.menu.goml").DataSource = this;			
+		}
+		#region Mouse
+		void Mouse_Move(object sender, MouseMoveEventArgs e)
+		{			
+			if (e.XDelta != 0 || e.YDelta != 0)
+			{
+				NotifyValueChange("MousePos", MousePos);
+				int selPtr = (e.X * 4 + (ClientRectangle.Height - e.Y) * ClientRectangle.Width * 4);
+				//				SelectionPos = new Vector3 (selectionMap [selPtr], 
+				//					selectionMap [selPtr + 1], selectionMap [selPtr + 2]);
+				SelectionPos = new Vector3 (
+					(float)selectionMap [selPtr] + (float)selectionMap [selPtr + 1] / 255f, 
+					(float)selectionMap [selPtr + 2] + (float)selectionMap [selPtr + 3] / 255f, 0f);
+
+				switch (CurrentState) {
+				case GameState.Playing:					
+				case GameState.GroundLeveling:
+					updatePtrHm ();
+					break;
+				case GameState.GroundTexturing:
+					UpdatePtrSplat ();
+					break;
+				}
+
+				if (e.Mouse.MiddleButton == OpenTK.Input.ButtonState.Pressed) {
+					if (Keyboard [Key.ShiftLeft]) {
+						Vector3 v = new Vector3 (
+							Vector2.Normalize (vLook.Xy.PerpendicularLeft));
+						Vector3 tmp = Vector3.Transform (vLook, 
+							Matrix4.CreateRotationZ (-e.XDelta * RotationSpeed) *
+							Matrix4.CreateFromAxisAngle (v, -e.YDelta * RotationSpeed));
+						tmp.Normalize ();
+						if (tmp.Z <= 0f)
+							return;
+						vLook = tmp;
+					} else {
+						Vector3 vH = new Vector3(Vector2.Normalize(vLook.Xy.PerpendicularLeft) * e.XDelta * MoveSpeed * eyeDist);
+						Vector3 vV = new Vector3(Vector2.Normalize(vLook.Xy) * e.YDelta * MoveSpeed * eyeDist);
+						vEyeTarget -= vH + vV;						
+					}
+					UpdateViewMatrix ();
+					return;
+				}
+
+			}
+
+		}			
+		void Mouse_WheelChanged(object sender, MouseWheelEventArgs e)
+		{
+			float speed = ZoomSpeed * eyeDist;
+			if (Keyboard [Key.ShiftLeft]) {
+				
+			}
+			else if (Keyboard[Key.ControlLeft])
+				speed *= 20.0f;
+
+			eyeDistTarget -= e.Delta * speed;
+			if (eyeDistTarget < zNear+5)
+				eyeDistTarget = zNear+5;
+			else if (eyeDistTarget > zFar-100)
+				eyeDistTarget = zFar-100;
+			Animation.StartAnimation(new Animation<float> (this, "EyeDist", eyeDistTarget, (eyeDistTarget - eyeDist) * 0.2f));
+		}
+		void Mouse_ButtonUp (object sender, MouseButtonEventArgs e)
+		{
+			switch (CurrentState) {
+			case GameState.Playing:
+				break;
+			case GameState.GroundLeveling:
+				if (e.Button == MouseButton.Left) {
+					hmData [ptrHM+1] += 1;
+					heightMapIsUpToDate = false;
+				} else if (e.Button == MouseButton.Right) {
+					if (hmData [ptrHM + 1] == 0)
+						break;
+					hmData [ptrHM+1] -= 1;
+					heightMapIsUpToDate = false;
+				}	
+				break;
+			case GameState.GroundTexturing:
+				break;
+			}
+		}
+		#endregion
+
+		void onGameStateChange (object sender, ValueChangeEventArgs e)
+		{
+			if (e.MemberName != "IsChecked" || (bool)e.NewValue != true)
+				return;
+			
+			GraphicObject g = sender as GraphicObject;
+			switch (g.Name) {
+			case "play":
+				CurrentState = GameState.Playing;
+				break;
+			case "hmEdit":
+				CurrentState = GameState.GroundLeveling;
+				break;
+			case "splatEdit":
+				CurrentState = GameState.GroundTexturing;
+				break;
+			}
+			//force update of position mesh
+			SelectionPos = selPos;
+		}
+		#endregion
 
 		protected override void OnLoad (EventArgs e)
 		{
 			base.OnLoad (e);
 
-			this.MouseWheelChanged += new EventHandler<MouseWheelEventArgs>(Mouse_WheelChanged);
-			this.MouseMove += new EventHandler<MouseMoveEventArgs>(Mouse_Move);
+			initInterface ();
 
-			LoadInterface("#Tests.ui.fps.goml").DataSource = this;
-			LoadInterface("#Tests.ui.menu.goml").DataSource = this;
-
-
-
-			circleShader = new GameLib.ShadedTexture ("Tests.Shaders.circle",512, 512);
-			voronoiShader = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",_hmSize, _hmSize);
-
-			GL.BindTexture (TextureTarget.Texture2D, voronoiShader.Texture);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-			GL.BindTexture (TextureTarget.Texture2D, 0);
-			//mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDispInstanced.vert","GGL.Shaders.GameLib.VertDispNormFilt.frag");
-			//mainShader = new GameLib.VertexDispShader ("GGL.Shaders.GameLib.VertDispInstancedSingleLight.vert","GGL.Shaders.GameLib.VertDispSingleLight.frag");
-			gridShader = new GameLib.VertexDispShader ("Tests.Shaders.VertDisp.vert", "Tests.Shaders.Grid.frag");
-			redShader = new GameLib.Shader ();
-
-			CacheRenderingShader = new go.GLBackend.TexturedShader();
+			initShaders ();
 
 			GL.ClearColor(0.0f, 0.0f, 0.2f, 1.0f);
 			GL.Enable(EnableCap.DepthTest);
@@ -616,6 +718,7 @@ namespace ottdGridTest
 			getHeightMapData ();
 
 		}
+			
 		private int frameCpt = 0;
 		protected override void OnUpdateFrame (FrameEventArgs e)
 		{
@@ -628,6 +731,32 @@ namespace ottdGridTest
 
 			}
 			frameCpt++;
+
+			if (CurrentState == GameState.GroundTexturing) {
+				MouseState mouse = Mouse.GetState ();
+				if (mouse[MouseButton.Left]) {
+					if (splatData [ptrSplat + 1] != CurrentTexture) {
+						splatData [ptrSplat + 1] = CurrentTexture;
+						splatData [ptrSplat] = 0;
+					} else {
+
+						if ((int)splatData [ptrSplat] + splatPressure > 255)
+							splatData [ptrSplat] = 255;
+						else
+							splatData [ptrSplat] += (byte)splatPressure;
+					}
+
+					splatTextureIsUpToDate = false;
+				} else if (mouse[MouseButton.Right]) {
+					if ((int)splatData [ptrSplat] - splatPressure < 0)
+						splatData [ptrSplat] = 0;
+					else
+						splatData[ptrSplat] -= (byte)splatPressure;
+
+					splatTextureIsUpToDate = false;
+				}							
+			}
+
 
 			Animation.ProcessAnimations ();
 
