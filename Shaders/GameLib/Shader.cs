@@ -4,11 +4,27 @@ using System.IO;
 using System.Reflection;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GameLib
 {
 	public class Shader : IDisposable
 	{
+		class SubRoutine
+		{
+			public string Name;
+			public int Id;
+			public ShaderType ShaderStage;
+
+			public SubRoutine(string _name, int _id, ShaderType _stage)
+			{
+				Name = _name;
+				Id = _id;
+				ShaderStage = _stage;
+			}
+		}
+
 		#region CTOR
 		public Shader ()
 		{
@@ -110,8 +126,10 @@ namespace GameLib
 				modelMat = Matrix4.Identity,
 				modelViewMat = Matrix4.Identity;
 		Vector4 color = new Vector4(1,1,1,1);
-		#endregion
 
+		List<SubRoutine> SubRoutines;
+		SubRoutine activeSubRoutine;
+		#endregion
 
 		#region Public properties
 		public virtual string vertSource
@@ -236,6 +254,9 @@ namespace GameLib
 		public virtual void Enable(){
 			GL.UseProgram (pgmId);
 
+			if (activeSubRoutine != null)
+				GL.UniformSubroutines(activeSubRoutine.ShaderStage, 1, ref activeSubRoutine.Id);
+
 			GL.UniformMatrix4(projectionLocation, false, ref projectionMat);
 			GL.UniformMatrix4 (modelLocation, false, ref modelMat); 
 			GL.UniformMatrix4 (modelViewLocation, false, ref modelViewMat);
@@ -260,6 +281,31 @@ namespace GameLib
 			s.Disable ();
 		}
 		#endregion
+
+		public void RegisterSubRoutine(ShaderType shaderType, string subName)
+		{
+			GL.UseProgram (pgmId);
+			if (SubRoutines == null)
+				SubRoutines = new List<SubRoutine> ();
+
+			int tmp = GL.GetSubroutineIndex (pgmId, shaderType, subName);
+			if (tmp < 0) {
+				Debug.WriteLine ("Subroutine registration failed: {0} not found.", subName);
+				return;
+			}
+			GL.UseProgram (0);
+			SubRoutines.Add (new SubRoutine(subName, tmp, shaderType));
+		}
+
+		public void SelectSubroutine(string subName)
+		{
+			SubRoutine tmp = SubRoutines.Where (s => s.Name == subName).FirstOrDefault();
+			if (tmp == null) {
+				Debug.WriteLine ("Subroutine {0} not found.", subName);
+				return;
+			}
+			activeSubRoutine = tmp;
+		}
 
 		void compileShader(int shader, string source)
 		{
