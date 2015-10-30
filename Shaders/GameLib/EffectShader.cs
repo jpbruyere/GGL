@@ -27,35 +27,26 @@ namespace GameLib
 			if (height < 0)
 				height = width;
 
-			initFbo ();
-
-			Enable ();
-
-			Resolution = new Vector2 (width, height);
 			ProjectionMatrix = OpenTK.Matrix4.CreateOrthographicOffCenter(-0.5f, 0.5f, -0.5f, 0.5f, 1, -1);
-			ModelViewMatrix = Matrix4.Identity;
-			ModelMatrix = Matrix4.Identity;
+			Resolution = new Vector2 (width, height);
 
-			Disable ();
+			initFbo ();
 
 			if (quad == null)
 				quad = new vaoMesh (0, 0, 0, 1, 1, 1, 1);
 		}
 
-		public override void Reload ()
-		{
-			base.Reload ();
-
-			initFbo ();
-			Enable ();
-			Resolution = new Vector2 (width, height);
-			Disable ();
-		}
-
 		public int Texture { get { return tex; } }
+
+		public override void Enable ()
+		{
+			base.Enable ();
+			GL.Uniform2 (resolutionLocation, resolution);
+		}
 		public void Update (float time)
 		{
 			this.Enable ();
+
 			Time = time;
 
 			GL.Viewport(0, 0, width, height);
@@ -91,9 +82,11 @@ namespace GameLib
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 		}
 		#endregion
+		Vector2 resolution;
 
 		public float Time { set { GL.Uniform1 (timeLocation, value); }}
-		public Vector2 Resolution { set { GL.Uniform2 (resolutionLocation, value.X, value.Y); }}
+		public Vector2 Resolution { set { resolution = value; }}
+
 
 		protected override void GetUniformLocations ()
 		{

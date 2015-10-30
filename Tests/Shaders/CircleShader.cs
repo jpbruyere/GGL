@@ -33,10 +33,24 @@ namespace Ottd3D
 
 		int radiusLoc;
 
+		float radius = 0.5f;
+
+		public float Radius { 
+			set { radius = value; }
+			get { return radius; }
+		}
+
+
 		protected override void GetUniformLocations ()
 		{
 			base.GetUniformLocations ();
+
 			radiusLoc = GL.GetUniformLocation(pgmId, "radius");
+		}
+		public override void Enable ()
+		{
+			base.Enable ();
+			GL.Uniform1(radiusLoc, radius);
 		}
 	}
 }

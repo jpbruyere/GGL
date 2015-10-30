@@ -40,6 +40,7 @@ void main(void)
 	vec3 c = mix (t1, t2, splat.b);
 
 	out_frag_color = vec4(c * nl, 1.0);
+
 //	ivec2 i = floatBitsToInt(vertex.xy);
 //	vec4 res = intBitsToFloat(ivec4(i.x , i.y , 1, 1));
 //	int x = floatBitsToInt(vertex.x);
@@ -48,6 +49,7 @@ void main(void)
 
 	//out_frag_selection = vertex;
 	//out_frag_selection = vec4(vertex.x, fract(vertex.x * 255.0), vertex.y, 1.0);
+
 	vec2 resx = EncodeFloatRGBA(vertex.x);
 	vec2 resy = EncodeFloatRGBA(vertex.y);
 	out_frag_selection = vec4(resx, resy);

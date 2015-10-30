@@ -47,19 +47,21 @@
     <Reference Include="OpenTK.Compatibility">
       <HintPath>..\..\..\src\opentk-git\Binaries\OpenTK\Release\OpenTK.Compatibility.dll</HintPath>
     </Reference>
-    <Reference Include="golib">
-      <HintPath>..\..\GOLib\bin\Release\golib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GGL.csproj">
       <Project>{5490AD74-0BB3-438C-9DE4-EB7CFC68BCB5}</Project>
       <Name>GGL</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\GOLib\GOLib.csproj">
+      <Project>{C2980F9B-4798-4C05-99E2-E174810F7C7B}</Project>
+      <Name>GOLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ottdGrid.cs" />
     <Compile Include="Shaders\CircleShader.cs" />
+    <Compile Include="Shaders\BrushShader.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ui\" />
@@ -75,50 +77,23 @@
       <Link>images\grass4.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="images\grass_autumn_orn_d.jpg">
-      <LogicalName>Ottd3D.images.grass_autumn_orn_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\grass_autumn_red_d.jpg">
-      <LogicalName>Ottd3D.images.grass_autumn_red_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\grass_green2y_d.jpg">
-      <LogicalName>Ottd3D.images.grass_green2y_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\grass_ground2y_d.jpg">
-      <LogicalName>Ottd3D.images.grass_ground2y_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\grass_ground_d.jpg">
-      <LogicalName>Ottd3D.images.grass_ground_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\grass_mix_d.jpg">
-      <LogicalName>Ottd3D.images.grass_mix_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\grass_mix_ylw_d.jpg">
-      <LogicalName>Ottd3D.images.grass_mix_ylw_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\ground_crackedo_d.jpg">
-      <LogicalName>Ottd3D.images.ground_crackedo_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\ground_crackedv_d.jpg">
-      <LogicalName>Ottd3D.images.ground_crackedv_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\ground_cracks2v_d.jpg">
-      <LogicalName>Ottd3D.images.ground_cracks2v_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\ground_cracks2y_d.jpg">
-      <LogicalName>Ottd3D.images.ground_cracks2y_d.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ui\fps.goml">
-      <LogicalName>Ottd3D.ui.fps.goml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ui\menu.goml">
-      <LogicalName>Ottd3D.ui.menu.goml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="images\grass.jpg">
-      <LogicalName>Ottd3D.images.grass.jpg</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Shaders\circle.frag">
-      <LogicalName>Ottd3D.Shaders.circle.frag</LogicalName>
-    </EmbeddedResource>
+    <EmbeddedResource Include="images\grass_autumn_orn_d.jpg" />
+    <EmbeddedResource Include="images\grass_autumn_red_d.jpg" />
+    <EmbeddedResource Include="images\grass_green2y_d.jpg" />
+    <EmbeddedResource Include="images\grass_ground2y_d.jpg" />
+    <EmbeddedResource Include="images\grass_ground_d.jpg" />
+    <EmbeddedResource Include="images\grass_mix_d.jpg" />
+    <EmbeddedResource Include="images\grass_mix_ylw_d.jpg" />
+    <EmbeddedResource Include="images\ground_crackedo_d.jpg" />
+    <EmbeddedResource Include="images\ground_crackedv_d.jpg" />
+    <EmbeddedResource Include="images\ground_cracks2v_d.jpg" />
+    <EmbeddedResource Include="images\ground_cracks2y_d.jpg" />
+    <EmbeddedResource Include="ui\fps.goml" />
+    <EmbeddedResource Include="ui\menu.goml" />
+    <EmbeddedResource Include="images\grass.jpg" />
+    <EmbeddedResource Include="Shaders\circle.frag" />
+    <EmbeddedResource Include="Shaders\brush.frag" />
+    <EmbeddedResource Include="ui\BrushImageItem.goml" />
+    <EmbeddedResource Include="ui\SpattingBrush.goml" />
   </ItemGroup>
 </Project>

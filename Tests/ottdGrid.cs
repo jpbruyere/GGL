@@ -26,10 +26,15 @@ namespace Ottd3D
 			GroundTexturing
 		}
 
+		const int _gridSize = 256;
+		const int _hmSize = 256;
+		const int _splatingSize = 2048;
+		const int _circleTexSize = 1024;
+		const float heightScale = 200.0f;
+
 		public GameState CurrentState = GameState.Playing;
-		public byte CurrentTexture = 1;
-		public int splatPressure = 10;
-		public int BrushRadius = 5;
+		public Vector4 splatBrush = new Vector4(0f, 0f, 10f/255f, 1f);
+		public float splatBrushRadius = 0.01f;
 
 		#region IValueChange implementation
 		public event EventHandler<ValueChangeEventArgs> ValueChanged;
@@ -110,72 +115,85 @@ namespace Ottd3D
 			set {
 				selPos = value;
 				selPos.Z = hmData[((int)selPos.Y * _hmSize + (int)selPos.X) * 4 + 1] / 256f * heightScale;
-				switch (CurrentState) {
-				case GameState.GroundLeveling:
-					selMesh = new vaoMesh ((int)Math.Round(selPos.X), (int)Math.Round(selPos.Y), selPos.Z, 20.0f, 20.0f);
-					break;
-				case GameState.GroundTexturing:
-				case GameState.Playing:
-					selMesh = new vaoMesh (selPos.X, selPos.Y, selPos.Z, 20.0f, 20.0f);
-					break;
-				default:
-					break;
-				}
+				updateSelMesh ();
 				NotifyValueChange ("SelectionPos", selPos);
 			}
 		}
 		public Vector2 MousePos {
 			get { return new Vector2 (Mouse.X, Mouse.Y); }
 		}
+		void updateSelMesh(){
+			switch (CurrentState) {
+			case GameState.GroundLeveling:
+				selMesh = new vaoMesh ((int)Math.Round (selPos.X), (int)Math.Round (selPos.Y), selPos.Z, 20.0f, 20.0f);
+				break;
+			case GameState.GroundTexturing:
+			case GameState.Playing:
+				selMesh = new vaoMesh (selPos.X, selPos.Y, selPos.Z, 20.0f, 20.0f);
+				break;
+			default:
+				break;
+			}
+		}
 
 		#region Shaders
-		public static GameLib.ShadedTexture voronoiShader;
+		public static GameLib.ShadedTexture hmGenerator;
+		public static BrushShader splattingBrushShader;
 		public static CircleShader circleShader;
 		public static GameLib.VertexDispShader gridShader;
 		public static GameLib.Shader simpleTexturedShader;
 		public static go.GLBackend.TexturedShader CacheRenderingShader;
 
-		void initShaders()
+		void setTexFilterNeareast(int _tex)
 		{
-			circleShader = new CircleShader ("Ottd3D.Shaders.circle",512, 512);
-			gridShader = new GameLib.VertexDispShader ("Ottd3D.Shaders.VertDisp.vert", "Ottd3D.Shaders.Grid.frag");
-			simpleTexturedShader = new GameLib.Shader ();
-			CacheRenderingShader = new go.GLBackend.TexturedShader();			
-
-			voronoiShader = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",_hmSize, _hmSize);
-			GL.BindTexture (TextureTarget.Texture2D, voronoiShader.Texture);
+			GL.BindTexture (TextureTarget.Texture2D, _tex);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
 			GL.BindTexture (TextureTarget.Texture2D, 0);
 		}
-
-		void activateGridShader()
+		void initShaders()
 		{
-			gridShader.DisplacementMap = voronoiShader.Texture;
-			gridShader.Enable ();
+			circleShader = new CircleShader ("Ottd3D.Shaders.circle",_circleTexSize, _circleTexSize);
+			circleShader.Color = Color.White;
+			circleShader.Radius = 0.01f;
+
+			splattingBrushShader = new BrushShader ("Ottd3D.Shaders.brush", _splatingSize, _splatingSize);
+			setTexFilterNeareast (splattingBrushShader.OutputTex);
+			setTexFilterNeareast (splattingBrushShader.InputTex);
+
+			gridShader = new GameLib.VertexDispShader ("Ottd3D.Shaders.VertDisp.vert", "Ottd3D.Shaders.Grid.frag");
+
+			simpleTexturedShader = new GameLib.Shader ();
+			CacheRenderingShader = new go.GLBackend.TexturedShader();			
+
+			hmGenerator = new GameLib.ShadedTexture ("GGL.Shaders.GameLib.voronoi",_hmSize, _hmSize);
+			setTexFilterNeareast(hmGenerator.OutputTex);
+
+			circleShader.Update ();
+
+			hmGenerator.Update ();
+
+			gridShader.DisplacementMap = hmGenerator.OutputTex;
 			gridShader.LightPos = vLight;
-			gridShader.MapSize = new Vector2 (_width, _height);
+			gridShader.MapSize = new Vector2 (_gridSize, _gridSize);
 			gridShader.HeightScale = heightScale;
+
+			splattingBrushShader.Clear ();
+			gridShader.SplatTexture = splattingBrushShader.OutputTex;
+		}
+
+		void updateShadersMatrices(){
 			gridShader.ProjectionMatrix = projection;
 			gridShader.ModelViewMatrix = modelview;
 			gridShader.ModelMatrix = Matrix4.Identity;
 
-		}
-		void activateSimpleTexturedShader()
-		{
-			simpleTexturedShader.Enable ();
 			simpleTexturedShader.ProjectionMatrix = projection;
 			simpleTexturedShader.ModelViewMatrix = modelview;
 			simpleTexturedShader.ModelMatrix = Matrix4.Identity;
 		}
+
 		#endregion
 
-
-		const int _width = 256;
-		const int _height = 256;
-		const int _hmSize = 256;
-		const int _splatingSize = 2048;
-		const float heightScale = 100.0f;
 
 		string[] groundTextures = new string[]
 		{
@@ -194,6 +212,8 @@ namespace Ottd3D
 			"#Ottd3D.images.ground_crackedo_d.jpg"			
 		};
 
+		public string[] GroundTextures { get { return groundTextures; }}
+
 		vaoMesh grid;
 		vaoMesh selMesh;
 
@@ -206,22 +226,22 @@ namespace Ottd3D
 			int[] indicesVboData;
 			Vector2[] texVboData;
 
-			positionVboData = new Vector3[_width * _height];
-			texVboData = new Vector2[_width * _height];
-			indicesVboData = new int[(_width * 2 + 1) * _height];
+			positionVboData = new Vector3[_gridSize * _gridSize];
+			texVboData = new Vector2[_gridSize * _gridSize];
+			indicesVboData = new int[(_gridSize * 2 + 1) * _gridSize];
 
-			for (int y = 0; y < _height; y++) {
-				for (int x = 0; x < _width; x++) {				
-					positionVboData [_width * y + x] = new Vector3 (x, y, z);
-					texVboData [_width * y + x] = new Vector2 ((float)x, (float)y);
+			for (int y = 0; y < _gridSize; y++) {
+				for (int x = 0; x < _gridSize; x++) {				
+					positionVboData [_gridSize * y + x] = new Vector3 (x, y, z);
+					texVboData [_gridSize * y + x] = new Vector2 ((float)x*0.5f, (float)y*0.5f);
 
-					if (y < _height-1) {
-						indicesVboData [(_width * 2 + 1) * y + x*2] = _width * y + x;
-						indicesVboData [(_width * 2 + 1) * y + x*2 + 1] = _width * (y+1) + x;
+					if (y < _gridSize-1) {
+						indicesVboData [(_gridSize * 2 + 1) * y + x*2] = _gridSize * y + x;
+						indicesVboData [(_gridSize * 2 + 1) * y + x*2 + 1] = _gridSize * (y+1) + x;
 					}
 
-					if (x == _width-1) {
-						indicesVboData [(_width * 2 + 1) * y + x*2 + 2] = IdxPrimitiveRestart;
+					if (x == _gridSize-1) {
+						indicesVboData [(_gridSize * 2 + 1) * y + x*2 + 2] = IdxPrimitiveRestart;
 					}
 				}
 			}
@@ -230,16 +250,7 @@ namespace Ottd3D
 			grid.indices = indicesVboData;
 
 			gridShader.DiffuseTexture = new TextureArray (groundTextures);
-			gridShader.SplatTexture = new Texture (_splatingSize, _splatingSize);
-			getSplatData ();
-			//2048
-			//"#Ottd3D.images.grass_green2y_d.jpg",
-			GL.BindTexture (TextureTarget.Texture2D, gridShader.SplatTexture);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-			GL.BindTexture (TextureTarget.Texture2D, 0);
-
-
+		
 		}
 		void drawGrid()
 		{
@@ -247,14 +258,13 @@ namespace Ottd3D
 				updateGridFbo ();
 
 			renderGridCache ();
-			drawHoverCase ();
 		}
 		void drawHoverCase()
 		{
 			if (selMesh == null)
 				return;
 			
-			activateSimpleTexturedShader ();
+			simpleTexturedShader.Enable ();
 //			GL.LineWidth (2);
 //
 
@@ -287,7 +297,7 @@ namespace Ottd3D
 
 
 
-			GL.BindTexture (TextureTarget.Texture2D, circleShader.Texture);
+			GL.BindTexture (TextureTarget.Texture2D, circleShader.OutputTex);
 			selMesh.Render(PrimitiveType.TriangleStrip);
 			GL.BindTexture (TextureTarget.Texture2D, 0);
 		}
@@ -296,31 +306,39 @@ namespace Ottd3D
 		byte[] splatData;//ground texture splatting
 		byte[] selectionMap;//has grid positions as colors
 
-		void getSplatData()
+//		void getSplatData()
+//		{
+//			splatData = new byte[_splatingSize*_splatingSize*4];
+//			GL.BindTexture (TextureTarget.Texture2D, splattingBrushShader.OutputTex);
+//
+//			GL.GetTexImage (TextureTarget.Texture2D, 0, 
+//				PixelFormat.Rgba, PixelType.UnsignedByte, splatData);
+//
+//			GL.BindTexture (TextureTarget.Texture2D, 0);
+//		}
+		void updateSplatting()
 		{
-			splatData = new byte[_splatingSize*_splatingSize*4];
-			GL.BindTexture (TextureTarget.Texture2D, gridShader.SplatTexture);
-
-			GL.GetTexImage (TextureTarget.Texture2D, 0, 
-				PixelFormat.Rgba, PixelType.UnsignedByte, splatData);
-
-			GL.BindTexture (TextureTarget.Texture2D, 0);
-		}
-		void updateSplat()
-		{
-			GL.BindTexture (TextureTarget.Texture2D, gridShader.SplatTexture);
-
-			GL.TexSubImage2D (TextureTarget.Texture2D,
-				0, 0, 0, _splatingSize, _splatingSize, PixelFormat.Bgra, PixelType.UnsignedByte, splatData);
-
-			GL.BindTexture (TextureTarget.Texture2D, 0);
+			float radiusDiv = 40f / (float)_circleTexSize;
+			splattingBrushShader.Radius = circleShader.Radius * radiusDiv;
+			splattingBrushShader.Center = SelectionPos.Xy * 4f / (float)(_splatingSize);
+			splattingBrushShader.Update ();
+			gridShader.SplatTexture = splattingBrushShader.OutputTex;
 			gridCacheIsUpToDate = false;
-			splatTextureIsUpToDate = true;
 		}
+//		void updateSplat()
+//		{
+//			GL.BindTexture (TextureTarget.Texture2D, gridShader.SplatTexture);
+//
+//			GL.TexSubImage2D (TextureTarget.Texture2D,
+//				0, 0, 0, _splatingSize, _splatingSize, PixelFormat.Bgra, PixelType.UnsignedByte, splatData);
+//
+//			GL.BindTexture (TextureTarget.Texture2D, 0);
+//			gridCacheIsUpToDate = false;
+//			splatTextureIsUpToDate = true;
+//		}
 		void getHeightMapData()
-		{
-			hmData = new byte[_hmSize*_hmSize*4];
-			GL.BindTexture (TextureTarget.Texture2D, voronoiShader.Texture);
+		{			
+			GL.BindTexture (TextureTarget.Texture2D, hmGenerator.OutputTex);
 
 			GL.GetTexImage (TextureTarget.Texture2D, 0, 
 				PixelFormat.Rgba, PixelType.UnsignedByte, hmData);
@@ -329,7 +347,7 @@ namespace Ottd3D
 		}
 		void updateHeightMap()
 		{
-			GL.BindTexture (TextureTarget.Texture2D, voronoiShader.Texture);
+			GL.BindTexture (TextureTarget.Texture2D, hmGenerator.OutputTex);
 
 			GL.TexSubImage2D (TextureTarget.Texture2D,
 				0, 0, 0, _hmSize, _hmSize, PixelFormat.Bgra, PixelType.UnsignedByte, hmData);
@@ -362,7 +380,8 @@ namespace Ottd3D
 		DrawBuffersEnum[] dbe = new DrawBuffersEnum[]
 		{
 			DrawBuffersEnum.ColorAttachment0 ,
-			DrawBuffersEnum.ColorAttachment1};
+			DrawBuffersEnum.ColorAttachment1
+		};
 		
 
 		void createCache(){
@@ -401,10 +420,9 @@ namespace Ottd3D
 
 			gridCacheTex = new Texture (cz.Width, cz.Height);
 			gridSelectionTex = new Texture (cz.Width, cz.Height);
-			GL.BindTexture (TextureTarget.Texture2D, gridSelectionTex);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-			GL.BindTexture (TextureTarget.Texture2D, 0);
+
+			setTexFilterNeareast (gridSelectionTex);
+
 
 			// Create Depth Renderbuffer
 			GL.GenRenderbuffers( 1, out depthRenderbuffer );
@@ -434,7 +452,8 @@ namespace Ottd3D
 			GL.DrawBuffers(2, dbe);
 
 			GL.Clear (ClearBufferMask.ColorBufferBit|ClearBufferMask.DepthBufferBit);
-			activateGridShader ();
+
+			gridShader.Enable ();
 
 			//4th component of selection texture is used as coordinate, not as alpha
 			GL.Disable (EnableCap.AlphaTest);
@@ -455,9 +474,6 @@ namespace Ottd3D
 
 		#endregion
 
-
-
-
 		public void UpdateViewMatrix()
 		{
 			Rectangle r = this.ClientRectangle;
@@ -467,13 +483,8 @@ namespace Ottd3D
 			modelview = Matrix4.LookAt(vEye, vEyeTarget, Vector3.UnitZ);
 			GL.GetInteger(GetPName.Viewport, viewport);
 
-			try {
-				gridShader.ProjectionMatrix = projection;
-				gridShader.ModelViewMatrix = modelview;
-				gridShader.ModelMatrix = Matrix4.Identity;
-			} catch (Exception ex) {
-				Debug.WriteLine ("UpdateViewMatrices: failed to set shader matrices: " + ex.Message);
-			}
+			updateShadersMatrices ();
+
 			gridCacheIsUpToDate = false;
 		}			
 
@@ -575,6 +586,7 @@ namespace Ottd3D
 
 		}
 		#region Interface
+		GraphicObject splattingMenu = null;
 		void initInterface()
 		{
 			this.MouseButtonUp += Mouse_ButtonUp;
@@ -582,7 +594,7 @@ namespace Ottd3D
 			this.MouseMove += new EventHandler<MouseMoveEventArgs>(Mouse_Move);
 
 			LoadInterface("#Ottd3D.ui.fps.goml").DataSource = this;
-			LoadInterface("#Ottd3D.ui.menu.goml").DataSource = this;			
+			LoadInterface("#Ottd3D.ui.menu.goml").DataSource = this;
 		}
 		#region Mouse
 		void Mouse_Move(object sender, MouseMoveEventArgs e)
@@ -634,7 +646,19 @@ namespace Ottd3D
 		{
 			float speed = ZoomSpeed * eyeDist;
 			if (Keyboard [Key.ShiftLeft]) {
-				
+				if (CurrentState == GameState.GroundTexturing) {
+					if (e.Delta > 0)
+						splatBrushRadius *= 1.25f;
+					else
+						splatBrushRadius *= 0.8f;
+					if (splatBrushRadius > 0.5f)
+						splatBrushRadius = 0.5f;
+					else if (splatBrushRadius < 0.0125f)
+						splatBrushRadius = 0.0125f;
+					circleShader.Radius = splatBrushRadius;
+					circleShader.Update ();
+					return;
+				}
 			}
 			else if (Keyboard[Key.ControlLeft])
 				speed *= 20.0f;
@@ -672,6 +696,9 @@ namespace Ottd3D
 		{
 			if (e.MemberName != "IsChecked" || (bool)e.NewValue != true)
 				return;
+
+			if (CurrentState == GameState.GroundTexturing)
+				splattingMenu.Visible = false;
 			
 			GraphicObject g = sender as GraphicObject;
 			switch (g.Name) {
@@ -680,13 +707,30 @@ namespace Ottd3D
 				break;
 			case "hmEdit":
 				CurrentState = GameState.GroundLeveling;
+				circleShader.Radius = 0.002f;
+				circleShader.Update ();
 				break;
 			case "splatEdit":
 				CurrentState = GameState.GroundTexturing;
+				circleShader.Radius = splatBrushRadius;
+				circleShader.Update ();
+
+				if (splattingMenu == null) {
+					splattingMenu = LoadInterface ("#Ottd3D.ui.SpattingBrush.goml");
+					splattingMenu.DataSource = this;
+				}else
+					splattingMenu.Visible = true;
 				break;
 			}
 			//force update of position mesh
 			SelectionPos = selPos;
+		}
+		void onSelectedBrushChanged(object sender, SelectionChangeEventArgs e){
+			splatBrush.Y = (float)Array.IndexOf (GroundTextures, e.NewValue.ToString())/255f;
+
+//			mainMenu.Visible = true;
+//			imgSelection.Visible = false;
+//			ImagePath = e.NewValue.ToString();
 		}
 		#endregion
 
@@ -712,9 +756,7 @@ namespace Ottd3D
 
 			createCache ();
 
-			circleShader.Update ();
-			voronoiShader.Update ();
-
+			hmData = new byte[_hmSize*_hmSize*4];
 			getHeightMapData ();
 
 		}
@@ -735,25 +777,27 @@ namespace Ottd3D
 			if (CurrentState == GameState.GroundTexturing) {
 				MouseState mouse = Mouse.GetState ();
 				if (mouse[MouseButton.Left]) {
-					if (splatData [ptrSplat + 1] != CurrentTexture) {
-						splatData [ptrSplat + 1] = CurrentTexture;
-						splatData [ptrSplat] = 0;
-					} else {
-
-						if ((int)splatData [ptrSplat] + splatPressure > 255)
-							splatData [ptrSplat] = 255;
-						else
-							splatData [ptrSplat] += (byte)splatPressure;
-					}
-
-					splatTextureIsUpToDate = false;
+//					if (splatData [ptrSplat + 1] != CurrentTexture) {
+//						splatData [ptrSplat + 1] = CurrentTexture;
+//						splatData [ptrSplat] = 0;
+//					} else {
+//
+//						if ((int)splatData [ptrSplat] + splatPressure > 255)
+//							splatData [ptrSplat] = 255;
+//						else
+//							splatData [ptrSplat] += (byte)splatPressure;
+//					}
+					splattingBrushShader.Color = splatBrush;
+					updateSplatting ();
 				} else if (mouse[MouseButton.Right]) {
-					if ((int)splatData [ptrSplat] - splatPressure < 0)
-						splatData [ptrSplat] = 0;
-					else
-						splatData[ptrSplat] -= (byte)splatPressure;
-
-					splatTextureIsUpToDate = false;
+//					if ((int)splatData [ptrSplat] - splatPressure < 0)
+//						splatData [ptrSplat] = 0;
+//					else
+//						splatData[ptrSplat] -= (byte)splatPressure;
+//
+//					splatTextureIsUpToDate = false;
+					splattingBrushShader.Color = new Vector4(0f,0f,0f,1f);
+					updateSplatting();
 				}							
 			}
 
@@ -779,8 +823,8 @@ namespace Ottd3D
 				gridCacheIsUpToDate = false;
 				//GL.Light (LightName.Light0, LightParameter.Position, vLight);
 			}
-			if (!splatTextureIsUpToDate)
-				updateSplat ();
+//			if (!splatTextureIsUpToDate)
+//				updateSplat ();
 			if (heightMapIsUpToDate)
 				return;
 			
@@ -793,13 +837,13 @@ namespace Ottd3D
 			UpdateViewMatrix();
 		}
 		public override void GLClear ()
-		{
-			GL.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		{			
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 		}
 		public override void OnRender (FrameEventArgs e)
 		{
 			drawGrid ();
+			drawHoverCase ();
 		}
 
 		#region Main and CTOR

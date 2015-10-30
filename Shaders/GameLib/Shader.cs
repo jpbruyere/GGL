@@ -99,16 +99,17 @@ namespace GameLib
 		#endregion
 
 		#region Private and protected fields
-		protected int vsId, fsId, gsId, pgmId, savedPgmId = 0,
+		protected int vsId, fsId, gsId, pgmId, 
 						modelViewLocation,
 						modelLocation,
 						projectionLocation,
 						normalLocation,	
 						colorLocation;
 
-		Matrix4 Projection, 
-				Model,
-				ModelView;
+		Matrix4 projectionMat = Matrix4.Identity, 
+				modelMat = Matrix4.Identity,
+				modelViewMat = Matrix4.Identity;
+		Vector4 color = new Vector4(1,1,1,1);
 		#endregion
 
 
@@ -130,42 +131,27 @@ namespace GameLib
 		}
 
 		public Matrix4 ProjectionMatrix{
-			set { 
-				Projection = value;
-				GL.UniformMatrix4(projectionLocation, false, ref Projection);  
-			}
-			get {
-				return Projection;
-			}
+			set { projectionMat = value; }
+			get { return projectionMat; }
 		}
 		public Matrix4 ModelViewMatrix {
-			set { 
-				ModelView = value;
-				GL.UniformMatrix4 (modelViewLocation, false, ref ModelView);
-				updateNormalMatrix ();
-			}
-			get {
-				return ModelView;
-			}
+			set { modelViewMat = value; }
+			get { return modelViewMat; }
 		}
 		public Matrix4 ModelMatrix {
-			set { 
-				Model = value;
-				GL.UniformMatrix4 (modelLocation, false, ref Model); 
-			}
-			get {
-				return Model;
-			}
+			set { modelMat = value; }
+			get { return modelMat; }
 		}
 		public Vector4 Color {
-			set {GL.Uniform4 (colorLocation, value);}
+			set { color = value; }
+			get { return color; }
 		}
 
 		#endregion
 
 		void updateNormalMatrix()
 		{
-			Matrix4 normalMat = (ModelView).Inverted();
+			Matrix4 normalMat = (modelViewMat).Inverted();
 			normalMat.Transpose ();
 			GL.UniformMatrix4 (normalLocation, false, ref normalMat);
 		}
@@ -206,32 +192,29 @@ namespace GameLib
 			string info;
 			GL.LinkProgram(pgmId);
 			GL.GetProgramInfoLog(pgmId, out info);
-			Debug.WriteLine("Linkage:");
-			Debug.WriteLine(info);
+
+			if (!string.IsNullOrEmpty (info)) {
+				Debug.WriteLine ("Linkage:");
+				Debug.WriteLine (info);
+			}
+
+			info = null;
 
 			GL.ValidateProgram(pgmId);
 			GL.GetProgramInfoLog(pgmId, out info);
-			Debug.WriteLine("Validation:");
-			Debug.WriteLine(info);
-
-
-			Enable ();
+			if (!string.IsNullOrEmpty (info)) {
+				Debug.WriteLine ("Validation:");
+				Debug.WriteLine (info);
+			}
+				
+			GL.UseProgram (pgmId);
 
 			GetUniformLocations ();
 			BindSamplesSlots ();
 
 			Disable ();
 		}
-		public virtual void Reload ()
-		{
-			Compile ();
 
-			Enable ();
-			ProjectionMatrix = Projection;
-			ModelViewMatrix = ModelView;
-			ModelMatrix = Model;
-			Disable ();
-		}
 		protected virtual void BindVertexAttributes()
 		{
 			GL.BindAttribLocation(pgmId, 0, "in_position");						
@@ -251,11 +234,18 @@ namespace GameLib
 		}
 
 		public virtual void Enable(){
-			GL.GetInteger (GetPName.CurrentProgram, out savedPgmId);
 			GL.UseProgram (pgmId);
+
+			GL.UniformMatrix4(projectionLocation, false, ref projectionMat);
+			GL.UniformMatrix4 (modelLocation, false, ref modelMat); 
+			GL.UniformMatrix4 (modelViewLocation, false, ref modelViewMat);
+			updateNormalMatrix ();
+			GL.Uniform4 (colorLocation, color);
+
+
 		}
 		public virtual void Disable(){
-			GL.UseProgram (savedPgmId);
+			GL.UseProgram (0);
 		}
 		public static void Enable(Shader s)
 		{

@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GGL", "GGL.csproj", "{5490A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ottd3D", "Tests\Ottd3D.csproj", "{2D1D500E-469C-410B-A331-F1FD93820234}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GOLib", "..\GOLib\GOLib.csproj", "{C2980F9B-4798-4C05-99E2-E174810F7C7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Linux_x86 = Debug|Linux_x86
@@ -29,5 +31,13 @@ Global
 		{5490AD74-0BB3-438C-9DE4-EB7CFC68BCB5}.Release|Linux_x86.Build.0 = Release|Linux_x86
 		{5490AD74-0BB3-438C-9DE4-EB7CFC68BCB5}.Release|Win_x86.ActiveCfg = Release|Win_x86
 		{5490AD74-0BB3-438C-9DE4-EB7CFC68BCB5}.Release|Win_x86.Build.0 = Release|Win_x86
+		{C2980F9B-4798-4C05-99E2-E174810F7C7B}.Debug|Linux_x86.ActiveCfg = Debug|Any CPU
+		{C2980F9B-4798-4C05-99E2-E174810F7C7B}.Debug|Linux_x86.Build.0 = Debug|Any CPU
+		{C2980F9B-4798-4C05-99E2-E174810F7C7B}.Debug|Win_x86.ActiveCfg = Debug|Any CPU
+		{C2980F9B-4798-4C05-99E2-E174810F7C7B}.Debug|Win_x86.Build.0 = Debug|Any CPU
+		{C2980F9B-4798-4C05-99E2-E174810F7C7B}.Release|Linux_x86.ActiveCfg = Release|Any CPU
+		{C2980F9B-4798-4C05-99E2-E174810F7C7B}.Release|Linux_x86.Build.0 = Release|Any CPU
+		{C2980F9B-4798-4C05-99E2-E174810F7C7B}.Release|Win_x86.ActiveCfg = Release|Any CPU
+		{C2980F9B-4798-4C05-99E2-E174810F7C7B}.Release|Win_x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

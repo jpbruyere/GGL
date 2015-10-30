@@ -32,18 +32,23 @@ namespace GameLib
 		}
 
 		protected int   mapSizeLoc, heightScaleLoc, lightPosLoc;
+
 		public int DisplacementMap;
 		public int DiffuseTexture;
 		public int SplatTexture;
 
+		Vector4 lightPos;
+		Vector2 mapSize;
+		float heightScale = 1f;
+
 		public Vector2 MapSize {
-			set { GL.Uniform2 (mapSizeLoc, value); }
+			set { mapSize = value; }
 		}
 		public float HeightScale {
-			set { GL.Uniform1 (heightScaleLoc, value); }
+			set { heightScale = value; }
 		}
 		public Vector4 LightPos {
-			set { GL.Uniform4 (lightPosLoc, value); }
+			set { lightPos = value; }
 		}
 
 		protected override void GetUniformLocations ()
@@ -64,6 +69,10 @@ namespace GameLib
 		public override void Enable ()
 		{
 			base.Enable ();
+
+			GL.Uniform2 (mapSizeLoc, mapSize);
+			GL.Uniform1 (heightScaleLoc, heightScale);
+			GL.Uniform4 (lightPosLoc, lightPos);
 
 			GL.ActiveTexture (TextureUnit.Texture2);
 			GL.BindTexture(TextureTarget.Texture2D, SplatTexture);
