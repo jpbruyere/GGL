@@ -1,6 +1,0 @@
-﻿<?xml version="1.0"?>
-<HorizontalStack Margin="10" Fit="true" VerticalAlignment="Top" Background="0,5;0,5;0,5;0,5">
-	<RadioButton Name="play" Caption="Play" IsChecked="true" ValueChanged="onGameStateChange"/>
-	<RadioButton Name="hmEdit" Caption="height" ValueChanged="onGameStateChange"/>
-	<RadioButton Name="splatEdit" Caption="splat" ValueChanged="onGameStateChange"/>
-</HorizontalStack>
