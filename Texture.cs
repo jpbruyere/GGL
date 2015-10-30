@@ -92,6 +92,14 @@ namespace GGL
         { 
             return t == null ? 0: t.texRef; 
         }
+
+		public static void SetTexFilterNeareast(int _tex)
+		{
+			GL.BindTexture (TextureTarget.Texture2D, _tex);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+		}
     }
 
 }
