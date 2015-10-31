@@ -148,6 +148,13 @@ namespace GGL
 				DrawElementsType.UnsignedInt, _customIndices);	
 			GL.BindVertexArray (0);
 		}
+		public void Render(PrimitiveType _primitiveType, int instances){
+			GL.BindVertexArray(vaoHandle);
+			GL.DrawElementsInstanced(_primitiveType, indices.Length,
+				DrawElementsType.UnsignedInt, IntPtr.Zero, instances);	
+			GL.BindVertexArray (0);
+		}
+
 		public static vaoMesh operator +(vaoMesh m1, vaoMesh m2){
 			if (m1 == null)
 				return m2;
