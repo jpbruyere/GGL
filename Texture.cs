@@ -100,6 +100,26 @@ namespace GGL
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
 			GL.BindTexture (TextureTarget.Texture2D, 0);
 		}
+		public static void Save(int _tex, string file)
+		{
+			int w, h;
+
+			GL.BindTexture (TextureTarget.Texture2D, _tex);
+			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureWidth, out w); 
+			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureHeight, out h);
+
+			byte[] data = new byte[w*h*4];
+
+			GL.GetTexImage (TextureTarget.Texture2D, 0, 
+				OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data);
+
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+
+			Cairo.Surface bmp = new Cairo.ImageSurface(data, Cairo.Format.Argb32, w, h, w*4);
+			bmp.WriteToPng (file);
+
+			bmp.Dispose ();
+		}
     }
 
 }
