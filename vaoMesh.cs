@@ -18,11 +18,13 @@ namespace GGL
 		positionVboHandle,
 		normalsVboHandle,
 		texVboHandle,
+		matVboHandle,
 		eboHandle;
 
 		public Vector3[] positions;
 		public Vector3[] normals;
 		public Vector2[] texCoords;
+		public Matrix4[] modelMats;
 		public int[] indices;
 
 		public string Name = "Unamed";
@@ -41,12 +43,14 @@ namespace GGL
 			CreateVAOs ();
 		}
 
-		public vaoMesh (Vector3[] _positions, Vector2[] _texCoord, Vector3[] _normales, int[] _indices)
+		public vaoMesh (Vector3[] _positions, Vector2[] _texCoord, Vector3[] _normales, int[] _indices, Matrix4[] _modelMats = null)
 		{
 			positions = _positions;
 			texCoords = _texCoord;
 			normals = _normales;
 			indices = _indices;
+			modelMats = _modelMats;
+
 
 			CreateVBOs ();
 			CreateVAOs ();
@@ -101,15 +105,25 @@ namespace GGL
 					new IntPtr (texCoords.Length * Vector2.SizeInBytes),
 					texCoords, BufferUsageHint.StaticDraw);
 			}
+
+			if (modelMats != null) {
+				matVboHandle = GL.GenBuffer ();
+				GL.BindBuffer (BufferTarget.ArrayBuffer, matVboHandle);
+				GL.BufferData<Matrix4> (BufferTarget.ArrayBuffer,
+					new IntPtr (modelMats.Length * Vector4.SizeInBytes * 4),
+					modelMats, BufferUsageHint.DynamicDraw);				
+			}
+
+			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+
 			if (indices != null) {
 				eboHandle = GL.GenBuffer ();
 				GL.BindBuffer (BufferTarget.ElementArrayBuffer, eboHandle);
 				GL.BufferData (BufferTarget.ElementArrayBuffer,
 					new IntPtr (sizeof(uint) * indices.Length),
 					indices, BufferUsageHint.StaticDraw);
+				GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 			}
-			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-			GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 		}
 		protected void CreateVAOs()
 		{
@@ -130,16 +144,29 @@ namespace GGL
 				GL.BindBuffer (BufferTarget.ArrayBuffer, normalsVboHandle);
 				GL.VertexAttribPointer (2, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 			}
+			if (modelMats != null) {
+				GL.BindBuffer (BufferTarget.ArrayBuffer, matVboHandle);
+				for (int i = 0; i < 4; i++) {
+					GL.EnableVertexAttribArray (3 + i);	
+					GL.VertexAttribPointer (3+i, 4, VertexAttribPointerType.Float, false, Vector4.SizeInBytes * 4, Vector4.SizeInBytes * i);
+					GL.VertexAttribDivisor (3+i, 1);
+				}
+
+			}
+
 			if (indices != null)
 				GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
-
+			
 			GL.BindVertexArray(0);
 		}
 
-		public void Render(PrimitiveType _primitiveType){
+		public void Render(PrimitiveType _primitiveType){			
 			GL.BindVertexArray(vaoHandle);
-			GL.DrawElements(_primitiveType, indices.Length,
-				DrawElementsType.UnsignedInt, IntPtr.Zero);	
+			if (indices == null)
+				GL.DrawArrays (_primitiveType, 0, positions.Length);	
+			else
+				GL.DrawElements(_primitiveType, indices.Length,
+					DrawElementsType.UnsignedInt, IntPtr.Zero);
 			GL.BindVertexArray (0);
 		}
 		public void Render(PrimitiveType _primitiveType, int[] _customIndices){
@@ -191,6 +218,7 @@ namespace GGL
 			GL.DeleteBuffer (positionVboHandle);
 			GL.DeleteBuffer (normalsVboHandle);
 			GL.DeleteBuffer (texVboHandle);
+			GL.DeleteBuffer (matVboHandle);
 			GL.DeleteBuffer (eboHandle);
 			GL.DeleteVertexArray (vaoHandle);
 		}
