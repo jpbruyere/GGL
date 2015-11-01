@@ -1,21 +1,23 @@
 ﻿using System;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using System.Runtime.InteropServices;
 
 namespace GGL
 {
-	public class VertexArrayObject : IDisposable
+	public class IndexedVAO<T> : IDisposable 
+		where T : struct
 	{
 		public int vaoHandle,
 		positionVboHandle,
 		texVboHandle,
 		eboHandle;
 
-		Vector3[] positionVboData;
+		T[] positionVboData;
 		public int[] indicesVboData;
 		Vector2[] texVboData;
 
-		public VertexArrayObject (Vector3[] _positions, Vector2[] _texCoord, int[] _indices)
+		public IndexedVAO (T[] _positions, Vector2[] _texCoord, int[] _indices)
 		{
 			positionVboData = _positions;
 			texVboData = _texCoord;
@@ -37,8 +39,8 @@ namespace GGL
 		{
 			positionVboHandle = GL.GenBuffer();
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-			GL.BufferData<Vector3>(BufferTarget.ArrayBuffer,
-				new IntPtr(positionVboData.Length * Vector3.SizeInBytes),
+			GL.BufferData<T>(BufferTarget.ArrayBuffer,
+				new IntPtr(positionVboData.Length * Marshal.SizeOf(typeof(T))),
 				positionVboData, BufferUsageHint.StaticDraw);
 
 			texVboHandle = GL.GenBuffer();
@@ -64,7 +66,12 @@ namespace GGL
 
 			GL.EnableVertexAttribArray(0);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
+
+			if (typeof(T) == typeof(Vector2))
+				GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, true, Vector2.SizeInBytes, 0);
+			else if (typeof(T) == typeof(Vector3))
+				GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
+
 
 			GL.EnableVertexAttribArray(1);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, texVboHandle);
