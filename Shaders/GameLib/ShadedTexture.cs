@@ -12,7 +12,8 @@ namespace GameLib
 		protected int 	resolutionLocation;
 
 		protected int width, height;
-		protected int tex, fbo;
+		protected int fbo;
+		protected Texture tex;
 		protected bool clear = true;
 
 		protected DrawBuffersEnum[] drawBuffs;
@@ -43,7 +44,7 @@ namespace GameLib
 		{
 			base.Enable ();
 		}
-		public virtual int OutputTex { get { return tex; } }
+		public virtual Texture OutputTex { get { return tex; } }
 
 		public virtual void Update ()
 		{

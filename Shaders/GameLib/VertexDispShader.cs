@@ -21,6 +21,7 @@
 using System;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using GGL;
 
 namespace GameLib
 {
@@ -33,9 +34,9 @@ namespace GameLib
 
 		protected int   mapSizeLoc, heightScaleLoc, lightPosLoc;
 
-		public int DisplacementMap;
-		public int DiffuseTexture;
-		public int SplatTexture;
+		public Texture DisplacementMap;
+		public Texture DiffuseTexture;
+		public Texture SplatTexture;
 
 		Vector4 lightPos;
 		Vector2 mapSize;

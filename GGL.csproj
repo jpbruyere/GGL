@@ -65,10 +65,11 @@
     <Compile Include="Animation\AnimationTemplate.cs" />
     <Compile Include="Shaders\GameLib\ShadedTexture.cs" />
     <Compile Include="Shaders\GameLib\VertexDispShader.cs" />
-    <Compile Include="TextureArray.cs" />
     <Compile Include="Shaders\GameLib\DynamicShader\ShaderData.cs" />
     <Compile Include="Shaders\GameLib\DynamicShader\DynamicShader.cs" />
     <Compile Include="IndexedVAO.cs" />
+    <Compile Include="LoaderDDS.cs" />
+    <Compile Include="LoaderStatics.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

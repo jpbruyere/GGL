@@ -13,14 +13,14 @@ namespace GGL
 		texVboHandle,
 		eboHandle;
 
-		T[] positionVboData;
+		T[] positions;
 		public int[] indicesVboData;
-		Vector2[] texVboData;
+		Vector2[] texCoords;
 
 		public IndexedVAO (T[] _positions, Vector2[] _texCoord, int[] _indices)
 		{
-			positionVboData = _positions;
-			texVboData = _texCoord;
+			positions = _positions;
+			texCoords = _texCoord;
 			indicesVboData = _indices;
 
 			CreateVBOs ();
@@ -40,14 +40,14 @@ namespace GGL
 			positionVboHandle = GL.GenBuffer();
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
 			GL.BufferData<T>(BufferTarget.ArrayBuffer,
-				new IntPtr(positionVboData.Length * Marshal.SizeOf(typeof(T))),
-				positionVboData, BufferUsageHint.StaticDraw);
+				new IntPtr(positions.Length * Marshal.SizeOf(typeof(T))),
+				positions, BufferUsageHint.StaticDraw);
 
 			texVboHandle = GL.GenBuffer();
 			GL.BindBuffer(BufferTarget.ArrayBuffer, texVboHandle);
 			GL.BufferData<Vector2>(BufferTarget.ArrayBuffer,
-				new IntPtr(texVboData.Length * Vector2.SizeInBytes),
-				texVboData, BufferUsageHint.StaticDraw);
+				new IntPtr(texCoords.Length * Vector2.SizeInBytes),
+				texCoords, BufferUsageHint.StaticDraw);
 			//
 			eboHandle = GL.GenBuffer();
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
