@@ -99,7 +99,7 @@ namespace Tetra
 
 					bitmap.UnlockBits(data);				
 				}
-
+				stream.Dispose();
 				tmp.configureTexParameters ();
 
 			}

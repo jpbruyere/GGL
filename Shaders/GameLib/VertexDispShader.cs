@@ -31,13 +31,13 @@ namespace GameLib
 		{
 		}
 
-		protected int   mapSizeLoc, heightScaleLoc, lightPosLoc;
+		protected int   mapSizeLoc, heightScaleLoc, lightPosLoc, fogColorLoc;
 
 		public int DisplacementMap;
 		public int DiffuseTexture;
 		public int SplatTexture;
 
-		Vector4 lightPos;
+		Vector4 lightPos, fogColor;
 		Vector2 mapSize;
 		float heightScale = 1f;
 
@@ -50,6 +50,9 @@ namespace GameLib
 		public Vector4 LightPos {
 			set { lightPos = value; }
 		}
+		public Vector4 FogColor {
+			set { fogColor = value; }
+		}
 
 		protected override void GetUniformLocations ()
 		{
@@ -58,6 +61,7 @@ namespace GameLib
 			lightPosLoc = GL.GetUniformLocation (pgmId, "lightPos");
 			mapSizeLoc = GL.GetUniformLocation (pgmId, "mapSize");
 			heightScaleLoc = GL.GetUniformLocation (pgmId, "heightScale");
+			fogColorLoc = GL.GetUniformLocation (pgmId, "fogColor");
 		}
 		protected override void BindSamplesSlots ()
 		{
@@ -73,6 +77,7 @@ namespace GameLib
 			GL.Uniform2 (mapSizeLoc, mapSize);
 			GL.Uniform1 (heightScaleLoc, heightScale);
 			GL.Uniform4 (lightPosLoc, lightPos);
+			GL.Uniform4 (fogColorLoc, fogColor);
 
 			GL.ActiveTexture (TextureUnit.Texture2);
 			GL.BindTexture(TextureTarget.Texture2D, SplatTexture);

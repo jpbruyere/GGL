@@ -125,6 +125,17 @@ namespace GGL
 				GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 			}
 		}
+		public void UpdateModelsMat()
+		{
+			if (matVboHandle == 0)
+				return;
+			GL.BindBuffer (BufferTarget.ArrayBuffer, matVboHandle);
+			GL.BufferSubData<Matrix4> (BufferTarget.ArrayBuffer, IntPtr.Zero,
+				modelMats.Length * Vector4.SizeInBytes * 4,
+				modelMats);
+			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+			
+		}
 		protected void CreateVAOs()
 		{
 			vaoHandle = GL.GenVertexArray();
