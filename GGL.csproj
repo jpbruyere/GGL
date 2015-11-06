@@ -20,6 +20,8 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>__linux__;TRACE;DEBUG</DefineConstants>
@@ -74,7 +76,7 @@
     <Reference Include="Mono.Cairo" />
     <Reference Include="System.Xml" />
     <Reference Include="OpenTK">
-      <HintPath>..\..\opentk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+      <HintPath>..\opentk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -98,6 +100,5 @@
     <EmbeddedResource Include="Shaders\GameLib\fire0.frag" />
     <EmbeddedResource Include="Shaders\GameLib\voronoi.frag" />
     <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
-    <EmbeddedResource Include="Shaders\GameLib\classicnoise2D.frag" />
   </ItemGroup>
 </Project>
