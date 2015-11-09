@@ -18,7 +18,7 @@ namespace Tetra
 		T[] positions;
 		Vector3[] normals;
 		Vector2[] texCoords;
-		int[] indices;
+		ushort[] indices;
 
 		public List<VAOItem> Meshes = new List<VAOItem>();
 
@@ -42,11 +42,12 @@ namespace Tetra
 
 			vaoi.BaseVertex = positions.Length;
 			vaoi.IndicesOffset = indices.Length;
+			vaoi.IndicesCount = mesh.Indices.Length;
 
 			T[] tmpPositions;
 			Vector3[] tmpNormals;
 			Vector2[] tmpTexCoords;
-			int[] tmpIndices;
+			ushort[] tmpIndices;
 
 
 			tmpPositions = new T[positions.Length + mesh.Positions.Length];
@@ -54,15 +55,15 @@ namespace Tetra
 			mesh.Positions.CopyTo (tmpPositions, positions.Length);
 
 			tmpTexCoords = new Vector2[texCoords.Length + mesh.TexCoords.Length];
-			positions.CopyTo (tmpTexCoords, 0);
+			texCoords.CopyTo (tmpTexCoords, 0);
 			mesh.TexCoords.CopyTo (tmpTexCoords, texCoords.Length);
 
 			tmpNormals = new Vector3[normals.Length + mesh.Normals.Length];
-			positions.CopyTo (tmpNormals, 0);
+			normals.CopyTo (tmpNormals, 0);
 			mesh.Normals.CopyTo (tmpNormals, normals.Length);
 
-			tmpIndices = new int[indices.Length + mesh.Indices.Length];
-			positions.CopyTo (tmpIndices, 0);
+			tmpIndices = new ushort[indices.Length + mesh.Indices.Length];
+			indices.CopyTo (tmpIndices, 0);
 			mesh.Indices.CopyTo (tmpIndices, indices.Length);
 
 			positions = tmpPositions;
@@ -104,7 +105,7 @@ namespace Tetra
 				eboHandle = GL.GenBuffer ();
 				GL.BindBuffer (BufferTarget.ElementArrayBuffer, eboHandle);
 				GL.BufferData (BufferTarget.ElementArrayBuffer,
-					new IntPtr (sizeof(uint) * indices.Length),
+					new IntPtr (sizeof(ushort) * indices.Length),
 					indices, BufferUsageHint.StaticDraw);
 				GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 			}
@@ -131,10 +132,12 @@ namespace Tetra
 				GL.BindBuffer (BufferTarget.ArrayBuffer, normalsVboHandle);
 				GL.VertexAttribPointer (2, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 			}
-			for (int i = 0; i < 4; i++) {
+
+			GL.VertexBindingDivisor (3, 1);
+			for (int i = 0; i < 4; i++) {					
 				GL.EnableVertexAttribArray (3 + i);	
-				GL.VertexAttribPointer (3+i, 4, VertexAttribPointerType.Float, false, Vector4.SizeInBytes * 4, Vector4.SizeInBytes * i);
-				GL.VertexAttribDivisor (3+i, 1);
+				GL.VertexAttribBinding (3+i, 3);
+				GL.VertexAttribFormat(3+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
 			}
 
 			if (indices != null)
@@ -153,14 +156,15 @@ namespace Tetra
 			GL.BindVertexArray(vaoHandle);
 		}
 
-		public void Render(PrimitiveType _primitiveType, VAOItem item){
-			//GL.BindVertexBuffer (3, item.instancesVboId, IntPtr.Zero,Vector4.SizeInBytes * 4);
-			GL.BindBuffer (BufferTarget.ArrayBuffer, item.instancesVboId);
-			GL.DrawElementsInstancedBaseVertex (
-				_primitiveType, item.IndicesCount, DrawElementsType.UnsignedInt,
-				new IntPtr (item.IndicesOffset), item.modelMats.Length, item.BaseVertex);
-			//GL.BindVertexBuffer (3, 0, IntPtr.Zero,Vector4.SizeInBytes * 4);
-			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+		public void Render(PrimitiveType _primitiveType){
+			foreach (VAOItem item in Meshes) {
+				GL.ActiveTexture (TextureUnit.Texture0);
+				GL.BindTexture (TextureTarget.Texture2D, item.DiffuseTexture);
+				GL.BindVertexBuffer (3, item.instancesVboId, IntPtr.Zero,Vector4.SizeInBytes * 4);
+				GL.DrawElementsInstancedBaseVertex(_primitiveType, item.IndicesCount, 
+					DrawElementsType.UnsignedShort, new IntPtr(item.IndicesOffset*sizeof(ushort)),
+					item.modelMats.Length, item.BaseVertex);
+			}
 		}
 			
 		public void Unbind(){

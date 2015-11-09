@@ -156,19 +156,13 @@ namespace GGL
 				GL.VertexAttribPointer (2, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 			}
 			if (modelMats != null) {
-				//GL.BindBuffer (BufferTarget.ArrayBuffer, matVboHandle);
-				GL.VertexBindingDivisor (5, 1);
+				GL.VertexBindingDivisor (3, 1);
 				for (int i = 0; i < 4; i++) {					
 					GL.EnableVertexAttribArray (3 + i);	
-//					GL.VertexAttribPointer (3+i, 4, VertexAttribPointerType.Float, false, Vector4.SizeInBytes * 4, Vector4.SizeInBytes * i);
-					//GL.VertexAttribDivisor (3+i, 1);
-					GL.VertexAttribBinding (3+i, 5);
+					GL.VertexAttribBinding (3+i, 3);
 					GL.VertexAttribFormat(3+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
-
-					//GL.VertexBindingDivisor (3+i, 1);
 				}
-
-//				GL.VertexBindingDivisor (0, 1);
+				GL.BindVertexBuffer (3, matVboHandle, IntPtr.Zero, Vector4.SizeInBytes*4);
 			}
 
 			if (indices != null)
@@ -195,13 +189,6 @@ namespace GGL
 		public void Render(PrimitiveType _primitiveType, int instances){
 
 			GL.BindVertexArray(vaoHandle);
-//			for (int i = 0; i < 4; i++) {
-//				GL.BindVertexBuffer (i, matVboHandle, new IntPtr(Vector4.SizeInBytes*i), Vector4.SizeInBytes*4);
-//				GL.VertexBindingDivisor (i, 1);
-//			}
-			GL.BindVertexBuffer (5, matVboHandle, IntPtr.Zero, Vector4.SizeInBytes*4);
-
-
 			GL.DrawElementsInstanced(_primitiveType, indices.Length,
 				DrawElementsType.UnsignedInt, IntPtr.Zero, instances);	
 			GL.BindVertexArray (0);

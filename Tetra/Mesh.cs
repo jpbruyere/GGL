@@ -32,12 +32,12 @@ namespace Tetra
 		public T[] Positions;
 		public Vector3[] Normals;
 		public Vector2[] TexCoords;
-		public int[] Indices;
+		public ushort[] Indices;
 		//public Dictionary<string, int[]> Indices;
 		public Mesh ()
 		{
 		}
-		public Mesh (T[] _positions, Vector2[] _texCoord, Vector3[] _normals, int[] _indices)
+		public Mesh (T[] _positions, Vector2[] _texCoord, Vector3[] _normals, ushort[] _indices)
 		{
 			Positions = _positions;
 			TexCoords = _texCoord;
@@ -57,7 +57,7 @@ namespace Tetra
 		static List<Vector3> lPositions;
 		static List<Vector3> lNormals;
 		static List<Vector2> lTexCoords;
-		static List<int> lIndices;
+		static List<ushort> lIndices;
 
 		public static Mesh<Vector3> Load(string fileName)
 		{
@@ -67,7 +67,7 @@ namespace Tetra
 			lPositions = new List<Vector3>();
 			lNormals = new List<Vector3>();
 			lTexCoords = new List<Vector2>();
-			lIndices = new List<int> ();
+			lIndices = new List<ushort> ();
 
 			string name = "unamed";
 			using (Stream stream = GGL.FileSystemHelpers.GetStreamFromPath (fileName)) {
@@ -146,7 +146,7 @@ namespace Tetra
 			return tmp;
 		}			
 
-		static int ParseFaceParameter(string faceParameter)
+		static ushort ParseFaceParameter(string faceParameter)
 		{
 			Vector3 vertex = new Vector3();
 			Vector2 texCoord = new Vector2();
@@ -186,7 +186,7 @@ namespace Tetra
 			lNormals.Add(normal);
 
 			int index = lPositions.Count-1;
-			return index;
+			return (ushort)index;
 		}			
 	}
 	#endregion

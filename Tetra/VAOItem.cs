@@ -34,6 +34,8 @@ namespace Tetra
 
 		public Matrix4[] modelMats;
 
+		public int DiffuseTexture;
+		public int NormalMapTexture;
 
 		public VAOItem ()
 		{
@@ -47,15 +49,6 @@ namespace Tetra
 				GL.BufferData<Matrix4> (BufferTarget.ArrayBuffer,
 					new IntPtr (modelMats.Length * Vector4.SizeInBytes * 4),
 					modelMats, BufferUsageHint.DynamicDraw);
-
-//				for (int i = 0; i < 4; i++) {
-//					GL.BindVertexBuffer(0, instancesVboId, Vector4.SizeInBytes * i, Vector4.SizeInBytes * 4);
-//					GL.VertexAttribBinding(3+i, i);
-
-//					GL.EnableVertexAttribArray (3 + i);	
-//					GL.VertexAttribPointer (3+i, 4, VertexAttribPointerType.Float, false, Vector4.SizeInBytes * 4, Vector4.SizeInBytes * i);
-//					GL.VertexAttribDivisor (3+i, 1);
-//				}
 				GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 			}			
 		}
