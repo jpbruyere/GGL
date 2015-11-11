@@ -6,17 +6,20 @@ using System.Collections.Generic;
 
 namespace Tetra
 {
-	public class IndexedVAO<T> : IDisposable 
-		where T : struct
+	public class IndexedVAO : IDisposable 
 	{
+		public const int instanceBufferIndex = 4;
+
 		int	vaoHandle,
 			positionVboHandle,
 			texVboHandle,
 			normalsVboHandle,
+			tangentsVboHandle,
 			eboHandle;
 
-		T[] positions;
+		Vector3[] positions;
 		Vector3[] normals;
+		Vector3[] tangents;
 		Vector2[] texCoords;
 		ushort[] indices;
 
@@ -25,7 +28,7 @@ namespace Tetra
 		public IndexedVAO(){
 		}
 
-		public VAOItem Add(Mesh<T> mesh)
+		public VAOItem Add(Mesh mesh)
 		{
 			VAOItem vaoi = new VAOItem ();
 
@@ -44,13 +47,13 @@ namespace Tetra
 			vaoi.IndicesOffset = indices.Length;
 			vaoi.IndicesCount = mesh.Indices.Length;
 
-			T[] tmpPositions;
+			Vector3[] tmpPositions;
 			Vector3[] tmpNormals;
 			Vector2[] tmpTexCoords;
 			ushort[] tmpIndices;
 
 
-			tmpPositions = new T[positions.Length + mesh.Positions.Length];
+			tmpPositions = new Vector3[positions.Length + mesh.Positions.Length];
 			positions.CopyTo (tmpPositions, 0);
 			mesh.Positions.CopyTo (tmpPositions, positions.Length);
 
@@ -79,8 +82,8 @@ namespace Tetra
 		{
 			positionVboHandle = GL.GenBuffer();
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-			GL.BufferData<T>(BufferTarget.ArrayBuffer,
-				new IntPtr(positions.Length * Marshal.SizeOf(typeof(T))),
+			GL.BufferData<Vector3>(BufferTarget.ArrayBuffer,
+				new IntPtr(positions.Length * Vector3.SizeInBytes),
 				positions, BufferUsageHint.StaticDraw);
 
 			if (normals != null) {
@@ -97,6 +100,14 @@ namespace Tetra
 				GL.BufferData<Vector2> (BufferTarget.ArrayBuffer,
 					new IntPtr (texCoords.Length * Vector2.SizeInBytes),
 					texCoords, BufferUsageHint.StaticDraw);
+			}
+
+			if (tangents != null) {
+				tangentsVboHandle = GL.GenBuffer ();
+				GL.BindBuffer (BufferTarget.ArrayBuffer, tangentsVboHandle);
+				GL.BufferData<Vector3> (BufferTarget.ArrayBuffer,
+					new IntPtr (tangents.Length * Vector3.SizeInBytes),
+					tangents, BufferUsageHint.StaticDraw);
 			}
 
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -117,10 +128,7 @@ namespace Tetra
 
 			GL.EnableVertexAttribArray(0);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-			if (typeof(T) == typeof(Vector2))
-				GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, true, Vector2.SizeInBytes, 0);
-			else if (typeof(T) == typeof(Vector3))
-				GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);			
+			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);			
 
 			if (texCoords != null) {
 				GL.EnableVertexAttribArray (1);
@@ -132,12 +140,16 @@ namespace Tetra
 				GL.BindBuffer (BufferTarget.ArrayBuffer, normalsVboHandle);
 				GL.VertexAttribPointer (2, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 			}
-
-			GL.VertexBindingDivisor (3, 1);
+			if (tangents != null) {
+				GL.EnableVertexAttribArray (3);
+				GL.BindBuffer (BufferTarget.ArrayBuffer, tangentsVboHandle);
+				GL.VertexAttribPointer (3, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
+			}
+			GL.VertexBindingDivisor (instanceBufferIndex, 1);
 			for (int i = 0; i < 4; i++) {					
-				GL.EnableVertexAttribArray (3 + i);	
-				GL.VertexAttribBinding (3+i, 3);
-				GL.VertexAttribFormat(3+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
+				GL.EnableVertexAttribArray (instanceBufferIndex + i);	
+				GL.VertexAttribBinding (instanceBufferIndex+i, instanceBufferIndex);
+				GL.VertexAttribFormat(instanceBufferIndex+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
 			}
 
 			if (indices != null)
@@ -158,9 +170,11 @@ namespace Tetra
 
 		public void Render(PrimitiveType _primitiveType){
 			foreach (VAOItem item in Meshes) {
+				GL.ActiveTexture (TextureUnit.Texture1);
+				GL.BindTexture (TextureTarget.Texture2D, item.NormalMapTexture);
 				GL.ActiveTexture (TextureUnit.Texture0);
 				GL.BindTexture (TextureTarget.Texture2D, item.DiffuseTexture);
-				GL.BindVertexBuffer (3, item.instancesVboId, IntPtr.Zero,Vector4.SizeInBytes * 4);
+				GL.BindVertexBuffer (instanceBufferIndex, item.instancesVboId, IntPtr.Zero,Vector4.SizeInBytes * 4);
 				GL.DrawElementsInstancedBaseVertex(_primitiveType, item.IndicesCount, 
 					DrawElementsType.UnsignedShort, new IntPtr(item.IndicesOffset*sizeof(ushort)),
 					item.modelMats.Length, item.BaseVertex);
@@ -171,11 +185,48 @@ namespace Tetra
 			GL.BindVertexArray (0);
 		}
 
+
+		public void ComputeTangents(){
+			tangents = new Vector3[indices.Length];
+
+			for (int i = 0 ; i < indices.Length; i += 3) {
+				
+
+				Vector3 Edge1 = positions[indices[i+1]] - positions[indices[i]];
+				Vector3 Edge2 = positions[indices[i+2]] - positions[indices[i]];
+
+				float DeltaU1 = texCoords[indices[i+1]].X - texCoords[indices[i]].X;
+				float DeltaV1 = texCoords[indices[i+1]].Y - texCoords[indices[i]].Y;
+				float DeltaU2 = texCoords[indices[i+2]].X - texCoords[indices[i]].X;
+				float DeltaV2 = texCoords[indices[i+2]].Y - texCoords[indices[i]].Y;
+
+				float f = 1.0f / (DeltaU1 * DeltaV2 - DeltaU2 * DeltaV1);
+
+				Vector3 Tangent, Bitangent;
+
+				Tangent.X = f * (DeltaV2 * Edge1.X - DeltaV1 * Edge2.X);
+				Tangent.Y = f * (DeltaV2 * Edge1.Y - DeltaV1 * Edge2.Y);
+				Tangent.Z = f * (DeltaV2 * Edge1.Z - DeltaV1 * Edge2.Z);
+
+				Bitangent.X = f * (-DeltaU2 * Edge1.X - DeltaU1 * Edge2.X);
+				Bitangent.Y = f * (-DeltaU2 * Edge1.Y - DeltaU1 * Edge2.Y);
+				Bitangent.Z = f * (-DeltaU2 * Edge1.Z - DeltaU1 * Edge2.Z);
+
+				tangents[indices[i]] += Tangent;
+				tangents[indices[i+1]] += Tangent;
+				tangents[indices[i+2]] += Tangent;
+			}
+
+			for (int i = 0 ; i < tangents.Length ; i++)
+				tangents[i].Normalize();			
+		}
+
 		#region IDisposable implementation
 		public void Dispose ()
 		{
 			GL.DeleteBuffer (positionVboHandle);
 			GL.DeleteBuffer (normalsVboHandle);
+			GL.DeleteBuffer (tangentsVboHandle);
 			GL.DeleteBuffer (texVboHandle);
 			GL.DeleteBuffer (eboHandle);
 			GL.DeleteVertexArray (vaoHandle);

@@ -156,13 +156,13 @@ namespace GGL
 				GL.VertexAttribPointer (2, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 			}
 			if (modelMats != null) {
-				GL.VertexBindingDivisor (3, 1);
+				GL.VertexBindingDivisor (Tetra.IndexedVAO.instanceBufferIndex, 1);
 				for (int i = 0; i < 4; i++) {					
-					GL.EnableVertexAttribArray (3 + i);	
-					GL.VertexAttribBinding (3+i, 3);
-					GL.VertexAttribFormat(3+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
+					GL.EnableVertexAttribArray (Tetra.IndexedVAO.instanceBufferIndex + i);	
+					GL.VertexAttribBinding (Tetra.IndexedVAO.instanceBufferIndex+i, Tetra.IndexedVAO.instanceBufferIndex);
+					GL.VertexAttribFormat(Tetra.IndexedVAO.instanceBufferIndex+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
 				}
-				GL.BindVertexBuffer (3, matVboHandle, IntPtr.Zero, Vector4.SizeInBytes*4);
+				GL.BindVertexBuffer (Tetra.IndexedVAO.instanceBufferIndex, matVboHandle, IntPtr.Zero, Vector4.SizeInBytes*4);
 			}
 
 			if (indices != null)

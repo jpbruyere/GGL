@@ -26,10 +26,10 @@ using System.Threading;
 
 namespace Tetra
 {
-	public class Mesh<T>
+	public class Mesh
 	{
 		public string Name = "unamed";
-		public T[] Positions;
+		public Vector3[] Positions;
 		public Vector3[] Normals;
 		public Vector2[] TexCoords;
 		public ushort[] Indices;
@@ -37,7 +37,7 @@ namespace Tetra
 		public Mesh ()
 		{
 		}
-		public Mesh (T[] _positions, Vector2[] _texCoord, Vector3[] _normals, ushort[] _indices)
+		public Mesh (Vector3[] _positions, Vector2[] _texCoord, Vector3[] _normals, ushort[] _indices)
 		{
 			Positions = _positions;
 			TexCoords = _texCoord;
@@ -59,7 +59,7 @@ namespace Tetra
 		static List<Vector2> lTexCoords;
 		static List<ushort> lIndices;
 
-		public static Mesh<Vector3> Load(string fileName)
+		public static Mesh Load(string fileName)
 		{
 			objPositions = new List<Vector3>();
 			objNormals = new List<Vector3>();
@@ -130,7 +130,7 @@ namespace Tetra
 					Thread.CurrentThread.CurrentCulture = savedCulture;
 				}
 			}
-			Mesh<Vector3> tmp = new Mesh<Vector3>(lPositions.ToArray (),lTexCoords.ToArray (),
+			Mesh tmp = new Mesh(lPositions.ToArray (),lTexCoords.ToArray (),
 				lNormals.ToArray (), lIndices.ToArray ());
 
 			tmp.Name = name;
