@@ -53,8 +53,8 @@ namespace Tetra
 
 			uniform mat4 mvp;
 
-			in vec3 in_position;
-			in vec2 in_tex;
+			layout(location = 0) in vec3 in_position;
+			layout(location = 1) in vec2 in_tex;
 
 			out vec2 texCoord;
 			

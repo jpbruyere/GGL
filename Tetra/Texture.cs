@@ -25,6 +25,16 @@ namespace Tetra
 		/// <summary>Compressed formats must have a border of 0, so this is constant.</summary>
 		public static int Border = 0;
 
+		public static void ResetToDefaultLoadingParams()
+		{
+			DefaultMinFilter = TextureMinFilter.Linear;
+			DefaultMagFilter = TextureMagFilter.Linear;
+			DefaultWrapMode = TextureWrapMode.Clamp;
+			GenerateMipMaps = true;
+			FlipY = true;
+			int Border = 0;
+		}
+
 
         public string MapPath;
 		public TextureTarget TexTarget = TextureTarget.Texture2D;
@@ -61,6 +71,7 @@ namespace Tetra
 			GL.TexParameter(TexTarget, TextureParameterName.TextureMagFilter, (int)DefaultMagFilter);
 			GL.TexParameter(TexTarget, TextureParameterName.TextureWrapS, (int)DefaultWrapMode);
 			GL.TexParameter(TexTarget, TextureParameterName.TextureWrapT, (int)DefaultWrapMode);
+			GL.TexParameter(TexTarget, TextureParameterName.TextureWrapR, (int)DefaultWrapMode);
 		}
 						
         public static implicit operator int(Texture t)
@@ -108,6 +119,62 @@ namespace Tetra
 			}
 			return tmp;
 		}
+		public static Texture LoadCubeMap(params string[] _mapPath){
+			Texture tmp = new Texture();
+			GL.ActiveTexture (TextureUnit.Texture0);
+			tmp.texRef = (uint)GL.GenTexture();
+			GL.BindTexture(TextureTarget.TextureCubeMap, tmp.texRef);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter,
+				(int)TextureMinFilter.Linear);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter,
+				(int)TextureMinFilter.Linear);
+
+			int i = 0;
+			try {				
+
+				foreach (string path in _mapPath) {
+					if (string.IsNullOrEmpty(path))
+						continue;
+					using (Stream fs = FileSystemHelpers.GetStreamFromPath (path)) {						
+						Bitmap bmp = new Bitmap (fs);
+
+						if (tmp.Width < 0) {
+							tmp.Width = bmp.Width;
+							tmp.Height = bmp.Height;
+						}
+
+						if (tmp.Width != bmp.Width || tmp.Height != bmp.Height)
+							throw new Exception ("Different size for cube textures");
+						
+						if(FlipY)
+							bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
+						BitmapData bmpdata = bmp.LockBits(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height),
+							ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+						tmp.TexTarget = TextureTarget.TextureCubeMapPositiveX + i;
+						GL.TexImage2D(tmp.TexTarget, 0, PixelInternalFormat.Rgba, bmp.Width, bmp.Height, 0,
+							OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmpdata.Scan0);															
+						bmp.UnlockBits(bmpdata);
+					}
+					i++;
+				}
+				while(i<6){
+					tmp.TexTarget = TextureTarget.TextureCubeMapPositiveX + i;
+					GL.TexImage2D(tmp.TexTarget, 0, PixelInternalFormat.Rgba, tmp.Width, tmp.Height, 0,
+						OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, IntPtr.Zero);									
+
+					i++;
+				}
+			} catch (Exception ex) {
+				throw new Exception ("Error loading cube textures: " + ex.Message);
+			}
+			tmp.TexTarget = TextureTarget.TextureCubeMap;
+			return tmp;
+		}
 		public static Texture Load(TextureTarget textureTarget, params string[] _mapPath)
 		{
 
@@ -124,8 +191,9 @@ namespace Tetra
 			try {				
 
 				foreach (string path in _mapPath) {
-
-					using (Stream fs = FileSystemHelpers.GetStreamFromPath (path)) {
+					if (string.IsNullOrEmpty(path))
+						continue;
+					using (Stream fs = FileSystemHelpers.GetStreamFromPath (path)) {						
 						Bitmap bmp = new Bitmap (fs);
 
 						if (tmp.Width < 0) {

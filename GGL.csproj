@@ -74,6 +74,8 @@
     <Compile Include="Tetra\Mesh.cs" />
     <Compile Include="Tetra\VAOItem.cs" />
     <Compile Include="Tetra\Shader.cs" />
+    <Compile Include="Tetra\SkyBox.cs" />
+    <Compile Include="Tetra\SkyboxShader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
