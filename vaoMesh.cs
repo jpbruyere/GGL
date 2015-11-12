@@ -25,7 +25,7 @@ namespace GGL
 		public Vector3[] normals;
 		public Vector2[] texCoords;
 		public Matrix4[] modelMats;
-		public int[] indices;
+		public ushort[] indices;
 
 		public string Name = "Unamed";
 
@@ -33,7 +33,7 @@ namespace GGL
 		{
 		}
 
-		public vaoMesh (Vector3[] _positions, Vector2[] _texCoord, int[] _indices)
+		public vaoMesh (Vector3[] _positions, Vector2[] _texCoord, ushort[] _indices)
 		{
 			positions = _positions;
 			texCoords = _texCoord;
@@ -43,7 +43,7 @@ namespace GGL
 			CreateVAOs ();
 		}
 
-		public vaoMesh (Vector3[] _positions, Vector2[] _texCoord, Vector3[] _normales, int[] _indices, Matrix4[] _modelMats = null)
+		public vaoMesh (Vector3[] _positions, Vector2[] _texCoord, Vector3[] _normales, ushort[] _indices, Matrix4[] _modelMats = null)
 		{
 			positions = _positions;
 			texCoords = _texCoord;
@@ -77,7 +77,7 @@ namespace GGL
 				Vector3.UnitZ,
 				Vector3.UnitZ
 			};
-			indices = new int[] { 0, 1, 2, 3 };
+			indices = new ushort[] { 0, 1, 2, 3 };
 
 			CreateVBOs ();
 			CreateVAOs ();
@@ -120,7 +120,7 @@ namespace GGL
 				eboHandle = GL.GenBuffer ();
 				GL.BindBuffer (BufferTarget.ElementArrayBuffer, eboHandle);
 				GL.BufferData (BufferTarget.ElementArrayBuffer,
-					new IntPtr (sizeof(uint) * indices.Length),
+					new IntPtr (sizeof(ushort) * indices.Length),
 					indices, BufferUsageHint.StaticDraw);
 				GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 			}
@@ -177,20 +177,20 @@ namespace GGL
 				GL.DrawArrays (_primitiveType, 0, positions.Length);	
 			else
 				GL.DrawElements(_primitiveType, indices.Length,
-					DrawElementsType.UnsignedInt, IntPtr.Zero);
+					DrawElementsType.UnsignedShort, IntPtr.Zero);
 			GL.BindVertexArray (0);
 		}
-		public void Render(PrimitiveType _primitiveType, int[] _customIndices){
+		public void Render(PrimitiveType _primitiveType, ushort[] _customIndices){
 			GL.BindVertexArray(vaoHandle);
 			GL.DrawElements(_primitiveType, _customIndices.Length,
-				DrawElementsType.UnsignedInt, _customIndices);	
+				DrawElementsType.UnsignedShort, _customIndices);	
 			GL.BindVertexArray (0);
 		}
 		public void Render(PrimitiveType _primitiveType, int instances){
 
 			GL.BindVertexArray(vaoHandle);
 			GL.DrawElementsInstanced(_primitiveType, indices.Length,
-				DrawElementsType.UnsignedInt, IntPtr.Zero, instances);	
+				DrawElementsType.UnsignedShort, IntPtr.Zero, instances);	
 			GL.BindVertexArray (0);
 		}
 
@@ -205,16 +205,16 @@ namespace GGL
 			m1.Dispose ();
 			m2.Dispose ();
 
-			int offset = m1.positions.Length;
+			ushort offset = (ushort)m1.positions.Length;
 
 			res.positions = new Vector3[m1.positions.Length + m2.positions.Length];
 			m1.positions.CopyTo (res.positions, 0);
 			m1.positions.CopyTo (res.positions, m1.positions.Length);
 
-			res.indices = new int[m1.indices.Length + m2.indices.Length];
+			res.indices = new ushort[m1.indices.Length + m2.indices.Length];
 			m1.indices.CopyTo (res.indices, 0);
 			for (int i = 0; i < m2.indices.Length; i++)				
-				res.indices [i + offset] = m2.indices [i] + offset;
+				res.indices [(ushort)i + offset] = (ushort)(m2.indices[i] + offset);
 
 			//TODO: implement texCoord and normals addition
 
@@ -242,7 +242,7 @@ namespace GGL
 		static List<Vector3> lPositions;
 		static List<Vector3> lNormals;
 		static List<Vector2> lTexCoords;
-		static List<int> lIndices;
+		static List<ushort> lIndices;
 
 		public static vaoMesh Load(string fileName)
 		{
@@ -252,7 +252,7 @@ namespace GGL
 			lPositions = new List<Vector3>();
 			lNormals = new List<Vector3>();
 			lTexCoords = new List<Vector2>();
-			lIndices = new List<int> ();
+			lIndices = new List<ushort> ();
 
 			string name = "unamed";
 			using (StreamReader Reader = new StreamReader(fileName))
@@ -411,7 +411,7 @@ namespace GGL
 
 
 
-		static int ParseFaceParameter(string faceParameter)
+		static ushort ParseFaceParameter(string faceParameter)
 		{
 			Vector3 vertex = new Vector3();
 			Vector2 texCoord = new Vector2();
@@ -453,7 +453,7 @@ namespace GGL
 
 
 			int index = lPositions.Count-1;
-			return index;
+			return (ushort)index;
 
 			//if (objVerticesIndexDictionary.TryGetValue(newObjVertex, out index))
 			//{

@@ -14,7 +14,7 @@ namespace GGL
 			int resolution = 40;
 
 			positions = new Vector3[resolution*2];
-			indices = new int[resolution * 2];
+			indices = new ushort[resolution * 2];
 
 			Vector3 vPerp = new Vector3 
 				((new Vector2 (vArrow.X, vArrow.Y)).PerpendicularLeft);
@@ -40,8 +40,8 @@ namespace GGL
 
 				positions [i*2] = p - vd;
 				positions [i*2+1] = p + vd;
-				indices [i * 2] = i * 2;
-				indices [i * 2 + 1] = i * 2 + 1;
+				indices [i * 2] = (ushort)(i * 2);
+				indices [i * 2 + 1] = (ushort)(i * 2 + 1);
 			}
 
 			CreateVBOs ();
