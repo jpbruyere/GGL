@@ -49,6 +49,7 @@ namespace Tetra
 			Height = height;
 
 			createTexture (IntPtr.Zero);
+			configureTexParameters ();
 		}
 
 		public Texture(){
