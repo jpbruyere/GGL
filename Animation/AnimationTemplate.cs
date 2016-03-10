@@ -40,6 +40,13 @@ namespace GGL
 		protected SetterDelegate setValue;
 
 		#region CTOR
+		public Animation(Object instance, string _propertyName)
+			: base(instance, _propertyName)
+		{
+			PropertyInfo pi = instance.GetType().GetProperty(propertyName);
+			getValue = (GetterDelegate)Delegate.CreateDelegate(typeof(GetterDelegate), instance, pi.GetGetMethod());
+			setValue = (SetterDelegate)Delegate.CreateDelegate(typeof(SetterDelegate), instance, pi.GetSetMethod());
+		}
 		public Animation(Object instance, string _propertyName, T Target, T step)
 			: base(instance, _propertyName)
 		{

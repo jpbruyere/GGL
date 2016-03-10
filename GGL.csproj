@@ -20,8 +20,6 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>__linux__;TRACE;DEBUG</DefineConstants>
@@ -76,6 +74,9 @@
     <Compile Include="Tetra\Shader.cs" />
     <Compile Include="Tetra\SkyBox.cs" />
     <Compile Include="Tetra\SkyboxShader.cs" />
+    <Compile Include="Tetra\Mat4InstancedShader.cs" />
+    <Compile Include="Animation\PathAnimation.cs" />
+    <Compile Include="BezierPath.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -101,6 +102,7 @@
     <Folder Include="MiscUtil\" />
     <Folder Include="Animation\" />
     <Folder Include="Shaders\GameLib\DynamicShader\" />
+    <Folder Include="Tetra\Shaders\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\GameLib\effect0.frag" />
@@ -121,6 +123,11 @@
     <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
     <EmbeddedResource Include="Shaders\GameLib\VertDisp.vert" />
     <EmbeddedResource Include="Shaders\GameLib\Texture.frag" />
+    <EmbeddedResource Include="Tetra\Shaders\red.frag" />
+    <EmbeddedResource Include="Tetra\Shaders\simple.vert" />
+    <EmbeddedResource Include="Tetra\Shaders\simple.geom" />
+    <EmbeddedResource Include="Tetra\Shaders\simple %28copier%29.geom" />
+    <EmbeddedResource Include="Tetra\Shaders\simpleTex.frag" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\GameLib\classicnoise2D.frag" />
