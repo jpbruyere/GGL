@@ -169,18 +169,26 @@ namespace Tetra
 		}
 
 		public void Render(PrimitiveType _primitiveType){
-			foreach (VAOItem item in Meshes) {
-				GL.ActiveTexture (TextureUnit.Texture1);
-				GL.BindTexture (TextureTarget.Texture2D, item.NormalMapTexture);
-				GL.ActiveTexture (TextureUnit.Texture0);
-				GL.BindTexture (TextureTarget.Texture2D, item.DiffuseTexture);
-				GL.BindVertexBuffer (instanceBufferIndex, item.instancesVboId, IntPtr.Zero,Vector4.SizeInBytes * 4);
-				GL.DrawElementsInstancedBaseVertex(_primitiveType, item.IndicesCount, 
-					DrawElementsType.UnsignedShort, new IntPtr(item.IndicesOffset*sizeof(ushort)),
-					item.modelMats.Length, item.BaseVertex);
-			}
+			foreach (VAOItem item in Meshes)
+				Render (_primitiveType, item, 0, item.modelMats.Length);
 		}
-			
+		public void Render(PrimitiveType _primitiveType, int[] vaoItemIndexes){
+			foreach (int i in vaoItemIndexes)
+				Render (_primitiveType, Meshes [i], 0, Meshes[i].modelMats.Length);
+		}
+		public void Render(PrimitiveType _primitiveType, VAOItem item){
+			Render (_primitiveType, item, 0, item.modelMats.Length);
+		}
+		public void Render(PrimitiveType _primitiveType, VAOItem item, int firstInstance, int instancesCount){
+			GL.ActiveTexture (TextureUnit.Texture1);
+			GL.BindTexture (TextureTarget.Texture2D, item.NormalMapTexture);
+			GL.ActiveTexture (TextureUnit.Texture0);
+			GL.BindTexture (TextureTarget.Texture2D, item.DiffuseTexture);
+			GL.BindVertexBuffer (instanceBufferIndex, item.instancesVboId, (IntPtr)(firstInstance * Vector4.SizeInBytes * 4), Vector4.SizeInBytes * 4);
+			GL.DrawElementsInstancedBaseVertex(_primitiveType, item.IndicesCount, 
+				DrawElementsType.UnsignedShort, new IntPtr(item.IndicesOffset*sizeof(ushort)),
+				instancesCount, item.BaseVertex);
+		}
 		public void Unbind(){
 			GL.BindVertexArray (0);
 		}
