@@ -14,20 +14,27 @@ namespace Tetra
 		{
 			Compile ();
 		}
-		public Shader (string vertResId, string fragResId)
+		public Shader (string vertResId, string fragResId, string geomResId = null)
 		{
 
 			Stream s = tryGetStreamForResource (vertResId);
 			if (s != null) {
-				using (StreamReader sr = new StreamReader (s)) {				
+				using (StreamReader sr = new StreamReader (s)) {
 					vertSource = sr.ReadToEnd ();
 				}
 			}
 
 			s = tryGetStreamForResource (fragResId);
 			if (s != null) {
-				using (StreamReader sr = new StreamReader (s)) {				
+				using (StreamReader sr = new StreamReader (s)) {
 					fragSource = sr.ReadToEnd ();
+				}
+			}
+
+			s = tryGetStreamForResource (geomResId);
+			if (s != null) {
+				using (StreamReader sr = new StreamReader (s)) {
+					geomSource = sr.ReadToEnd ();
 				}
 			}
 
@@ -36,7 +43,7 @@ namespace Tetra
 		Stream tryGetStreamForResource(string resId){
 			if (string.IsNullOrEmpty (resId))
 				return null;
-			
+
 			Stream s = Assembly.GetEntryAssembly ().
 				GetManifestResourceStream (resId);
 			return s == null ?
@@ -57,7 +64,7 @@ namespace Tetra
 			layout(location = 1) in vec2 in_tex;
 
 			out vec2 texCoord;
-			
+
 			void main(void)
 			{
 				texCoord = in_tex;
@@ -67,7 +74,7 @@ namespace Tetra
 		protected string _fragSource = @"
 			#version 330
 			precision lowp float;
-			
+
 			uniform sampler2D tex;
 
 			in vec2 texCoord;
@@ -78,7 +85,7 @@ namespace Tetra
 				out_frag_color = texture( tex, texCoord);
 			}";
 		string _geomSource = @"";
-//			#version 330 
+//			#version 330
 //			layout(triangles) in;
 //			layout(triangle_strip, max_vertices=3) out;
 //			void main()
@@ -105,14 +112,14 @@ namespace Tetra
 			get { return _vertSource;}
 			set { _vertSource = value; }
 		}
-		public virtual string fragSource 
+		public virtual string fragSource
 		{
 			get { return _fragSource;}
 			set { _fragSource = value; }
 		}
 		public virtual string geomSource
-		{ 
-			get { return _geomSource; }          
+		{
+			get { return _geomSource; }
 			set { _geomSource = value; }
 		}
 
@@ -143,7 +150,7 @@ namespace Tetra
 			if (!string.IsNullOrEmpty(geomSource))
 			{
 				gsId = GL.CreateShader(ShaderType.GeometryShader);
-				compileShader(gsId,geomSource);                
+				compileShader(gsId,geomSource);
 			}
 
 			if (vsId != 0)
@@ -172,7 +179,7 @@ namespace Tetra
 				Debug.WriteLine ("Validation:");
 				Debug.WriteLine (info);
 			}
-				
+
 			GL.UseProgram (pgmId);
 
 			GetUniformLocations ();
@@ -183,8 +190,9 @@ namespace Tetra
 
 		protected virtual void BindVertexAttributes()
 		{
-			GL.BindAttribLocation(pgmId, 0, "in_position");						
+			GL.BindAttribLocation(pgmId, 0, "in_position");
 			GL.BindAttribLocation(pgmId, 1, "in_tex");
+			GL.BindAttribLocation(pgmId, 4, "in_model");
 		}
 		protected virtual void GetUniformLocations()
 		{
@@ -232,8 +240,8 @@ namespace Tetra
 				Debug.WriteLine("Compile Error!");
 				Debug.WriteLine(source);
 			}
-		}			
-			
+		}
+
 		#region IDisposable implementation
 		public virtual void Dispose ()
 		{

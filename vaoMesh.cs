@@ -111,7 +111,7 @@ namespace GGL
 				GL.BindBuffer (BufferTarget.ArrayBuffer, matVboHandle);
 				GL.BufferData<Matrix4> (BufferTarget.ArrayBuffer,
 					new IntPtr (modelMats.Length * Vector4.SizeInBytes * 4),
-					modelMats, BufferUsageHint.DynamicDraw);				
+					modelMats, BufferUsageHint.DynamicDraw);
 			}
 
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -134,7 +134,7 @@ namespace GGL
 				modelMats.Length * Vector4.SizeInBytes * 4,
 				modelMats);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-			
+
 		}
 		protected void CreateVAOs()
 		{
@@ -156,25 +156,25 @@ namespace GGL
 				GL.VertexAttribPointer (2, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 			}
 			if (modelMats != null) {
-				GL.VertexBindingDivisor (Tetra.IndexedVAO.instanceBufferIndex, 1);
-				for (int i = 0; i < 4; i++) {					
-					GL.EnableVertexAttribArray (Tetra.IndexedVAO.instanceBufferIndex + i);	
-					GL.VertexAttribBinding (Tetra.IndexedVAO.instanceBufferIndex+i, Tetra.IndexedVAO.instanceBufferIndex);
-					GL.VertexAttribFormat(Tetra.IndexedVAO.instanceBufferIndex+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
+				GL.VertexBindingDivisor (4, 1);
+				for (int i = 0; i < 4; i++) {
+					GL.EnableVertexAttribArray (4 + i);
+					GL.VertexAttribBinding (4+i, 4);
+					GL.VertexAttribFormat(4+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
 				}
-				GL.BindVertexBuffer (Tetra.IndexedVAO.instanceBufferIndex, matVboHandle, IntPtr.Zero, Vector4.SizeInBytes*4);
+				GL.BindVertexBuffer (4, matVboHandle, IntPtr.Zero, Vector4.SizeInBytes*4);
 			}
 
 			if (indices != null)
 				GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
-			
+
 			GL.BindVertexArray(0);
 		}
 
-		public void Render(PrimitiveType _primitiveType){			
+		public void Render(PrimitiveType _primitiveType){
 			GL.BindVertexArray(vaoHandle);
 			if (indices == null)
-				GL.DrawArrays (_primitiveType, 0, positions.Length);	
+				GL.DrawArrays (_primitiveType, 0, positions.Length);
 			else
 				GL.DrawElements(_primitiveType, indices.Length,
 					DrawElementsType.UnsignedInt, IntPtr.Zero);
@@ -183,14 +183,14 @@ namespace GGL
 		public void Render(PrimitiveType _primitiveType, int[] _customIndices){
 			GL.BindVertexArray(vaoHandle);
 			GL.DrawElements(_primitiveType, _customIndices.Length,
-				DrawElementsType.UnsignedInt, _customIndices);	
+				DrawElementsType.UnsignedInt, _customIndices);
 			GL.BindVertexArray (0);
 		}
 		public void Render(PrimitiveType _primitiveType, int instances){
 
 			GL.BindVertexArray(vaoHandle);
 			GL.DrawElementsInstanced(_primitiveType, indices.Length,
-				DrawElementsType.UnsignedInt, IntPtr.Zero, instances);	
+				DrawElementsType.UnsignedInt, IntPtr.Zero, instances);
 			GL.BindVertexArray (0);
 		}
 
@@ -199,7 +199,7 @@ namespace GGL
 				return m2;
 			if (m2 == null)
 				return m1;
-			
+
 			vaoMesh res = new vaoMesh ();
 
 			m1.Dispose ();
@@ -213,7 +213,7 @@ namespace GGL
 
 			res.indices = new int[m1.indices.Length + m2.indices.Length];
 			m1.indices.CopyTo (res.indices, 0);
-			for (int i = 0; i < m2.indices.Length; i++)				
+			for (int i = 0; i < m2.indices.Length; i++)
 				res.indices [i + offset] = m2.indices [i] + offset;
 
 			//TODO: implement texCoord and normals addition
@@ -235,6 +235,40 @@ namespace GGL
 			GL.DeleteVertexArray (vaoHandle);
 		}
 		#endregion
+
+		public static vaoMesh CreateGrid(int gridSize)
+		{
+			const float z = 0.0f;
+			const int IdxPrimitiveRestart = int.MaxValue;
+
+			Vector3[] positionVboData;
+			int[] indicesVboData;
+			Vector2[] texVboData;
+
+			positionVboData = new Vector3[gridSize * gridSize];
+			texVboData = new Vector2[gridSize * gridSize];
+			indicesVboData = new int[(gridSize * 2 + 1) * gridSize];
+
+			for (int y = 0; y < gridSize; y++) {
+				for (int x = 0; x < gridSize; x++) {
+					positionVboData [gridSize * y + x] = new Vector3 (x, y, z);
+					texVboData [gridSize * y + x] = new Vector2 ((float)x*0.5f, (float)y*0.5f);
+
+					if (y < gridSize-1) {
+						indicesVboData [(gridSize * 2 + 1) * y + x*2] = gridSize * y + x;
+						indicesVboData [(gridSize * 2 + 1) * y + x*2 + 1] = gridSize * (y+1) + x;
+					}
+
+					if (x == gridSize-1) {
+						indicesVboData [(gridSize * 2 + 1) * y + x*2 + 2] = IdxPrimitiveRestart;
+					}
+				}
+			}
+			return new vaoMesh (positionVboData, texVboData, null,indicesVboData);
+//			vaoMesh tmp = new vaoMesh (positionVboData, texVboData, null);
+//			tmp.indices = indicesVboData;
+//			return tmp;
+		}
 
 		static List<Vector3> objPositions;
 		static List<Vector3> objNormals;
@@ -270,7 +304,7 @@ namespace GGL
 
 					switch (parameters[0])
 					{
-					case "o":					
+					case "o":
 						name = parameters[1];
 						break;
 					case "p": // Point
@@ -279,7 +313,7 @@ namespace GGL
 						float x = float.Parse(parameters[1]);
 						float y = float.Parse(parameters[2]);
 						float z = float.Parse(parameters[3]);
-                    
+
 						objPositions.Add(new Vector3(x, y, z));
 						break;
 					case "vt": // TexCoord
@@ -315,7 +349,7 @@ namespace GGL
 						break;
 
 					case "usemtl":
-						Debug.WriteLine ("usemtl: {0}", parameters [1]); 
+						Debug.WriteLine ("usemtl: {0}", parameters [1]);
 //						if (parameters.Length > 1)
 //							name = parameters[1];
 //
@@ -327,7 +361,7 @@ namespace GGL
 
 						break;
 					case "mtllib":
-						Debug.WriteLine ("usemtl: {0}", parameters [1]); 
+						Debug.WriteLine ("usemtl: {0}", parameters [1]);
 //							model.mtllib = parameters[1];
 //							string mtlPath = System.IO.Path.GetDirectoryName(fileName)
 //								+ System.IO.Path.DirectorySeparatorChar
@@ -551,7 +585,7 @@ namespace GGL
 //
 
 		static char[] faceParamaterSplitter = new char[] { '/' };
-    
+
 	}
 
 }

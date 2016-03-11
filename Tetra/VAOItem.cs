@@ -21,10 +21,16 @@
 using System;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using System.Runtime.InteropServices;
 
 namespace Tetra
 {
-	public class VAOItem : IDisposable
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
+	public struct VAOInstancedData
+	{
+		public Matrix4 modelMats;
+	}
+	public class VAOItem 
 	{
 		public int instancesVboId;
 
@@ -32,23 +38,50 @@ namespace Tetra
 		public int IndicesCount;
 		public int IndicesOffset;
 
-		public Matrix4[] modelMats;
-
 		public int DiffuseTexture;
 		public int NormalMapTexture;
 
-		public VAOItem ()
+		public VAOItem(){
+			
+		}
+	}
+	public class VAOItem<T> : VAOItem, IDisposable where T : struct
+	{
+
+		public T[] Datas;
+		public int InstanceDataLengthInBytes;
+
+		public VAOItem () : base()
 		{
+			InstanceDataLengthInBytes = Marshal.SizeOf(typeof(T));
 			instancesVboId = GL.GenBuffer ();
+		}
+
+		public void AddInstance(T modelMat)
+		{
+			T[] tmp = new T[Datas.Length + 1];
+			Array.Copy (Datas, tmp, Datas.Length);
+			tmp [Datas.Length] = modelMat;
+			Datas = tmp;
+			UpdateInstancesData ();
+		}
+		public void RemoveInstance(int index)
+		{
+			T[] tmp = new T[Datas.Length - 1];
+			if (index > 0)
+				Array.Copy (Datas, tmp, index);
+			if (index < Datas.Length - 1)
+				Array.Copy (Datas, index + 1, tmp, index, Datas.Length - 1 - index);
+			UpdateInstancesData ();
 		}
 
 		public void UpdateInstancesData()
 		{
-			if (modelMats != null) {				
+			if (Datas != null) {				
 				GL.BindBuffer (BufferTarget.ArrayBuffer, instancesVboId);
-				GL.BufferData<Matrix4> (BufferTarget.ArrayBuffer,
-					new IntPtr (modelMats.Length * Vector4.SizeInBytes * 4),
-					modelMats, BufferUsageHint.DynamicDraw);
+				GL.BufferData<T> (BufferTarget.ArrayBuffer,
+					new IntPtr (Datas.Length * InstanceDataLengthInBytes),
+					Datas, BufferUsageHint.DynamicDraw);
 				GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 			}			
 		}

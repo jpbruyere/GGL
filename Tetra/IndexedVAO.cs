@@ -3,10 +3,13 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Tetra
 {
-	public class IndexedVAO : IDisposable 
+	public class IndexedVAO : IndexedVAO<VAOInstancedData>{}
+
+	public class IndexedVAO<V> : IDisposable where V : struct
 	{
 		public const int instanceBufferIndex = 4;
 
@@ -23,14 +26,14 @@ namespace Tetra
 		Vector2[] texCoords;
 		ushort[] indices;
 
-		public List<VAOItem> Meshes = new List<VAOItem>();
+		public List<VAOItem<V>> Meshes = new List<VAOItem<V>>();
 
 		public IndexedVAO(){
 		}
 
-		public VAOItem Add(Mesh mesh)
+		public VAOItem<V> Add(Mesh mesh)
 		{
-			VAOItem vaoi = new VAOItem ();
+			VAOItem<V> vaoi = new VAOItem<V> ();
 
 			vaoi.IndicesCount = mesh.Indices.Length;
 
@@ -128,7 +131,7 @@ namespace Tetra
 
 			GL.EnableVertexAttribArray(0);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);			
+			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 
 			if (texCoords != null) {
 				GL.EnableVertexAttribArray (1);
@@ -145,9 +148,12 @@ namespace Tetra
 				GL.BindBuffer (BufferTarget.ArrayBuffer, tangentsVboHandle);
 				GL.VertexAttribPointer (3, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 			}
+
+			int dataStructSize = Marshal.SizeOf (typeof(V));
+			int nbSubBuf = dataStructSize / 4;
 			GL.VertexBindingDivisor (instanceBufferIndex, 1);
-			for (int i = 0; i < 4; i++) {					
-				GL.EnableVertexAttribArray (instanceBufferIndex + i);	
+			for (int i = 0; i < nbSubBuf; i++) {
+				GL.EnableVertexAttribArray (instanceBufferIndex + i);
 				GL.VertexAttribBinding (instanceBufferIndex+i, instanceBufferIndex);
 				GL.VertexAttribFormat(instanceBufferIndex+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
 			}
@@ -156,8 +162,8 @@ namespace Tetra
 				GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
 
 			GL.BindVertexArray(0);
-		}			
-			
+		}
+
 		public void BuildBuffers(){
 			Dispose ();
 			CreateVBOs ();
@@ -169,23 +175,23 @@ namespace Tetra
 		}
 
 		public void Render(PrimitiveType _primitiveType){
-			foreach (VAOItem item in Meshes)
-				Render (_primitiveType, item, 0, item.modelMats.Length);
+			foreach (VAOItem<V> item in Meshes)
+				Render (_primitiveType, item, 0, item.Datas.Length);
 		}
 		public void Render(PrimitiveType _primitiveType, int[] vaoItemIndexes){
 			foreach (int i in vaoItemIndexes)
-				Render (_primitiveType, Meshes [i], 0, Meshes[i].modelMats.Length);
+				Render (_primitiveType, Meshes [i], 0, Meshes[i].Datas.Length);
 		}
-		public void Render(PrimitiveType _primitiveType, VAOItem item){
-			Render (_primitiveType, item, 0, item.modelMats.Length);
+		public void Render(PrimitiveType _primitiveType, VAOItem<V> item){
+			Render (_primitiveType, item, 0, item.Datas.Length);
 		}
-		public void Render(PrimitiveType _primitiveType, VAOItem item, int firstInstance, int instancesCount){
+		public void Render(PrimitiveType _primitiveType, VAOItem<V> item, int firstInstance, int instancesCount){
 			GL.ActiveTexture (TextureUnit.Texture1);
 			GL.BindTexture (TextureTarget.Texture2D, item.NormalMapTexture);
 			GL.ActiveTexture (TextureUnit.Texture0);
 			GL.BindTexture (TextureTarget.Texture2D, item.DiffuseTexture);
-			GL.BindVertexBuffer (instanceBufferIndex, item.instancesVboId, (IntPtr)(firstInstance * Vector4.SizeInBytes * 4), Vector4.SizeInBytes * 4);
-			GL.DrawElementsInstancedBaseVertex(_primitiveType, item.IndicesCount, 
+			GL.BindVertexBuffer (instanceBufferIndex, item.instancesVboId, (IntPtr)(firstInstance * item.InstanceDataLengthInBytes), item.InstanceDataLengthInBytes);
+			GL.DrawElementsInstancedBaseVertex(_primitiveType, item.IndicesCount,
 				DrawElementsType.UnsignedShort, new IntPtr(item.IndicesOffset*sizeof(ushort)),
 				instancesCount, item.BaseVertex);
 		}
@@ -198,7 +204,7 @@ namespace Tetra
 			tangents = new Vector3[indices.Length];
 
 			for (int i = 0 ; i < indices.Length; i += 3) {
-				
+
 
 				Vector3 Edge1 = positions[indices[i+1]] - positions[indices[i]];
 				Vector3 Edge2 = positions[indices[i+2]] - positions[indices[i]];
@@ -226,7 +232,7 @@ namespace Tetra
 			}
 
 			for (int i = 0 ; i < tangents.Length ; i++)
-				tangents[i].Normalize();			
+				tangents[i].Normalize();
 		}
 
 		#region IDisposable implementation
