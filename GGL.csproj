@@ -102,7 +102,6 @@
     <Folder Include="MiscUtil\" />
     <Folder Include="Animation\" />
     <Folder Include="Shaders\GameLib\DynamicShader\" />
-    <Folder Include="Tetra\Shaders\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\GameLib\effect0.frag" />
@@ -123,11 +122,6 @@
     <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
     <EmbeddedResource Include="Shaders\GameLib\VertDisp.vert" />
     <EmbeddedResource Include="Shaders\GameLib\Texture.frag" />
-    <EmbeddedResource Include="Tetra\Shaders\red.frag" />
-    <EmbeddedResource Include="Tetra\Shaders\simple.vert" />
-    <EmbeddedResource Include="Tetra\Shaders\simple.geom" />
-    <EmbeddedResource Include="Tetra\Shaders\simple %28copier%29.geom" />
-    <EmbeddedResource Include="Tetra\Shaders\simpleTex.frag" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\GameLib\classicnoise2D.frag" />
