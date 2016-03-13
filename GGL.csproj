@@ -92,10 +92,10 @@
     <Reference Include="System.Drawing" />
     <Reference Include="Mono.Cairo" />
     <Reference Include="System.Xml" />
-    <Reference Include="OpenTK">
-      <HintPath>..\opentk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="OpenTK">
+      <HintPath>..\..\..\..\src\opentk-git\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaders\GameLib\" />
