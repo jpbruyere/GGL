@@ -65,6 +65,14 @@ namespace Tetra
 			Datas = tmp;
 			UpdateInstancesData ();
 		}
+		public int AddInstance()
+		{
+			T[] tmp = new T[Datas.Length + 1];
+			Array.Copy (Datas, tmp, Datas.Length);
+			Datas = tmp;
+			UpdateInstancesData ();
+			return Datas.Length - 1;
+		}
 		public void RemoveInstance(int index)
 		{
 			T[] tmp = new T[Datas.Length - 1];
@@ -72,6 +80,7 @@ namespace Tetra
 				Array.Copy (Datas, tmp, index);
 			if (index < Datas.Length - 1)
 				Array.Copy (Datas, index + 1, tmp, index, Datas.Length - 1 - index);
+			Datas = tmp;
 			UpdateInstancesData ();
 		}
 
