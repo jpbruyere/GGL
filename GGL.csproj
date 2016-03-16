@@ -20,6 +20,7 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ReleaseVersion>0.1.*</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>__linux__;TRACE;DEBUG</DefineConstants>
@@ -90,11 +91,13 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
-    <Reference Include="Mono.Cairo" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="cairo-sharp">
+      <HintPath>..\..\packages\gtk-sharp.Linux.3.14.3.14.7\lib\net40\cairo-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="OpenTK">
-      <HintPath>..\..\..\..\src\opentk-git\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+      <HintPath>..\..\packages\OpenTK.1.1.2225.0\lib\net20\OpenTK.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -125,5 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\GameLib\classicnoise2D.frag" />
+    <None Include="OpenTK.dll.config" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
