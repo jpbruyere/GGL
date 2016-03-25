@@ -12,7 +12,7 @@ namespace Tetra
 		#region CTOR
 		public Shader ()
 		{
-			Compile ();
+			Init ();
 		}
 		public Shader (string vertResId, string fragResId, string geomResId = null)
 		{
@@ -38,7 +38,7 @@ namespace Tetra
 				}
 			}
 
-			Compile ();
+			Init ();
 		}
 		Stream tryGetStreamForResource(string resId){
 			if (string.IsNullOrEmpty (resId))
@@ -130,6 +130,13 @@ namespace Tetra
 		#endregion
 
 		#region Public functions
+		/// <summary>
+		/// configure sources and compile
+		/// </summary>
+		public virtual void Init()
+		{
+			Compile ();
+		}
 		public virtual void Compile()
 		{
 			Dispose ();
