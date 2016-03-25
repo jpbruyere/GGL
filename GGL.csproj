@@ -2,6 +2,7 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{5490AD74-0BB3-438C-9DE4-EB7CFC68BCB5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -11,39 +12,31 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <NoStdLib>False</NoStdLib>
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    <OutputPath>bin</OutputPath>
-    <IntermediateOutputPath>obj</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)/build/$(Configuration)</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)/build/obj/$(Configuration)</IntermediateOutputPath>
     <WarningLevel>4</WarningLevel>
     <NoWin32Manifest>False</NoWin32Manifest>
     <SignAssembly>false</SignAssembly>
     <DelaySign>False</DelaySign>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>__linux__;TRACE;DEBUG</DefineConstants>
-    <Optimize>False</Optimize>
-    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
-    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
     <DebugType>Full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
+    <Optimize>False</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DefineConstants>__linux__</DefineConstants>
-    <Optimize>True</Optimize>
-    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
-    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
     <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="imgHelpers.cs" />
     <Compile Include="Path.cs" />
     <Compile Include="Shaders\Shader.cs" />
     <Compile Include="Texture.cs" />
-    <Compile Include="VertexArrayObject.cs" />
     <Compile Include="vaoMesh.cs" />
     <Compile Include="Shaders\SingleLightSimpleShader.cs" />
     <Compile Include="Shaders\GameLib\Shader.cs" />
@@ -55,11 +48,31 @@
     <Compile Include="Geo2D\Size.cs" />
     <Compile Include="glHelper.cs" />
     <Compile Include="ExtensionsMethods.cs" />
-    <Compile Include="Animation.cs" />
     <Compile Include="FileSystemHelpers.cs" />
     <Compile Include="MiscUtil\Operator.cs" />
     <Compile Include="MiscUtil\NullOp.cs" />
     <Compile Include="MiscUtil\ExpressionUtil.cs" />
+    <Compile Include="Animation\Animation.cs" />
+    <Compile Include="Animation\ShakeAnimation.cs" />
+    <Compile Include="Animation\FloatAnimation.cs" />
+    <Compile Include="Animation\AngleAnimation.cs" />
+    <Compile Include="Animation\AnimationTemplate.cs" />
+    <Compile Include="Shaders\GameLib\ShadedTexture.cs" />
+    <Compile Include="Shaders\GameLib\VertexDispShader.cs" />
+    <Compile Include="TextureArray.cs" />
+    <Compile Include="Shaders\GameLib\DynamicShader\ShaderData.cs" />
+    <Compile Include="Shaders\GameLib\DynamicShader\DynamicShader.cs" />
+    <Compile Include="Tetra\LoaderDDS.cs" />
+    <Compile Include="Tetra\Texture.cs" />
+    <Compile Include="Tetra\IndexedVAO.cs" />
+    <Compile Include="Tetra\Mesh.cs" />
+    <Compile Include="Tetra\VAOItem.cs" />
+    <Compile Include="Tetra\Shader.cs" />
+    <Compile Include="Tetra\SkyBox.cs" />
+    <Compile Include="Tetra\SkyboxShader.cs" />
+    <Compile Include="Tetra\Mat4InstancedShader.cs" />
+    <Compile Include="Animation\PathAnimation.cs" />
+    <Compile Include="BezierPath.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -74,6 +87,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="cairo-sharp">
+      <HintPath>..\..\packages\gtk-sharp.Linux.3.14.3.14.7\lib\net40\cairo-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="OpenTK">
       <HintPath>..\..\packages\OpenTK.1.1.2225.0\lib\net20\OpenTK.dll</HintPath>
     </Reference>
@@ -81,6 +98,8 @@
   <ItemGroup>
     <Folder Include="Shaders\GameLib\" />
     <Folder Include="MiscUtil\" />
+    <Folder Include="Animation\" />
+    <Folder Include="Shaders\GameLib\DynamicShader\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\GameLib\effect0.frag" />
@@ -99,8 +118,11 @@
     <EmbeddedResource Include="Shaders\GameLib\fire0.frag" />
     <EmbeddedResource Include="Shaders\GameLib\voronoi.frag" />
     <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\VertDisp.vert" />
+    <EmbeddedResource Include="Shaders\GameLib\Texture.frag" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\GameLib\classicnoise2D.frag" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
   </ItemGroup>

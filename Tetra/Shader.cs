@@ -5,38 +5,45 @@ using System.Reflection;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
-namespace GameLib
+namespace Tetra
 {
 	public class Shader : IDisposable
 	{
 		#region CTOR
 		public Shader ()
 		{
-			Compile ();
+			Init ();
 		}
-		public Shader (string vertResId, string fragResId)
+		public Shader (string vertResId, string fragResId, string geomResId = null)
 		{
 
 			Stream s = tryGetStreamForResource (vertResId);
 			if (s != null) {
-				using (StreamReader sr = new StreamReader (s)) {				
+				using (StreamReader sr = new StreamReader (s)) {
 					vertSource = sr.ReadToEnd ();
 				}
 			}
 
 			s = tryGetStreamForResource (fragResId);
 			if (s != null) {
-				using (StreamReader sr = new StreamReader (s)) {				
+				using (StreamReader sr = new StreamReader (s)) {
 					fragSource = sr.ReadToEnd ();
 				}
 			}
 
-			Compile ();
+			s = tryGetStreamForResource (geomResId);
+			if (s != null) {
+				using (StreamReader sr = new StreamReader (s)) {
+					geomSource = sr.ReadToEnd ();
+				}
+			}
+
+			Init ();
 		}
 		Stream tryGetStreamForResource(string resId){
 			if (string.IsNullOrEmpty (resId))
 				return null;
-			
+
 			Stream s = Assembly.GetEntryAssembly ().
 				GetManifestResourceStream (resId);
 			return s == null ?
@@ -49,31 +56,25 @@ namespace GameLib
 		#region Sources
 		protected string _vertSource = @"
 			#version 330
+			precision lowp float;
 
-			precision highp float;
+			uniform mat4 mvp;
 
-			uniform mat4 Projection;
-			uniform mat4 ModelView;
-			uniform mat4 Model;
-			uniform mat4 Normal;
-
-			in vec3 in_position;
-			in vec2 in_tex;
+			layout(location = 0) in vec3 in_position;
+			layout(location = 1) in vec2 in_tex;
 
 			out vec2 texCoord;
-			
 
 			void main(void)
 			{
 				texCoord = in_tex;
-				gl_Position = Projection * ModelView * Model * vec4(in_position, 1);
+				gl_Position = mvp * vec4(in_position, 1.0);
 			}";
 
 		protected string _fragSource = @"
 			#version 330
-			precision highp float;
+			precision lowp float;
 
-			uniform vec4 color;
 			uniform sampler2D tex;
 
 			in vec2 texCoord;
@@ -84,7 +85,7 @@ namespace GameLib
 				out_frag_color = texture( tex, texCoord);
 			}";
 		string _geomSource = @"";
-//			#version 330 
+//			#version 330
 //			layout(triangles) in;
 //			layout(triangle_strip, max_vertices=3) out;
 //			void main()
@@ -99,17 +100,9 @@ namespace GameLib
 		#endregion
 
 		#region Private and protected fields
-		protected int vsId, fsId, gsId, pgmId, 
-						modelViewLocation,
-						modelLocation,
-						projectionLocation,
-						normalLocation,	
-						colorLocation;
+		protected int vsId, fsId, gsId, pgmId, mvpLocation;
 
-		Matrix4 projectionMat = Matrix4.Identity, 
-				modelMat = Matrix4.Identity,
-				modelViewMat = Matrix4.Identity;
-		Vector4 color = new Vector4(1,1,1,1);
+		Matrix4 mvp = Matrix4.Identity;
 		#endregion
 
 
@@ -119,44 +112,31 @@ namespace GameLib
 			get { return _vertSource;}
 			set { _vertSource = value; }
 		}
-		public virtual string fragSource 
+		public virtual string fragSource
 		{
 			get { return _fragSource;}
 			set { _fragSource = value; }
 		}
 		public virtual string geomSource
-		{ 
-			get { return _geomSource; }          
+		{
+			get { return _geomSource; }
 			set { _geomSource = value; }
 		}
 
-		public Matrix4 ProjectionMatrix{
-			set { projectionMat = value; }
-			get { return projectionMat; }
+		public Matrix4 MVP{
+			set { mvp = value; }
+			get { return mvp; }
 		}
-		public Matrix4 ModelViewMatrix {
-			set { modelViewMat = value; }
-			get { return modelViewMat; }
-		}
-		public Matrix4 ModelMatrix {
-			set { modelMat = value; }
-			get { return modelMat; }
-		}
-		public Vector4 Color {
-			set { color = value; }
-			get { return color; }
-		}
-
 		#endregion
 
-		void updateNormalMatrix()
-		{
-			Matrix4 normalMat = (modelViewMat).Inverted();
-			normalMat.Transpose ();
-			GL.UniformMatrix4 (normalLocation, false, ref normalMat);
-		}
-
 		#region Public functions
+		/// <summary>
+		/// configure sources and compile
+		/// </summary>
+		public virtual void Init()
+		{
+			Compile ();
+		}
 		public virtual void Compile()
 		{
 			Dispose ();
@@ -177,7 +157,7 @@ namespace GameLib
 			if (!string.IsNullOrEmpty(geomSource))
 			{
 				gsId = GL.CreateShader(ShaderType.GeometryShader);
-				compileShader(gsId,geomSource);                
+				compileShader(gsId,geomSource);
 			}
 
 			if (vsId != 0)
@@ -206,7 +186,7 @@ namespace GameLib
 				Debug.WriteLine ("Validation:");
 				Debug.WriteLine (info);
 			}
-				
+
 			GL.UseProgram (pgmId);
 
 			GetUniformLocations ();
@@ -217,17 +197,13 @@ namespace GameLib
 
 		protected virtual void BindVertexAttributes()
 		{
-			GL.BindAttribLocation(pgmId, 0, "in_position");						
+			GL.BindAttribLocation(pgmId, 0, "in_position");
 			GL.BindAttribLocation(pgmId, 1, "in_tex");
+			GL.BindAttribLocation(pgmId, 4, "in_model");
 		}
 		protected virtual void GetUniformLocations()
 		{
-			projectionLocation = GL.GetUniformLocation(pgmId, "Projection");
-			modelViewLocation = GL.GetUniformLocation(pgmId, "ModelView");
-			modelLocation = GL.GetUniformLocation(pgmId, "Model");
-			normalLocation = GL.GetUniformLocation(pgmId, "Normal");
-			colorLocation = GL.GetUniformLocation (pgmId, "color");
-
+			mvpLocation = GL.GetUniformLocation(pgmId, "mvp");
 		}
 		protected virtual void BindSamplesSlots(){
 			GL.Uniform1(GL.GetUniformLocation (pgmId, "tex"), 0);
@@ -236,13 +212,7 @@ namespace GameLib
 		public virtual void Enable(){
 			GL.UseProgram (pgmId);
 
-			GL.UniformMatrix4(projectionLocation, false, ref projectionMat);
-			GL.UniformMatrix4 (modelLocation, false, ref modelMat); 
-			GL.UniformMatrix4 (modelViewLocation, false, ref modelViewMat);
-			updateNormalMatrix ();
-			GL.Uniform4 (colorLocation, color);
-
-
+			GL.UniformMatrix4(mvpLocation, false, ref mvp);
 		}
 		public virtual void Disable(){
 			GL.UseProgram (0);
@@ -277,8 +247,8 @@ namespace GameLib
 				Debug.WriteLine("Compile Error!");
 				Debug.WriteLine(source);
 			}
-		}			
-			
+		}
+
 		#region IDisposable implementation
 		public virtual void Dispose ()
 		{
