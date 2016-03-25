@@ -11,19 +11,22 @@ namespace Tetra
 
 	public class IndexedVAO<V> : IDisposable where V : struct
 	{
-		public const int instanceBufferIndex = 4;
+		public const int instanceBufferIndex = 5;
 
 		int	vaoHandle,
 			positionVboHandle,
 			texVboHandle,
 			normalsVboHandle,
 			tangentsVboHandle,
+			bonesIdxsVboHandle,
+			weightsVboHandle,
 			eboHandle;
 
 		Vector3[] positions;
 		Vector3[] normals;
 		Vector3[] tangents;
 		Vector2[] texCoords;
+		Vector4[] weights;
 		ushort[] indices;
 
 		public List<VAOItem<V>> Meshes = new List<VAOItem<V>>();
@@ -42,6 +45,7 @@ namespace Tetra
 				texCoords = mesh.TexCoords;
 				normals = mesh.Normals;
 				indices = mesh.Indices;
+				weights = mesh.Weights;
 				Meshes.Add (vaoi);
 				return vaoi;
 			}
@@ -50,10 +54,11 @@ namespace Tetra
 			vaoi.IndicesOffset = indices.Length;
 			vaoi.IndicesCount = mesh.Indices.Length;
 
-			Vector3[] tmpPositions;
-			Vector3[] tmpNormals;
-			Vector2[] tmpTexCoords;
-			ushort[] tmpIndices;
+			Vector3[] tmpPositions = null;
+			Vector3[] tmpNormals = null;
+			Vector2[] tmpTexCoords = null;
+			Vector4[] tmpWeights = null;
+			ushort[] tmpIndices = null;
 
 
 			tmpPositions = new Vector3[positions.Length + mesh.Positions.Length];
@@ -68,6 +73,12 @@ namespace Tetra
 			normals.CopyTo (tmpNormals, 0);
 			mesh.Normals.CopyTo (tmpNormals, normals.Length);
 
+			if (weights != null) {
+				tmpWeights = new Vector4[weights.Length + mesh.Weights.Length];
+				weights.CopyTo (tmpWeights, 0);
+				mesh.Weights.CopyTo (tmpWeights, weights.Length);
+			}
+
 			tmpIndices = new ushort[indices.Length + mesh.Indices.Length];
 			indices.CopyTo (tmpIndices, 0);
 			mesh.Indices.CopyTo (tmpIndices, indices.Length);
@@ -75,6 +86,7 @@ namespace Tetra
 			positions = tmpPositions;
 			texCoords = tmpTexCoords;
 			normals = tmpNormals;
+			weights = tmpWeights;
 			indices = tmpIndices;
 
 			Meshes.Add (vaoi);
@@ -113,6 +125,14 @@ namespace Tetra
 					tangents, BufferUsageHint.StaticDraw);
 			}
 
+			if (weights != null) {
+				weightsVboHandle = GL.GenBuffer ();
+				GL.BindBuffer (BufferTarget.ArrayBuffer, weightsVboHandle);
+				GL.BufferData<Vector4> (BufferTarget.ArrayBuffer,
+					new IntPtr (weights.Length * Vector4.SizeInBytes),
+					weights, BufferUsageHint.StaticDraw);
+			}
+
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
 			if (indices != null) {
@@ -147,6 +167,12 @@ namespace Tetra
 				GL.EnableVertexAttribArray (3);
 				GL.BindBuffer (BufferTarget.ArrayBuffer, tangentsVboHandle);
 				GL.VertexAttribPointer (3, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
+			}
+
+			if (weights != null) {
+				GL.EnableVertexAttribArray (4);
+				GL.BindBuffer (BufferTarget.ArrayBuffer, weightsVboHandle);
+				GL.VertexAttribPointer (4, 4, VertexAttribPointerType.Float, false, Vector4.SizeInBytes, 0);
 			}
 
 			int dataStructSize = Marshal.SizeOf (typeof(V));
@@ -241,6 +267,7 @@ namespace Tetra
 			GL.DeleteBuffer (positionVboHandle);
 			GL.DeleteBuffer (normalsVboHandle);
 			GL.DeleteBuffer (tangentsVboHandle);
+			GL.DeleteBuffer (weightsVboHandle);
 			GL.DeleteBuffer (texVboHandle);
 			GL.DeleteBuffer (eboHandle);
 			GL.DeleteVertexArray (vaoHandle);

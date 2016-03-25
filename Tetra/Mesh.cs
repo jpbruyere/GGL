@@ -26,6 +26,9 @@ using System.Threading;
 
 namespace Tetra
 {
+	public struct Bone{
+		public string Name;
+	}
 	public class Mesh
 	{
 		public string Name = "unamed";
@@ -33,6 +36,8 @@ namespace Tetra
 		public Vector3[] Normals;
 		public Vector2[] TexCoords;
 		public ushort[] Indices;
+		public Vector4[] Weights;
+		public string[] Bones;
 		//public Dictionary<string, int[]> Indices;
 		public Mesh ()
 		{
@@ -58,6 +63,8 @@ namespace Tetra
 		static List<Vector3> lNormals;
 		static List<Vector2> lTexCoords;
 		static List<ushort> lIndices;
+		static List<Dictionary<string, float>> objWeights;
+		static List<string> objBones;
 
 		public static Mesh Load(string fileName)
 		{
@@ -68,6 +75,9 @@ namespace Tetra
 			lNormals = new List<Vector3>();
 			lTexCoords = new List<Vector2>();
 			lIndices = new List<ushort> ();
+			objWeights = new List<Dictionary<string, float>> ();
+			objBones = new List<string> ();
+
 
 			string name = "unamed";
 			using (Stream stream = GGL.FileSystemHelpers.GetStreamFromPath (fileName)) {
@@ -83,7 +93,7 @@ namespace Tetra
 						string[] parameters = line.Split (' ');
 
 						switch (parameters [0]) {
-						case "o":					
+						case "o":
 							name = parameters [1];
 							break;
 						case "p": // Point
@@ -125,6 +135,22 @@ namespace Tetra
 								break;
 							}
 							break;
+						case "w":
+							int vidx = int.Parse (parameters [1]);
+							Dictionary<string, float> weights = new Dictionary<string, float> ();
+							if (objWeights.Count != vidx)
+								throw new Exception ("not all vertices has weight datas");
+							objWeights.Add (weights);
+							int ptrW = 2;
+							while (ptrW < parameters.Length) {
+								weights [parameters [ptrW]] = float.Parse (parameters [ptrW + 1]);
+								ptrW += 2;
+							}
+							break;
+						case "b":
+							if (!objBones.Contains (parameters [1]))
+								objBones.Add (parameters [1]);
+							break;
 						}
 					}
 					Thread.CurrentThread.CurrentCulture = savedCulture;
@@ -134,6 +160,24 @@ namespace Tetra
 				lNormals.ToArray (), lIndices.ToArray ());
 
 			tmp.Name = name;
+			tmp.Bones = objBones.ToArray ();
+			tmp.Weights = new Vector4[objWeights.Count];
+			for (int i = 0; i < objWeights.Count; i++) {
+				switch (objBones.Count) {
+				case 1:
+					tmp.Weights [i] = new Vector4 (objWeights[i][objBones [0]], 0f, 0f, 0f);
+					break;
+				case 2:
+					tmp.Weights [i] = new Vector4 (objWeights[i][objBones [0]], objWeights[i][objBones [1]], 0f, 0f);
+					break;
+				case 3:
+					tmp.Weights [i] = new Vector4 (objWeights[i][objBones [0]], objWeights[i][objBones [1]], objWeights[i][objBones [2]], 0f);
+					break;
+				case 4:
+					tmp.Weights [i] = new Vector4 (objWeights[i][objBones [0]], objWeights[i][objBones [1]], objWeights[i][objBones [2]], objWeights[i][objBones [3]]);
+					break;
+				}
+			}
 
 			objPositions.Clear();
 			objNormals.Clear();
@@ -142,9 +186,11 @@ namespace Tetra
 			lNormals.Clear();
 			lTexCoords.Clear();
 			lIndices.Clear();
+			objBones.Clear ();
+			objWeights.Clear ();
 
 			return tmp;
-		}			
+		}
 
 		static ushort ParseFaceParameter(string faceParameter)
 		{
@@ -180,14 +226,14 @@ namespace Tetra
 					normal = objNormals[normalIndex];
 				}
 			}
-				
+
 			lPositions.Add(vertex);
 			lTexCoords.Add(texCoord);
 			lNormals.Add(normal);
 
 			int index = lPositions.Count-1;
 			return (ushort)index;
-		}			
+		}
 	}
 	#endregion
 }
