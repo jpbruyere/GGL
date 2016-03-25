@@ -235,14 +235,14 @@ namespace GameLib
 
 		public virtual void Enable(){
 			GL.UseProgram (pgmId);
-
+			UpdateUniforms ();
+		}
+		public virtual void UpdateUniforms(){
 			GL.UniformMatrix4(projectionLocation, false, ref projectionMat);
 			GL.UniformMatrix4 (modelLocation, false, ref modelMat); 
 			GL.UniformMatrix4 (modelViewLocation, false, ref modelViewMat);
 			updateNormalMatrix ();
 			GL.Uniform4 (colorLocation, color);
-
-
 		}
 		public virtual void Disable(){
 			GL.UseProgram (0);
