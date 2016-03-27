@@ -30,8 +30,9 @@ namespace Tetra
 	{
 		public Matrix4 modelMats;
 	}
-	public class VAOItem 
+	public abstract class VAOItem : IDisposable
 	{
+		
 		public int instancesVboId;
 
 		public int BaseVertex;
@@ -44,61 +45,84 @@ namespace Tetra
 		public VAOItem(){
 			
 		}
-	}
-	public class VAOItem<T> : VAOItem, IDisposable where T : struct
-	{
 
-		public T[] Datas;
+		//public abstract Type DataType { get; }
+		//public abstract Type InstancedDataType { get; }
+
+		#region IDisposable implementation
+		public void Dispose ()
+		{
+		}
+		#endregion
+	}
+	public class VAOItem<U> : VAOItem, IDisposable
+		//where T : struct
+		where U : struct
+	{
 		public int InstanceDataLengthInBytes;
+
+		//public T Datas;
+		public U[] InstancedDatas;
 
 		public VAOItem () : base()
 		{
-			InstanceDataLengthInBytes = Marshal.SizeOf(typeof(T));
 			instancesVboId = GL.GenBuffer ();
+
+			InstanceDataLengthInBytes = Marshal.SizeOf(typeof(U));
 		}
 
-		public void AddInstance(T modelMat)
+		public void AddInstance(U instData)
 		{
-			T[] tmp = new T[Datas.Length + 1];
-			Array.Copy (Datas, tmp, Datas.Length);
-			tmp [Datas.Length] = modelMat;
-			Datas = tmp;
+			U[] tmp = new U[InstancedDatas.Length + 1];
+			Array.Copy (InstancedDatas, tmp, InstancedDatas.Length);
+			tmp [InstancedDatas.Length] = instData;
+			InstancedDatas = tmp;
 			UpdateInstancesData ();
 		}
 		public int AddInstance()
 		{
-			T[] tmp = new T[Datas.Length + 1];
-			Array.Copy (Datas, tmp, Datas.Length);
-			Datas = tmp;
+			U[] tmp = new U[InstancedDatas.Length + 1];
+			Array.Copy (InstancedDatas, tmp, InstancedDatas.Length);
+			InstancedDatas = tmp;
 			UpdateInstancesData ();
-			return Datas.Length - 1;
+			return InstancedDatas.Length - 1;
 		}
 		public void RemoveInstance(int index)
 		{
-			T[] tmp = new T[Datas.Length - 1];
+			U[] tmp = new U[InstancedDatas.Length - 1];
 			if (index > 0)
-				Array.Copy (Datas, tmp, index);
-			if (index < Datas.Length - 1)
-				Array.Copy (Datas, index + 1, tmp, index, Datas.Length - 1 - index);
-			Datas = tmp;
+				Array.Copy (InstancedDatas, tmp, index);
+			if (index < InstancedDatas.Length - 1)
+				Array.Copy (InstancedDatas, index + 1, tmp, index, InstancedDatas.Length - 1 - index);
+			InstancedDatas = tmp;
 			UpdateInstancesData ();
 		}
 
 		public void UpdateInstancesData()
 		{
-			if (Datas != null) {				
+			if (InstancedDatas != null) {				
 				GL.BindBuffer (BufferTarget.ArrayBuffer, instancesVboId);
-				GL.BufferData<T> (BufferTarget.ArrayBuffer,
-					new IntPtr (Datas.Length * InstanceDataLengthInBytes),
-					Datas, BufferUsageHint.DynamicDraw);
+				GL.BufferData<U> (BufferTarget.ArrayBuffer,
+					new IntPtr (InstancedDatas.Length * InstanceDataLengthInBytes),
+					InstancedDatas, BufferUsageHint.DynamicDraw);
 				GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 			}			
 		}
+
+//		#region implemented abstract members of VAOItem
+//		public override Type InstancedDataType {
+//			get {
+//				return typeof(U);
+//			}
+//		}
+//		#endregion
 
 		#region IDisposable implementation
 		public void Dispose ()
 		{
 			GL.DeleteBuffer (instancesVboId);
+
+			base.Dispose ();
 		}
 		#endregion
 	}

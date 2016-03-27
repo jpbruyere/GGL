@@ -26,11 +26,15 @@
     <DebugType>Full</DebugType>
     <DebugSymbols>True</DebugSymbols>
     <Optimize>False</Optimize>
+    <IntermediateOutputPath>$(SolutionDir)\build\obj\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)\build\$(Configuration)</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DefineConstants>__linux__</DefineConstants>
     <DebugType>None</DebugType>
     <Optimize>True</Optimize>
+    <IntermediateOutputPath>$(SolutionDir)\build\obj\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)\build\$(Configuration)</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="imgHelpers.cs" />
@@ -60,12 +64,8 @@
     <Compile Include="Shaders\GameLib\ShadedTexture.cs" />
     <Compile Include="Shaders\GameLib\VertexDispShader.cs" />
     <Compile Include="TextureArray.cs" />
-    <Compile Include="Shaders\GameLib\DynamicShader\ShaderData.cs" />
-    <Compile Include="Shaders\GameLib\DynamicShader\DynamicShader.cs" />
     <Compile Include="Tetra\LoaderDDS.cs" />
     <Compile Include="Tetra\Texture.cs" />
-    <Compile Include="Tetra\IndexedVAO.cs" />
-    <Compile Include="Tetra\Mesh.cs" />
     <Compile Include="Tetra\VAOItem.cs" />
     <Compile Include="Tetra\Shader.cs" />
     <Compile Include="Tetra\SkyBox.cs" />
@@ -73,6 +73,11 @@
     <Compile Include="Tetra\Mat4InstancedShader.cs" />
     <Compile Include="Animation\PathAnimation.cs" />
     <Compile Include="BezierPath.cs" />
+    <Compile Include="Tetra\DynamicShading\DynamicShader.cs" />
+    <Compile Include="Tetra\DynamicShading\UniformBufferObject.cs" />
+    <Compile Include="Tetra\DynamicShading\UBOModel.cs" />
+    <Compile Include="Tetra\DynamicShading\VertexArrayObject.cs" />
+    <Compile Include="Tetra\DynamicShading\Mesh.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -99,7 +104,7 @@
     <Folder Include="Shaders\GameLib\" />
     <Folder Include="MiscUtil\" />
     <Folder Include="Animation\" />
-    <Folder Include="Shaders\GameLib\DynamicShader\" />
+    <Folder Include="Tetra\DynamicShading\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\GameLib\effect0.frag" />
@@ -125,5 +130,6 @@
     <None Include="Shaders\GameLib\classicnoise2D.frag" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
+    <None Include="Tetra\Mesh.cs" />
   </ItemGroup>
 </Project>
