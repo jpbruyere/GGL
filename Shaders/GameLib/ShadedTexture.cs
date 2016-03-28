@@ -19,7 +19,7 @@ namespace GameLib
 
 		Vector2 resolution;
 
-		public ShadedTexture (string effectId, int _width = -1, int _height = -1) : 
+		public ShadedTexture (string effectId, int _width = -1, int _height = -1, int initTex = 0) : 
 			base(effectId + ".vert", effectId + ".frag")
 		{
 			if (_width < 0)
@@ -30,6 +30,8 @@ namespace GameLib
 
 			if (height < 0)
 				height = width;
+
+			tex = initTex;
 
 			initFbo ();
 
@@ -43,7 +45,7 @@ namespace GameLib
 		{
 			base.Enable ();
 		}
-		public virtual int OutputTex { get { return tex; } }
+		public virtual int OutputTex { get { return tex; } set { tex = value; }}
 
 		public virtual void Update ()
 		{
@@ -58,7 +60,8 @@ namespace GameLib
 		{
 			drawBuffs = new DrawBuffersEnum[] {	DrawBuffersEnum.ColorAttachment0 };
 
-			tex = new Texture (width, height);
+			if (!GL.IsTexture (tex))
+				tex = new Texture (width, height);
 			GL.GenFramebuffers(1, out fbo);
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
