@@ -204,21 +204,14 @@ namespace Tetra.DynamicShading
 					throw new Exception ("Error loading obj: maximum 4 groups in weighted obj");
 
 				md.Weights = new Vector4[objWeights.Count];
+
 				for (int i = 0; i < objWeights.Count; i++) {
-					switch (objBones.Count) {
-					case 1:
-						md.Weights [i] = new Vector4 (objWeights[i][objBones [0]], 0f, 0f, 0f);
-						break;
-					case 2:
-						md.Weights [i] = new Vector4 (objWeights[i][objBones [0]], objWeights[i][objBones [1]], 0f, 0f);
-						break;
-					case 3:
-						md.Weights [i] = new Vector4 (objWeights[i][objBones [0]], objWeights[i][objBones [1]], objWeights[i][objBones [2]], 0f);
-						break;
-					case 4:
-						md.Weights [i] = new Vector4 (objWeights[i][objBones [0]], objWeights[i][objBones [1]], objWeights[i][objBones [2]], objWeights[i][objBones [3]]);
-						break;
+					float[] weights = new float[4];
+					for (int j = 0; j < objBones.Count; j++) {
+						if (objWeights[i].ContainsKey(objBones [j]))
+							weights[j] = objWeights[i][objBones [j]];
 					}
+					md.Weights [i] = new Vector4 (weights [0], weights [1], weights [2], weights [3]);
 				}
 
 				tmp = new Mesh<WeightedMeshData> (lPositions.ToArray (), md, lIndices.ToArray ());
