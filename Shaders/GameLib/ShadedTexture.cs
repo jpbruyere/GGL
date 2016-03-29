@@ -114,8 +114,11 @@ namespace GameLib
 		public override void Dispose ()
 		{
 			base.Dispose ();
-			GL.DeleteTexture (tex);
-			GL.DeleteFramebuffer (fbo);
+
+			if (GL.IsTexture(tex))
+				GL.DeleteTexture (tex);
+			if (GL.IsFramebuffer(fbo))
+				GL.DeleteFramebuffer (fbo);
 		}
 	}
 }

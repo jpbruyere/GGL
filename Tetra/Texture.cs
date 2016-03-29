@@ -15,7 +15,7 @@ using OpenTK.Graphics.OpenGL;
 namespace Tetra
 {
     [Serializable]
-    public class Texture
+	public class Texture : IDisposable
     {
 		public static TextureMinFilter DefaultMinFilter = TextureMinFilter.Linear;
 		public static TextureMagFilter DefaultMagFilter = TextureMagFilter.Linear;
@@ -262,6 +262,16 @@ namespace Tetra
 
 			bmp.Dispose ();
 		}
+
+		#region IDisposable implementation
+
+		public void Dispose ()
+		{
+			if (GL.IsTexture (texRef))
+				GL.DeleteTexture (texRef);
+		}
+
+		#endregion
     }
 
 }
