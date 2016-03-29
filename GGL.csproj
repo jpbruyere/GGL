@@ -130,6 +130,5 @@
     <None Include="Shaders\GameLib\classicnoise2D.frag" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
-    <None Include="Tetra\Mesh.cs" />
   </ItemGroup>
 </Project>

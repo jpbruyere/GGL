@@ -81,7 +81,7 @@ namespace Tetra.DynamicShading
 	public class VertexArrayObject<T,U> : VertexArrayObject, IDisposable
 		where T : struct
 		where U : struct
-	{		
+	{
 		int[] vboHandles;
 
 		T Datas;
