@@ -5,7 +5,7 @@ using GGL;
 
 namespace GameLib
 {
-	public class ShadedTexture : Shader
+	public class ShadedTexture : Tetra.Shader
 	{
 		protected static vaoMesh quad;
 
@@ -36,7 +36,7 @@ namespace GameLib
 			initFbo ();
 
 			Resolution = new Vector2 (width, height);
-			ProjectionMatrix = OpenTK.Matrix4.CreateOrthographicOffCenter(-0.5f, 0.5f, -0.5f, 0.5f, 1, -1);
+			MVP = OpenTK.Matrix4.CreateOrthographicOffCenter(-0.5f, 0.5f, -0.5f, 0.5f, 1, -1);
 
 			if (quad == null)
 				quad = new vaoMesh (0, 0, 0, 1, 1, 1, 1);

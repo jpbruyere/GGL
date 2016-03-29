@@ -14,7 +14,7 @@ namespace Tetra
 		{
 			Init ();
 		}
-		public Shader (string vertResId, string fragResId, string geomResId = null)
+		public Shader (string vertResId, string fragResId = null, string geomResId = null)
 		{
 
 			Stream s = tryGetStreamForResource (vertResId);
