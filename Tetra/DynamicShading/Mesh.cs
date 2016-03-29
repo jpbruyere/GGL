@@ -93,6 +93,7 @@ namespace Tetra.DynamicShading
 		static List<Vector2> lTexCoords;
 		static List<ushort> lIndices;
 		static List<Dictionary<string, float>> objWeights;
+		static List<Dictionary<string, float>> lWeights;
 		static List<string> objBones;
 
 		public static Mesh Load(string fileName)
@@ -105,6 +106,7 @@ namespace Tetra.DynamicShading
 			lTexCoords = new List<Vector2>();
 			lIndices = new List<ushort> ();
 			objWeights = new List<Dictionary<string, float>> ();
+			lWeights = new List<Dictionary<string, float>> ();
 			objBones = new List<string> ();
 
 			string name = "unamed";
@@ -203,13 +205,13 @@ namespace Tetra.DynamicShading
 				if (objBones.Count > 4)
 					throw new Exception ("Error loading obj: maximum 4 groups in weighted obj");
 
-				md.Weights = new Vector4[objWeights.Count];
+				md.Weights = new Vector4[lWeights.Count];
 
-				for (int i = 0; i < objWeights.Count; i++) {
+				for (int i = 0; i < lWeights.Count; i++) {
 					float[] weights = new float[4];
 					for (int j = 0; j < objBones.Count; j++) {
-						if (objWeights[i].ContainsKey(objBones [j]))
-							weights[j] = objWeights[i][objBones [j]];
+						if (lWeights[i].ContainsKey(objBones [j]))
+							weights[j] = lWeights[i][objBones [j]];
 					}
 					md.Weights [i] = new Vector4 (weights [0], weights [1], weights [2], weights [3]);
 				}
@@ -228,6 +230,7 @@ namespace Tetra.DynamicShading
 			lIndices.Clear();
 			objBones.Clear ();
 			objWeights.Clear ();
+			lWeights.Clear ();
 
 			return tmp;
 		}			
@@ -270,6 +273,7 @@ namespace Tetra.DynamicShading
 			lPositions.Add(vertex);
 			lTexCoords.Add(texCoord);
 			lNormals.Add(normal);
+			lWeights.Add (objWeights[vertexIndex]);
 
 			int index = lPositions.Count-1;
 			return (ushort)index;

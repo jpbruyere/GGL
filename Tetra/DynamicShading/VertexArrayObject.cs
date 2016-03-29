@@ -181,6 +181,11 @@ namespace Tetra.DynamicShading
 					GL.BufferData<Vector3> (BufferTarget.ArrayBuffer,
 						new IntPtr (vaoData.Length * Vector3.SizeInBytes),
 						tmp, BufferUsageHint.StaticDraw);
+				} else if (fi.FieldType.GetElementType () == typeof(Vector4)) {
+					Vector4[] tmp = (Vector4[])(vaoData as object);
+					GL.BufferData<Vector4> (BufferTarget.ArrayBuffer,
+						new IntPtr (vaoData.Length * Vector4.SizeInBytes),
+						tmp, BufferUsageHint.StaticDraw);
 				}
 			}
 
@@ -211,7 +216,9 @@ namespace Tetra.DynamicShading
 					GL.VertexAttribPointer (vaPtr, 2, VertexAttribPointerType.Float, true, Vector2.SizeInBytes, 0);
 				else if (fi.FieldType.GetElementType() == typeof(Vector3))
 					GL.VertexAttribPointer (vaPtr, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
-
+				else if (fi.FieldType.GetElementType() == typeof(Vector4))
+					GL.VertexAttribPointer (vaPtr, 4, VertexAttribPointerType.Float, true, Vector4.SizeInBytes, 0);
+				
 				vaPtr++;
 			}
 

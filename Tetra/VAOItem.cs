@@ -30,6 +30,15 @@ namespace Tetra
 	{
 		public Matrix4 modelMats;
 	}
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
+	public struct WeightedInstancedData
+	{
+		public Matrix4 modelMats;
+		public Quaternion quat0;
+		public Quaternion quat1;
+		public Quaternion quat2;
+		public Quaternion quat3;
+	}
 	public class VAOItem : IDisposable
 	{
 		
