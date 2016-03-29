@@ -24,7 +24,7 @@ namespace Tetra.DynamicShading
 {
 	public abstract class UBOModel{
 		public int	GlobalBindingPoint,
-		BlockIndex;
+					BlockIndex;
 		public string Name;
 
 		public UBOModel (int globalBindingPoint, string name = null){

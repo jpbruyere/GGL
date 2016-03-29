@@ -30,7 +30,7 @@ namespace Tetra
 	{
 		public Matrix4 modelMats;
 	}
-	public abstract class VAOItem : IDisposable
+	public class VAOItem : IDisposable
 	{
 		
 		public int instancesVboId;

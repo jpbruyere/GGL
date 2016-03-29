@@ -11,7 +11,12 @@ namespace Tetra.DynamicShading
 	public abstract class VertexArrayObject : IDisposable{
 		public const int instanceBufferIndex = 4;
 
-		protected int vaoHandle;
+		protected int	vaoHandle,
+						positionVboHandle,
+						eboHandle;
+
+		protected Vector3[] positions;
+		protected ushort[] indices;
 
 		public List<VAOItem> Meshes = new List<VAOItem>();
 
@@ -23,6 +28,38 @@ namespace Tetra.DynamicShading
 
 		public abstract Type VAODataType { get; }
 		public abstract Type VAOInstancedDataType { get; }
+
+		public virtual VAOItem Add(Mesh mesh){
+			VAOItem vaoi = new VAOItem ();
+
+			vaoi.IndicesCount = mesh.Indices.Length;
+
+			if (Meshes.Count == 0) {
+				positions = mesh.Positions;
+				indices = mesh.Indices;
+				Meshes.Add (vaoi);
+				return vaoi;
+			}
+
+			vaoi.BaseVertex = positions.Length;
+			vaoi.IndicesOffset = indices.Length;
+
+			Vector3[] tmpPositions;
+			ushort[] tmpIndices;
+
+			tmpPositions = new Vector3[positions.Length + mesh.Positions.Length];
+			positions.CopyTo (tmpPositions, 0);
+			mesh.Positions.CopyTo (tmpPositions, positions.Length);
+			positions = tmpPositions;
+
+			tmpIndices = new ushort[indices.Length + mesh.Indices.Length];
+			indices.CopyTo (tmpIndices, 0);
+			mesh.Indices.CopyTo (tmpIndices, indices.Length);
+			indices = tmpIndices;
+
+			Meshes.Add (vaoi);
+			return vaoi;
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Bind(){
@@ -45,21 +82,17 @@ namespace Tetra.DynamicShading
 		where T : struct
 		where U : struct
 	{		
-		int	positionVboHandle,
-			eboHandle;
-
 		int[] vboHandles;
-		Vector3[] positions;
-		ushort[] indices;
 
 		T Datas;
 
 		public VertexArrayObject() : base(){
 		}
 
-		public VAOItem<U> Add(Mesh<T> mesh)
+		public override VAOItem Add(Mesh _mesh)
 		{
 			VAOItem<U> vaoi = new VAOItem<U> ();
+			Mesh<T> mesh = _mesh as Mesh<T>;
 
 			vaoi.IndicesCount = mesh.Indices.Length;
 

@@ -76,6 +76,9 @@ namespace Tetra.DynamicShading
 			return tmp;
 		}
 
+		public void RegisterVertexAttributeStruct(Type vas){
+			
+		}
 		public void RegisterUBODataStruct(UBOModel uboM){
 			if (uboM.GlobalBindingPoint > maxUniformBufferBindings)
 				throw new Exception ("UBO Error: max UBO binding point limit reached");
