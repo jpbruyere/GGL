@@ -20,6 +20,8 @@
     <DelaySign>False</DelaySign>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>__linux__;TRACE;DEBUG</DefineConstants>
@@ -78,6 +80,7 @@
     <Compile Include="Tetra\DynamicShading\UBOModel.cs" />
     <Compile Include="Tetra\DynamicShading\VertexArrayObject.cs" />
     <Compile Include="Tetra\DynamicShading\Mesh.cs" />
+    <Compile Include="Tetra\DynamicShading\ShadingProgram.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
