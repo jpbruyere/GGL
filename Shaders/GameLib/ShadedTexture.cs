@@ -19,8 +19,8 @@ namespace GameLib
 
 		Vector2 resolution;
 
-		public ShadedTexture (string effectId, int _width = -1, int _height = -1, int initTex = 0) : 
-			base(effectId + ".vert", effectId + ".frag")
+		public ShadedTexture (string vertResPath, string fragResPath = null, int _width = -1, int _height = -1, int initTex = 0)
+			:base(vertResPath, fragResPath)
 		{
 			if (_width < 0)
 				return;

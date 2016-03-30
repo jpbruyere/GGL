@@ -14,29 +14,13 @@ namespace Tetra
 		{
 			Init ();
 		}
-		public Shader (string vertResId, string fragResId = null, string geomResId = null)
+		public Shader (string vertResPath, string fragResPath = null, string geomResPath = null)
 		{
+			VertSourcePath = vertResPath;
+			FragSourcePath = fragResPath;
+			GeomSourcePath = geomResPath;
 
-			Stream s = tryGetStreamForResource (vertResId);
-			if (s != null) {
-				using (StreamReader sr = new StreamReader (s)) {
-					vertSource = sr.ReadToEnd ();
-				}
-			}
-
-			s = tryGetStreamForResource (fragResId);
-			if (s != null) {
-				using (StreamReader sr = new StreamReader (s)) {
-					fragSource = sr.ReadToEnd ();
-				}
-			}
-
-			s = tryGetStreamForResource (geomResId);
-			if (s != null) {
-				using (StreamReader sr = new StreamReader (s)) {
-					geomSource = sr.ReadToEnd ();
-				}
-			}
+			loadSourcesFiles ();
 
 			Init ();
 		}
@@ -53,6 +37,9 @@ namespace Tetra
 		}
 		#endregion
 
+		public string	VertSourcePath,
+						FragSourcePath,
+						GeomSourcePath;
 		#region Sources
 		protected string _vertSource = @"
 			#version 330
@@ -135,6 +122,10 @@ namespace Tetra
 		/// </summary>
 		public virtual void Init()
 		{
+			Compile ();
+		}
+		public void Reload(){
+			loadSourcesFiles ();
 			Compile ();
 		}
 		public virtual void Compile()
@@ -231,6 +222,36 @@ namespace Tetra
 		}
 		#endregion
 
+		void loadSourcesFiles(){
+			Stream s;
+
+			if (!string.IsNullOrEmpty (VertSourcePath)) {
+				s = GGL.FileSystemHelpers.GetStreamFromPath (VertSourcePath);
+				if (s != null) {
+					using (StreamReader sr = new StreamReader (s)) {
+						vertSource = sr.ReadToEnd ();
+					}
+				}
+			}
+
+			if (!string.IsNullOrEmpty (FragSourcePath)) {
+				s = GGL.FileSystemHelpers.GetStreamFromPath (FragSourcePath);
+				if (s != null) {
+					using (StreamReader sr = new StreamReader (s)) {
+						fragSource = sr.ReadToEnd ();
+					}
+				}
+			}
+
+			if (!string.IsNullOrEmpty (GeomSourcePath)) {
+				s = GGL.FileSystemHelpers.GetStreamFromPath (GeomSourcePath);
+				if (s != null) {
+					using (StreamReader sr = new StreamReader (s)) {
+						geomSource = sr.ReadToEnd ();
+					}
+				}
+			}			
+		}
 		void compileShader(int shader, string source)
 		{
 			GL.ShaderSource(shader, source);
