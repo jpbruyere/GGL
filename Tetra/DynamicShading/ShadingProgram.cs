@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using OpenTK;
 using System.IO;
+using System.Diagnostics;
 
 namespace Tetra.DynamicShading
 {
@@ -34,20 +35,79 @@ namespace Tetra.DynamicShading
 		mediump,
 		highp
 	}
+	public enum GLType{
+		GLvoid,
+		GLfloat,
+		GLdouble,
+		GLbool,
+		GLint,
+		GLuint,
+		GLvec2,
+		GLvec3,
+		GLvec4,
+		GLbvec2,
+		GLbvec3,
+		GLbvec4,
+		GLivec2,
+		GLivec3,
+		GLivec4,
+		GLuvec2,
+		GLuvec3,
+		GLuvec4,
+		GLdvec2,
+		GLdvec3,
+		GLdvec4,
+		GLmat2x4,
+		GLmat2,
+		GLmat3,
+		GLmat4,
+		GLsampler1D,
+		GLsampler2D,
+		GLsampler3D,
+		GLsamplerCube,
+		GLsampler2DRect​,
+		GLsampler1DArray​,
+		GLsampler2DArray​,
+		GLsamplerCubeArray,
+		GLsamplerBuffer,
+		GLsampler2DMS​,
+		GLsampler2DMSArray​,
+		GLsampler1DShadow,
+		GLSampler2DShadow,
+		GLsamplerCubeShadow,
+		GLsampler2DRect​Shadow,
+		GLsampler1DArray​Shadow,
+		GLsampler2DArray​Shadow,
+		GLsamplerCubeArrayShadow,
+	}
 	#endregion
 	public class Uniform {
 		public string Name;
 		public int Location;
 		int pgmId;
 	}
+	public class ShadingInterface{
+		public int Location=-1;
+		public GLType Type;
+		public string Name;
+
+		public override string ToString ()
+		{
+			return string.Format ("{0} {1}", Type.ToString().Substring(2), Name);
+		}
+	}
 	public class ShaderSource : IDisposable
-	{		
+	{
 		public string GLSLVersion = "unknown";
-		public Precision FloatPrecision = Precision.unknown;
+		public Precision FloatPrecision = Precision.highp;
+		public Precision IntPrecision = Precision.highp;
 		public int ShaderID;
 		public ShaderType Type;
 		public string Source;
 		public string Path;
+		public List<ShadingInterface> Inputs;
+		public List<ShadingInterface> Outputs;
+		public List<ShadingInterface> Uniforms;
 
 		public ShaderSource(string _source, ShaderType _type){
 			Type = _type;
@@ -65,12 +125,22 @@ namespace Tetra.DynamicShading
 			load ();
 			compile ();
 		}
+		public void GetUniformLocations(ShadingProgram program)
+		{
+			foreach (ShadingInterface si in Uniforms) {
+				if (program.Uniforms.ContainsKey (si.Name))
+					continue;
+				program.Uniforms [si.Name] = si;
+				if (si.Location < 0)
+					si.Location = GL.GetUniformLocation (program.pgmId, si.Name);
+			}
+		}
 		void load(){
 			if (!string.IsNullOrEmpty (Path)) {
 				Stream s = GGL.FileSystemHelpers.GetStreamFromPath (Path);
 				using (StreamReader sr = new StreamReader (s))
 					Source = sr.ReadToEnd ();
-			}			
+			}
 		}
 		void compile()
 		{
@@ -90,27 +160,31 @@ namespace Tetra.DynamicShading
 		}
 		#region Analyse
 		void anaylyse(){
-			string[] lines;
-
 			int i = 0;
 			char c;
 			string tok;
 
+			Inputs = new List<ShadingInterface> ();
+			Outputs = new List<ShadingInterface> ();
+			Uniforms = new List<ShadingInterface> ();
+
 			while(!eof(i)){
-				if (!passSpaces (ref i))
+				if (!skipSpaces (ref i))
 					break;
-				switch (Source[i++]) {
+				switch (peek(i)) {
 				case '#':
+					i++;
 					tok = nextToken (ref i);
 					if (string.Equals (tok, "version", StringComparison.Ordinal)) {
-						if (!passSpaces (ref i))
+						if (!skipSpaces (ref i))
 							throw new Exception ("Syntax error");
 						GLSLVersion = nextToken (ref i);
 						readLine (ref i);
 					}
 					break;
 				case '/':
-					c = peek (i);	
+					i++;
+					c = peek (i);
 					if (c == '/') {
 						i++;
 						readLine (ref i);
@@ -119,23 +193,141 @@ namespace Tetra.DynamicShading
 						readBlockComment (ref i);
 					}
 					break;
+				case '\n':
+				case '\r':
+					break;
+				case '{':
+					i++;
+					while (!eof (i)) {
+						tok = nextToken(ref i, true);
+						if (string.Equals (tok, "}", StringComparison.Ordinal)) {
+							break;
+						}
+					}
+					break;
+				default:
+					ShadingInterface si = null;
+					tok = nextToken (ref i);
+					GLType t;
+					if (!Enum.TryParse ("GL" + tok, out t)) {
+						if (string.Equals (tok, "precision", StringComparison.Ordinal)) {
+							Precision tmp;
+							if (!Enum.TryParse (nextToken (ref i, true), out tmp))
+								throw new Exception ("Syntax error");
+							tok = nextToken (ref i, true);
+							if (string.Equals (tok, "float", StringComparison.Ordinal))
+								FloatPrecision = tmp;
+							else if (string.Equals (tok, "int", StringComparison.Ordinal))
+								IntPrecision = tmp;
+							else
+								throw new Exception ("Syntax error");
+
+							checkAndSkipSemiColon (ref i);
+							break;
+						}
+						si = new ShadingInterface ();
+						if (string.Equals (tok, "layout", StringComparison.Ordinal)) {
+							tok = nextToken (ref i, true);
+							if (string.Equals (tok, "(", StringComparison.Ordinal)) {
+								//process layout qualifier
+								while (!eof (i)) {
+									string qualifier, value = "";
+									qualifier = nextQualifierName (ref i, true);
+									tok = nextToken (ref i, true);
+									if (string.Equals (tok, "=", StringComparison.Ordinal)) {
+										value = nextValue (ref i, true);
+										tok = nextToken (ref i, true);
+									}
+									if (string.Equals (qualifier, "location", StringComparison.Ordinal))
+										si.Location = int.Parse (value);
+									else if (string.Equals (qualifier, "std140", StringComparison.Ordinal))
+										si.Location = int.Parse (value);
+									else
+										throw new Exception ("Unknown qualifier");
+
+									Debug.WriteLine ("qualifier: " + qualifier + " value: " + value);
+									if (string.Equals (tok, ")", StringComparison.Ordinal)) {
+										tok = nextToken (ref i, true);
+										break;
+									}
+									if (!string.Equals (tok, ",", StringComparison.Ordinal))
+										throw new Exception ("Syntax error");
+								}
+							}
+						}
+						if (string.Equals (tok, "uniform", StringComparison.Ordinal))
+							Uniforms.Add (si);
+						else if (string.Equals (tok, "in", StringComparison.Ordinal))
+							Inputs.Add (si);
+						else if (string.Equals (tok, "out", StringComparison.Ordinal))
+							Outputs.Add (si);
+
+						tok = nextToken (ref i, true);
+						if (!Enum.TryParse ("GL" + tok, out si.Type))
+							throw new Exception ("Unknown type: " + tok);
+					}
+					tok = nextToken (ref i, true);
+
+					if (si != null)
+						si.Name = tok;
+
+					tok = nextToken (ref i, true);
+					if (string.Equals (tok, "(", StringComparison.Ordinal)) {
+						//function
+						while (!eof (i)) {
+							tok = nextToken (ref i, true);
+							if (string.Equals (tok, ")", StringComparison.Ordinal)) {
+								break;
+							}
+						}
+						break;
+					} else if (string.Equals (tok, ";", StringComparison.Ordinal))
+						break;
+
+					checkAndSkipSemiColon (ref i);
+					break;
 				}
 			}
+		}
+		bool checkAndSkipSemiColon(ref int i){
+			return skipSpaces (ref i, true) ? Source [i++] == ';' :  false;
 		}
 		char peek(int i){
 			if (eof(i))
 				return (char)0;
 			return Source [i];
 		}
-		string nextToken(ref int i){			
+		string nextValue(ref int i, bool skipWhiteSpaces = false){
+			return nextToken(ref i, skipWhiteSpaces);
+		}
+		string nextQualifierName(ref int i, bool skipWhiteSpaces = false){
+			return nextToken(ref i, skipWhiteSpaces);
+		}
+		string nextName(ref int i, bool skipWhiteSpaces = false){
+			return nextToken(ref i, skipWhiteSpaces);
+		}
+		string nextToken(ref int i, bool skipWhiteSpaces = false){
+			if (skipWhiteSpaces){
+				if (!skipSpaces (ref i))
+					return null;
+			}
 			string tmp = "";
 			while(!eof(i)){
-				char c = Source [i++];
+				char c = peek(i);
 				if (char.IsWhiteSpace (c))
 					return tmp;
-				else if (c == '\r' || c == '\n')
+				else if (c == '\n')
 					return tmp;
-				tmp += c;
+				else if (char.IsLetterOrDigit (c) || c == '_')
+					tmp += c;
+				else {
+					if (string.IsNullOrEmpty (tmp)) {
+						tmp += c;
+						i++;
+					}
+					return tmp;
+				}
+				i++;
 			}
 			return tmp;
 		}
@@ -159,15 +351,17 @@ namespace Tetra.DynamicShading
 					continue;
 				else if (c == '*') {
 					if (peek (i) == '/')
-						return tmp;					
-				}					
+						return tmp;
+				}
 				tmp += c;
 			}
 			return tmp;
 		}
-		bool passSpaces(ref int i){
+		bool skipSpaces(ref int i, bool skipLineBreak = false){
 			while (i < Source.Length) {
-				if (char.IsWhiteSpace (Source [i]))
+				if (char.IsWhiteSpace (Source [i]) || Source [i] == '\r')
+					i++;
+				else if (skipLineBreak && Source [i] == '\n')
 					i++;
 				else
 					return true;
@@ -181,7 +375,7 @@ namespace Tetra.DynamicShading
 
 		static string OtkToGlslType(Type t){
 			if (t == typeof(float))
-				return "float";			
+				return "float";
 			if (t == typeof(Vector2))
 				return "vec2";
 			if (t == typeof(Vector3))
@@ -189,7 +383,7 @@ namespace Tetra.DynamicShading
 			if (t == typeof(Vector4))
 				return "vec4";
 			if (t == typeof(Matrix4))
-				return "mat4";			
+				return "mat4";
 
 			return "unknown type";
 		}
@@ -257,7 +451,7 @@ namespace Tetra.DynamicShading
 		static ShadingProgram(){
 			maxUniformBufferBindings = GL.GetInteger (GetPName.MaxUniformBufferBindings);
 		}
-			
+
 		#region CTOR
 		public ShadingProgram ()
 		{
@@ -266,12 +460,12 @@ namespace Tetra.DynamicShading
 		public ShadingProgram (string vertResPath, string fragResPath = null, string geomResPath = null)
 		{
 			if (!string.IsNullOrEmpty (vertResPath))
-				VertexShader = new ShaderSource (ShaderType.VertexShader, vertResPath);			
+				VertexShader = new ShaderSource (ShaderType.VertexShader, vertResPath);
 
-			if (!string.IsNullOrEmpty (fragResPath))				
+			if (!string.IsNullOrEmpty (fragResPath))
 				FragmentShader = new ShaderSource (ShaderType.FragmentShader, fragResPath);
 
-			if (!string.IsNullOrEmpty (geomResPath))				
+			if (!string.IsNullOrEmpty (geomResPath))
 				GeometryShader = new ShaderSource (ShaderType.GeometryShader, geomResPath);
 
 			Init ();
@@ -282,18 +476,9 @@ namespace Tetra.DynamicShading
 							FragmentShader,
 							GeometryShader;
 
+		public Dictionary<string, ShadingInterface> Uniforms;
 
-
-		#region Private and protected fields
-		protected int vsId, fsId, gsId, pgmId, mvpLocation;
-
-		Matrix4 mvp = Matrix4.Identity;
-		#endregion
-
-		public Matrix4 MVP{
-			set { mvp = value; }
-			get { return mvp; }
-		}
+		public int pgmId;
 
 		#region Public functions
 		/// <summary>
@@ -307,7 +492,7 @@ namespace Tetra.DynamicShading
 				FragmentShader = new ShaderSource (defaultFragSource, ShaderType.FragmentShader);
 			if (GeometryShader == null && !string.IsNullOrEmpty(defaultGeomSource))
 				GeometryShader = new ShaderSource (defaultGeomSource, ShaderType.GeometryShader);
-			
+
 			Compile ();
 		}
 		public virtual void Compile()
@@ -348,12 +533,19 @@ namespace Tetra.DynamicShading
 
 		protected virtual void BindVertexAttributes()
 		{
-			GL.BindAttribLocation(pgmId, 0, "in_position");
-			GL.BindAttribLocation(pgmId, 1, "in_tex");
+			foreach (ShadingInterface si in VertexShader.Inputs)
+				GL.BindAttribLocation(pgmId, si.Location, si.Name);
 		}
 		protected virtual void GetUniformLocations()
 		{
-			mvpLocation = GL.GetUniformLocation(pgmId, "mvp");
+			Uniforms = new Dictionary<string, ShadingInterface> ();
+
+			if (VertexShader != null)
+				VertexShader.GetUniformLocations (this);
+			if (FragmentShader != null)
+				FragmentShader.GetUniformLocations (this);
+			if (GeometryShader != null)
+				GeometryShader.GetUniformLocations (this);
 		}
 		protected virtual void BindSamplesSlots(){
 			GL.Uniform1(GL.GetUniformLocation (pgmId, "tex"), 0);
@@ -362,7 +554,7 @@ namespace Tetra.DynamicShading
 		public virtual void Enable(){
 			GL.UseProgram (pgmId);
 
-			GL.UniformMatrix4(mvpLocation, false, ref mvp);
+
 		}
 		public virtual void Disable(){
 			GL.UseProgram (0);
@@ -393,7 +585,7 @@ namespace Tetra.DynamicShading
 			if (FragmentShader != null)
 				FragmentShader.Dispose ();
 			if (GeometryShader != null)
-				GeometryShader.Dispose ();			
+				GeometryShader.Dispose ();
 		}
 		#endregion
 	}
