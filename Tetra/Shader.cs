@@ -24,17 +24,6 @@ namespace Tetra
 
 			Init ();
 		}
-		Stream tryGetStreamForResource(string resId){
-			if (string.IsNullOrEmpty (resId))
-				return null;
-
-			Stream s = Assembly.GetEntryAssembly ().
-				GetManifestResourceStream (resId);
-			return s == null ?
-				Assembly.GetExecutingAssembly ().
-					GetManifestResourceStream (resId) :
-				s;
-		}
 		#endregion
 
 		public string	VertSourcePath,
