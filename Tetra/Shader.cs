@@ -4,11 +4,18 @@ using System.IO;
 using System.Reflection;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using System.Collections.Generic;
 
 namespace Tetra
 {
 	public class Shader : IDisposable
 	{
+		static List<Shader> registeredShaders = new List<Shader>();
+
+		public static List<Shader> RegisteredShaders {
+			get { return registeredShaders; }
+		}
+
 		#region CTOR
 		public Shader ()
 		{
@@ -23,6 +30,9 @@ namespace Tetra
 			loadSourcesFiles ();
 
 			Init ();
+		}
+		~Shader(){
+			RegisteredShaders.Remove (this);
 		}
 		#endregion
 
@@ -111,11 +121,47 @@ namespace Tetra
 		/// </summary>
 		public virtual void Init()
 		{
+			RegisteredShaders.Add (this);			
 			Compile ();
 		}
 		public void Reload(){
 			loadSourcesFiles ();
 			Compile ();
+		}
+		public void SetSource(ShaderType shaderType, string _source){
+			switch (shaderType) {
+			case ShaderType.FragmentShader:
+				fragSource = _source;
+				return;
+			case ShaderType.VertexShader:
+				vertSource = _source;
+				return;
+			case ShaderType.GeometryShader:
+				geomSource = _source;
+				return;
+			}
+		}
+		public string GetSource(ShaderType shaderType){
+			switch (shaderType) {
+			case ShaderType.FragmentShader:
+				return fragSource;
+			case ShaderType.VertexShader:
+				return vertSource;
+			case ShaderType.GeometryShader:
+				return geomSource;
+			}
+			return "";
+		}
+		public string GetSourcePath(ShaderType shaderType){
+			switch (shaderType) {
+			case ShaderType.FragmentShader:
+				return FragSourcePath;
+			case ShaderType.VertexShader:
+				return VertSourcePath;
+			case ShaderType.GeometryShader:
+				return GeomSourcePath;
+			}
+			return "";
 		}
 		public virtual void Compile()
 		{
@@ -258,10 +304,13 @@ namespace Tetra
 				Debug.WriteLine(source);
 			}
 		}
-
+		public override string ToString ()
+		{
+			return string.Format ("{0} {1} {2}", VertSourcePath, FragSourcePath, GeomSourcePath);
+		}
 		#region IDisposable implementation
 		public virtual void Dispose ()
-		{
+		{			
 			if (GL.IsProgram (pgmId))
 				GL.DeleteProgram (pgmId);
 
