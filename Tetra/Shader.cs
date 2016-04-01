@@ -76,7 +76,7 @@ namespace Tetra
 		#endregion
 
 		#region Private and protected fields
-		protected int vsId, fsId, gsId, pgmId, mvpLocation;
+		public int vsId, fsId, gsId, pgmId, mvpLocation;
 
 		Matrix4 mvp = Matrix4.Identity;
 		#endregion

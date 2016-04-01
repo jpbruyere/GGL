@@ -94,6 +94,7 @@ namespace Tetra.DynamicShading
 		static List<ushort> lIndices;
 		static List<Dictionary<string, float>> objWeights;
 		static List<Dictionary<string, float>> lWeights;
+		static List<string> objGroups;
 		static List<string> objBones;
 
 		public static Mesh Load(string fileName)
@@ -108,6 +109,7 @@ namespace Tetra.DynamicShading
 			objWeights = new List<Dictionary<string, float>> ();
 			lWeights = new List<Dictionary<string, float>> ();
 			objBones = new List<string> ();
+			objGroups = new List<string> ();
 
 			string name = "unamed";
 			using (Stream stream = GGL.FileSystemHelpers.GetStreamFromPath (fileName)) {
@@ -174,8 +176,8 @@ namespace Tetra.DynamicShading
 							int ptrW = 2;
 							while (ptrW < parameters.Length) {
 								//make list of group's names
-								if (!objBones.Contains (parameters [ptrW]))
-									objBones.Add (parameters [ptrW]);
+								if (!objGroups.Contains (parameters [ptrW]))
+									objGroups.Add (parameters [ptrW]);
 								weights [parameters [ptrW]] = float.Parse (parameters [ptrW + 1]);
 								ptrW += 2;
 							}
@@ -198,20 +200,26 @@ namespace Tetra.DynamicShading
 
 				tmp = new Mesh<MeshData> (lPositions.ToArray (), md, lIndices.ToArray ());
 			} else {
+				string[] bones;
+				if (objBones.Count > 0)
+					bones = objBones.ToArray ();
+				else
+					bones = objGroups.ToArray ();
+				
 				WeightedMeshData md;
 				md.Normals = lNormals.ToArray ();
 				md.TexCoords = lTexCoords.ToArray ();
 
-				if (objBones.Count > 4)
+				if (bones.Length > 4)
 					throw new Exception ("Error loading obj: maximum 4 groups in weighted obj");
 
 				md.Weights = new Vector4[lWeights.Count];
 
 				for (int i = 0; i < lWeights.Count; i++) {
 					float[] weights = new float[4];
-					for (int j = 0; j < objBones.Count; j++) {
-						if (lWeights[i].ContainsKey(objBones [j]))
-							weights[j] = lWeights[i][objBones [j]];
+					for (int j = 0; j < bones.Length; j++) {
+						if (lWeights[i].ContainsKey(bones [j]))
+							weights[j] = lWeights[i][bones [j]];
 					}
 					md.Weights [i] = new Vector4 (weights [0], weights [1], weights [2], weights [3]);
 				}
@@ -228,6 +236,7 @@ namespace Tetra.DynamicShading
 			lNormals.Clear();
 			lTexCoords.Clear();
 			lIndices.Clear();
+			objGroups.Clear();
 			objBones.Clear ();
 			objWeights.Clear ();
 			lWeights.Clear ();
@@ -273,7 +282,8 @@ namespace Tetra.DynamicShading
 			lPositions.Add(vertex);
 			lTexCoords.Add(texCoord);
 			lNormals.Add(normal);
-			lWeights.Add (objWeights[vertexIndex]);
+			if (objWeights.Count > 0)
+				lWeights.Add (objWeights[vertexIndex]);
 
 			int index = lPositions.Count-1;
 			return (ushort)index;

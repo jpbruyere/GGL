@@ -38,10 +38,10 @@ namespace Tetra
 		public Quaternion quat1;
 		public Quaternion quat2;
 		public Quaternion quat3;
-		public Vector4 bpos0;
-		public Vector4 bpos1;
-		public Vector4 bpos2;
-		public Vector4 bpos3;
+		public Quaternion bpos0;
+		public Quaternion bpos1;
+		public Quaternion bpos2;
+		public Quaternion bpos3;
 	}
 	public class VAOItem : IDisposable
 	{

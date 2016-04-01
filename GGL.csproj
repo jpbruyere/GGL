@@ -81,6 +81,7 @@
     <Compile Include="Tetra\DynamicShading\VertexArrayObject.cs" />
     <Compile Include="Tetra\DynamicShading\Mesh.cs" />
     <Compile Include="Tetra\DynamicShading\ShadingProgram.cs" />
+    <Compile Include="Tetra\DualQuaternion.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
