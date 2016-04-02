@@ -263,6 +263,54 @@ namespace Tetra
 			bmp.Dispose ();
 		}
 
+		public static void SaveTextureFromId(int texId, string path){
+			int depthSize, alphaSize, redSize, greenSize, blueSize;
+			int texW, texH;
+			OpenTK.Graphics.OpenGL.PixelFormat pixFormat;
+			PixelType pixType;
+			byte[] data;
+
+			GL.BindTexture (TextureTarget.Texture2D, texId);
+			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureWidth, out texW);
+			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureHeight, out texH);
+			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureDepthSize, out depthSize);
+			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureAlphaSize, out alphaSize);
+			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureRedSize, out redSize);
+			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureGreenSize, out greenSize);
+			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureBlueSize, out blueSize);
+
+			if (depthSize > 0) {
+				pixFormat = OpenTK.Graphics.OpenGL.PixelFormat.DepthComponent;
+				pixType = PixelType.Float;
+				float[] df = new float[texW* texH];
+				GL.GetTexImage (TextureTarget.Texture2D, 0, pixFormat, pixType, df);
+				GL.BindTexture (TextureTarget.Texture2D, 0);
+				data = new byte[texW * texH * 4];
+				float min = df.Min ();
+				float max = df.Max ();
+				float diff = max - min;
+				for (int i = 0; i < df.Length; i++) {
+					byte b = (byte)((df [i] - min) / diff *255f );
+					data [i * 4] = b;
+					data [i * 4 + 1] = b;
+					data [i * 4 + 2] = b;
+					data [i * 4 + 3] = 255;
+				}
+			} else {
+				pixFormat = OpenTK.Graphics.OpenGL.PixelFormat.Bgra;
+				pixType = PixelType.UnsignedByte;
+				data = new byte[texW * texH * 4];
+				GL.GetTexImage (TextureTarget.Texture2D, 0, pixFormat, pixType, data);
+			}
+
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+			data = imgHelpers.imgHelpers.flitY(data, 4*texW,texH);
+			Cairo.Surface bmp = new Cairo.ImageSurface(data, Cairo.Format.ARGB32, texW, texH, texW*4);
+			bmp.WriteToPng (path);
+			bmp.Dispose ();			
+		}
+
+
 		#region IDisposable implementation
 
 		public void Dispose ()
