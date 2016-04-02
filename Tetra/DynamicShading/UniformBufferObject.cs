@@ -22,7 +22,7 @@ using System;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
 
-namespace Tetra.DynamicShading
+namespace Tetra
 {
 	public class UniformBufferObject<T> : IDisposable where T : struct
 	{
@@ -30,6 +30,8 @@ namespace Tetra.DynamicShading
 
 		public int UboId;
 		public T Datas;
+		public BufferUsageHint Usage;
+
 
 		static UniformBufferObject(){
 			dataLengthInBytes = Marshal.SizeOf(typeof(T));
@@ -37,18 +39,27 @@ namespace Tetra.DynamicShading
 				throw new Exception ("UBO Error: Uniform Block size limit reached for: " + typeof(T).Name);
 		}
 
-		public UniformBufferObject ()
-		{			
+		public UniformBufferObject (BufferUsageHint usage = BufferUsageHint.StaticCopy)
+		{
+			Usage = usage;
 			UboId = GL.GenBuffer ();
+			Update ();
 		}
-		public UniformBufferObject(T datas) : this(){
+		public UniformBufferObject(T datas, BufferUsageHint usage = BufferUsageHint.StaticCopy)
+			: this(usage){
+
 			Datas = datas;
-			UpdateGPU ();
+
+			Update ();
 		}
-		public void UpdateGPU(){
+		public void Update(T datas){
+			Datas = datas;
+			Update ();
+		}
+		public void Update(){
 			GL.BindBuffer (BufferTarget.UniformBuffer, UboId);
-			GL.BufferData<T>(BufferTarget.UniformBuffer,Marshal.SizeOf(dataLengthInBytes),
-				ref Datas, BufferUsageHint.DynamicCopy);
+			GL.BufferData<T>(BufferTarget.UniformBuffer,dataLengthInBytes,
+				ref Datas, Usage);
 			GL.BindBuffer (BufferTarget.UniformBuffer, 0);
 		}
 		public void Bind(int globalBindingPoint){
