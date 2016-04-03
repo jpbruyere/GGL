@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 namespace Tetra
 {
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct VAOInstancedData
+	public struct InstancedData
 	{
 		public Matrix4 modelMats;
 	}
