@@ -54,7 +54,12 @@ namespace Tetra
 
 		public Texture(){
 		}
-
+		public void SetFilters(TextureMinFilter minFilter, TextureMagFilter magFilter){
+			GL.BindTexture(TexTarget, texRef);
+			GL.TexParameter(TexTarget, TextureParameterName.TextureMinFilter, (int)minFilter);
+			GL.TexParameter(TexTarget, TextureParameterName.TextureMagFilter, (int)magFilter);
+			GL.BindTexture(TexTarget, 0);
+		}
 		void createTexture(IntPtr data)
 		{
 			GL.GenTextures(1, out texRef);
