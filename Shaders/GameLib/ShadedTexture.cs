@@ -95,7 +95,6 @@ namespace GameLib
 			quad.Render (PrimitiveType.TriangleStrip);
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-			GL.DrawBuffer(DrawBufferMode.Back);
 
 			if (clear)
 				GL.ClearColor(clearCols[0], clearCols[1], clearCols[2], clearCols[3]);
