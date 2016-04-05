@@ -63,13 +63,11 @@
     <Compile Include="Animation\FloatAnimation.cs" />
     <Compile Include="Animation\AngleAnimation.cs" />
     <Compile Include="Animation\AnimationTemplate.cs" />
-    <Compile Include="Shaders\GameLib\ShadedTexture.cs" />
     <Compile Include="Shaders\GameLib\VertexDispShader.cs" />
     <Compile Include="TextureArray.cs" />
     <Compile Include="Tetra\LoaderDDS.cs" />
     <Compile Include="Tetra\Texture.cs" />
     <Compile Include="Tetra\VAOItem.cs" />
-    <Compile Include="Tetra\Shader.cs" />
     <Compile Include="Tetra\SkyBox.cs" />
     <Compile Include="Tetra\SkyboxShader.cs" />
     <Compile Include="Tetra\Mat4InstancedShader.cs" />
@@ -82,6 +80,10 @@
     <Compile Include="Tetra\DynamicShading\Mesh.cs" />
     <Compile Include="Tetra\DynamicShading\ShadingProgram.cs" />
     <Compile Include="Tetra\DualQuaternion.cs" />
+    <Compile Include="Tetra\DynamicShading\FrameBufferObject.cs" />
+    <Compile Include="Tetra\Shader\Shader.cs" />
+    <Compile Include="Tetra\Shader\ShadedTexture.cs" />
+    <Compile Include="Tetra\Shader\FilterShader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -109,6 +111,7 @@
     <Folder Include="MiscUtil\" />
     <Folder Include="Animation\" />
     <Folder Include="Tetra\DynamicShading\" />
+    <Folder Include="Tetra\Shader\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\GameLib\effect0.frag" />

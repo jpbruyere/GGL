@@ -109,7 +109,7 @@ namespace Tetra
 			set { _geomSource = value; }
 		}
 
-		public Matrix4 MVP{
+		public virtual Matrix4 MVP{
 			set { mvp = value; }
 			get { return mvp; }
 		}
