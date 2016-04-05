@@ -26,7 +26,7 @@ using OpenTK;
 
 namespace Tetra.DynamicShading
 {
-	public class DynamicShader : Shader
+	public class DynamicShader : Tetra.Shader
 	{
 		#region enums
 		public enum Precision{

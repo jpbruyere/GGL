@@ -78,12 +78,13 @@
     <Compile Include="Tetra\DynamicShading\UBOModel.cs" />
     <Compile Include="Tetra\DynamicShading\VertexArrayObject.cs" />
     <Compile Include="Tetra\DynamicShading\Mesh.cs" />
-    <Compile Include="Tetra\DynamicShading\ShadingProgram.cs" />
     <Compile Include="Tetra\DualQuaternion.cs" />
     <Compile Include="Tetra\DynamicShading\FrameBufferObject.cs" />
     <Compile Include="Tetra\Shader\Shader.cs" />
     <Compile Include="Tetra\Shader\ShadedTexture.cs" />
     <Compile Include="Tetra\Shader\FilterShader.cs" />
+    <Compile Include="Tetra\DynamicShading\Shader.cs" />
+    <Compile Include="Tetra\DynamicShading\ShaderProgram.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

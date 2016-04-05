@@ -1,5 +1,5 @@
 ﻿//
-//  DynamicShader.cs
+//  Shader.cs
 //
 //  Author:
 //       Jean-Philippe Bruyère <jp.bruyere@hotmail.com>
@@ -21,86 +21,19 @@
 using System;
 using OpenTK.Graphics.OpenGL;
 using System.Collections.Generic;
-using System.Reflection;
-using OpenTK;
 using System.IO;
+using OpenTK;
 using System.Diagnostics;
 
 namespace Tetra.DynamicShading
 {
-	#region enums
-	public enum Precision{
-		unknown,
-		lowp,
-		mediump,
-		highp
-	}
-	public enum GLType{
-		GLvoid,
-		GLfloat,
-		GLdouble,
-		GLbool,
-		GLint,
-		GLuint,
-		GLvec2,
-		GLvec3,
-		GLvec4,
-		GLbvec2,
-		GLbvec3,
-		GLbvec4,
-		GLivec2,
-		GLivec3,
-		GLivec4,
-		GLuvec2,
-		GLuvec3,
-		GLuvec4,
-		GLdvec2,
-		GLdvec3,
-		GLdvec4,
-		GLmat2x4,
-		GLmat2,
-		GLmat3,
-		GLmat4,
-		GLsampler1D,
-		GLsampler2D,
-		GLsampler3D,
-		GLsamplerCube,
-		GLsampler2DRect​,
-		GLsampler1DArray​,
-		GLsampler2DArray​,
-		GLsamplerCubeArray,
-		GLsamplerBuffer,
-		GLsampler2DMS​,
-		GLsampler2DMSArray​,
-		GLsampler1DShadow,
-		GLSampler2DShadow,
-		GLsamplerCubeShadow,
-		GLsampler2DRect​Shadow,
-		GLsampler1DArray​Shadow,
-		GLsampler2DArray​Shadow,
-		GLsamplerCubeArrayShadow,
-	}
-	#endregion
-	public class Uniform {
-		public string Name;
-		public int Location;
-		int pgmId;
-	}
-	public class ShadingInterface{
-		public int Location=-1;
-		public GLType Type;
-		public string Name;
-
-		public override string ToString ()
-		{
-			return string.Format ("{0} {1}", Type.ToString().Substring(2), Name);
-		}
-	}
-	public class ShaderSource : IDisposable
+	public class Shader : IDisposable
 	{
 		public string GLSLVersion = "unknown";
 		public Precision FloatPrecision = Precision.highp;
 		public Precision IntPrecision = Precision.highp;
+		//TODO: parse head `layout(Packed)`
+		public MemoryLayout DefaultMemoryLayout = MemoryLayout.Shared;
 		public int ShaderID;
 		public ShaderType Type;
 		public string Source;
@@ -109,13 +42,13 @@ namespace Tetra.DynamicShading
 		public List<ShadingInterface> Outputs;
 		public List<ShadingInterface> Uniforms;
 
-		public ShaderSource(string _source, ShaderType _type){
+		public Shader(string _source, ShaderType _type){
 			Type = _type;
 			Source = _source;
 
 			compile ();
 		}
-		public ShaderSource(ShaderType _type, string _sourcePath = null){
+		public Shader(ShaderType _type, string _sourcePath = null){
 			Type = _type;
 			Path = _sourcePath;
 
@@ -125,7 +58,7 @@ namespace Tetra.DynamicShading
 			load ();
 			compile ();
 		}
-		public void GetUniformLocations(ShadingProgram program)
+		public void GetUniformLocations(ShaderProgram program)
 		{
 			foreach (ShadingInterface si in Uniforms) {
 				if (program.Uniforms.ContainsKey (si.Name))
@@ -158,6 +91,7 @@ namespace Tetra.DynamicShading
 			if (compileResult != 1)
 				throw new Exception("Compile Error!\n" + info);
 		}
+
 		#region Analyse
 		void anaylyse(){
 			int i = 0;
@@ -225,7 +159,7 @@ namespace Tetra.DynamicShading
 							checkAndSkipSemiColon (ref i);
 							break;
 						}
-						si = new ShadingInterface ();
+						si = new ShadingInterface (DefaultMemoryLayout);
 						if (string.Equals (tok, "layout", StringComparison.Ordinal)) {
 							tok = nextToken (ref i, true);
 							if (string.Equals (tok, "(", StringComparison.Ordinal)) {
@@ -240,8 +174,16 @@ namespace Tetra.DynamicShading
 									}
 									if (string.Equals (qualifier, "location", StringComparison.Ordinal))
 										si.Location = int.Parse (value);
+									else if (string.Equals (qualifier, "index", StringComparison.Ordinal))
+										si.Index = int.Parse (value);
 									else if (string.Equals (qualifier, "std140", StringComparison.Ordinal))
-										si.Location = int.Parse (value);
+										si.MemLayout = MemoryLayout.std140;
+									else if (string.Equals (qualifier, "std430", StringComparison.Ordinal))
+										si.MemLayout = MemoryLayout.std430;
+									else if (string.Equals (qualifier, "Shared", StringComparison.Ordinal))
+										si.MemLayout = MemoryLayout.Shared;
+									else if (string.Equals (qualifier, "Packed", StringComparison.Ordinal))
+										si.MemLayout = MemoryLayout.Packed;
 									else
 										throw new Exception ("Unknown qualifier");
 
@@ -263,6 +205,8 @@ namespace Tetra.DynamicShading
 							Outputs.Add (si);
 
 						tok = nextToken (ref i, true);
+
+						//TODO:could be uniform block name instead
 						if (!Enum.TryParse ("GL" + tok, out si.Type))
 							throw new Exception ("Unknown type: " + tok);
 					}
@@ -396,198 +340,4 @@ namespace Tetra.DynamicShading
 		}
 		#endregion
 	}
-	public class ShadingProgram : IDisposable
-	{
-		#region Default Shaders Sources
-		const string defaultVertSource = @"
-			#version 330
-			precision lowp float;
-
-			uniform mat4 mvp;
-
-			layout(location = 0) in vec3 in_position;
-			layout(location = 1) in vec2 in_tex;
-
-			out vec2 texCoord;
-
-			void main(void)
-			{
-				texCoord = in_tex;
-				gl_Position = mvp * vec4(in_position, 1.0);
-			}";
-
-		const string defaultFragSource = @"
-			#version 330
-			precision lowp float;
-
-			uniform sampler2D tex;
-
-			in vec2 texCoord;
-			out vec4 out_frag_color;
-
-			void main(void)
-			{
-				out_frag_color = texture( tex, texCoord);
-			}";
-		string defaultGeomSource = @"";
-		//			#version 330
-		//			layout(triangles) in;
-		//			layout(triangle_strip, max_vertices=3) out;
-		//			void main()
-		//			{
-		//				for(int i=0; i<3; i++)
-		//				{
-		//					gl_Position = gl_in[i].gl_Position;
-		//					EmitVertex();
-		//				}
-		//				EndPrimitive();
-		//			}";
-		#endregion
-
-		#region GL Limits
-		static int maxUniformBufferBindings;
-		#endregion
-
-		static ShadingProgram(){
-			maxUniformBufferBindings = GL.GetInteger (GetPName.MaxUniformBufferBindings);
-		}
-
-		#region CTOR
-		public ShadingProgram ()
-		{
-			Init ();
-		}
-		public ShadingProgram (string vertResPath, string fragResPath = null, string geomResPath = null)
-		{
-			if (!string.IsNullOrEmpty (vertResPath))
-				VertexShader = new ShaderSource (ShaderType.VertexShader, vertResPath);
-
-			if (!string.IsNullOrEmpty (fragResPath))
-				FragmentShader = new ShaderSource (ShaderType.FragmentShader, fragResPath);
-
-			if (!string.IsNullOrEmpty (geomResPath))
-				GeometryShader = new ShaderSource (ShaderType.GeometryShader, geomResPath);
-
-			Init ();
-		}
-		#endregion
-
-		public ShaderSource	VertexShader,
-							FragmentShader,
-							GeometryShader;
-
-		public Dictionary<string, ShadingInterface> Uniforms;
-
-		public int pgmId;
-
-		#region Public functions
-		/// <summary>
-		/// configure sources and compile
-		/// </summary>
-		public virtual void Init()
-		{
-			if (VertexShader == null && !string.IsNullOrEmpty(defaultVertSource))
-				VertexShader = new ShaderSource (defaultVertSource, ShaderType.VertexShader);
-			if (FragmentShader == null && !string.IsNullOrEmpty(defaultFragSource))
-				FragmentShader = new ShaderSource (defaultFragSource, ShaderType.FragmentShader);
-			if (GeometryShader == null && !string.IsNullOrEmpty(defaultGeomSource))
-				GeometryShader = new ShaderSource (defaultGeomSource, ShaderType.GeometryShader);
-
-			Compile ();
-		}
-		public virtual void Compile()
-		{
-			pgmId = GL.CreateProgram();
-
-			if (VertexShader != null)
-				GL.AttachShader(pgmId, VertexShader.ShaderID);
-			if (FragmentShader != null)
-				GL.AttachShader(pgmId, FragmentShader.ShaderID);
-			if (GeometryShader != null)
-				GL.AttachShader(pgmId, GeometryShader.ShaderID);
-
-			BindVertexAttributes ();
-
-			string info;
-			GL.LinkProgram(pgmId);
-			GL.GetProgramInfoLog(pgmId, out info);
-
-			if (!string.IsNullOrEmpty (info))
-				throw new Exception ("Linkage Error: " + info);
-
-			info = null;
-
-			GL.ValidateProgram(pgmId);
-			GL.GetProgramInfoLog(pgmId, out info);
-			if (!string.IsNullOrEmpty (info))
-				throw new Exception ("Validation Error: " + info);
-
-			GL.UseProgram (pgmId);
-
-
-			GetUniformLocations ();
-			BindSamplesSlots ();
-
-			Disable ();
-		}
-
-		protected virtual void BindVertexAttributes()
-		{
-			foreach (ShadingInterface si in VertexShader.Inputs)
-				GL.BindAttribLocation(pgmId, si.Location, si.Name);
-		}
-		protected virtual void GetUniformLocations()
-		{
-			Uniforms = new Dictionary<string, ShadingInterface> ();
-
-			if (VertexShader != null)
-				VertexShader.GetUniformLocations (this);
-			if (FragmentShader != null)
-				FragmentShader.GetUniformLocations (this);
-			if (GeometryShader != null)
-				GeometryShader.GetUniformLocations (this);
-		}
-		protected virtual void BindSamplesSlots(){
-			GL.Uniform1(GL.GetUniformLocation (pgmId, "tex"), 0);
-		}
-
-		public virtual void Enable(){
-			GL.UseProgram (pgmId);
-
-
-		}
-		public virtual void Disable(){
-			GL.UseProgram (0);
-		}
-		public static void Enable(Shader s)
-		{
-			if (s == null)
-				return;
-			s.Enable ();
-		}
-		public static void Disable(Shader s)
-		{
-			if (s == null)
-				return;
-			s.Disable ();
-		}
-		#endregion
-
-
-		#region IDisposable implementation
-		public virtual void Dispose ()
-		{
-			if (GL.IsProgram (pgmId))
-				GL.DeleteProgram (pgmId);
-
-			if (VertexShader != null)
-				VertexShader.Dispose ();
-			if (FragmentShader != null)
-				FragmentShader.Dispose ();
-			if (GeometryShader != null)
-				GeometryShader.Dispose ();
-		}
-		#endregion
-	}
 }
-

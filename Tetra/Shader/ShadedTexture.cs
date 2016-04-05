@@ -1,13 +1,13 @@
 ﻿   using System;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
-using GGL;
 
-namespace GameLib
+namespace Tetra
 {
-	public class ShadedTexture : Tetra.Shader
+	public class ShadedTexture : Shader
 	{
-		protected static vaoMesh quad;
+		public static GGL.vaoMesh quad;
+		public static Matrix4 orthoMat;
 
 		protected int 	resolutionLocation;
 
@@ -19,7 +19,12 @@ namespace GameLib
 
 		Vector2 resolution;
 
-		public ShadedTexture (string vertResPath, string fragResPath = null, int _width = -1, int _height = -1, int initTex = 0)
+		static ShadedTexture(){
+			quad = new GGL.vaoMesh (0, 0, 0, 1, 1, 1, 1);
+			orthoMat = OpenTK.Matrix4.CreateOrthographicOffCenter(-0.5f, 0.5f, -0.5f, 0.5f, 1, -1);
+		}
+
+		public ShadedTexture (string vertResPath, string fragResPath = null, int _width = 256, int _height = 256, int initTex = 0)
 			:base(vertResPath, fragResPath)
 		{
 			if (_width < 0)
@@ -35,16 +40,14 @@ namespace GameLib
 
 			initFbo ();
 
-			Resolution = new Vector2 (width, height);
-			MVP = OpenTK.Matrix4.CreateOrthographicOffCenter(-0.5f, 0.5f, -0.5f, 0.5f, 1, -1);
+			resolution = new Vector2 (width, height);
 
-			if (quad == null)
-				quad = new vaoMesh (0, 0, 0, 1, 1, 1, 1);
+			this.Enable ();
+			GL.UniformMatrix4 (mvpLocation, false, ref orthoMat);
+			GL.Uniform2 (resolutionLocation, resolution);
+			this.Disable ();
 		}
-		public override void Enable ()
-		{
-			base.Enable ();
-		}
+
 		public virtual int OutputTex { get { return tex; } set { tex = value; }}
 
 		public virtual void Update ()
@@ -101,8 +104,6 @@ namespace GameLib
 			GL.Viewport (viewport [0], viewport [1], viewport [2], viewport [3]);
 		}
 		#endregion
-
-		public Vector2 Resolution { set { resolution = value; }}
 
 		protected override void GetUniformLocations ()
 		{

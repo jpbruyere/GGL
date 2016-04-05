@@ -226,6 +226,7 @@ namespace Tetra
 			GL.BindAttribLocation(pgmId, 0, "in_position");
 			GL.BindAttribLocation(pgmId, 1, "in_tex");
 			GL.BindAttribLocation(pgmId, 4, "in_model");
+
 		}
 		protected virtual void GetUniformLocations()
 		{
