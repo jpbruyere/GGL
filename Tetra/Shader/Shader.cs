@@ -235,7 +235,9 @@ namespace Tetra
 		protected virtual void BindSamplesSlots(){
 			GL.Uniform1(GL.GetUniformLocation (pgmId, "tex"), 0);
 		}
-
+		public void SetMVP(Matrix4 _mvp){
+			GL.UniformMatrix4(mvpLocation, false, ref _mvp);
+		}
 		public virtual void Enable(){
 			GL.UseProgram (pgmId);
 

@@ -17,6 +17,7 @@ namespace Tetra
     [Serializable]
 	public class Texture : IDisposable
     {
+		public static int NumSamples = 4;
 		public static TextureTarget DefaultTarget = TextureTarget.Texture2D;
 		public static TextureMinFilter DefaultMinFilter = TextureMinFilter.Linear;
 		public static TextureMagFilter DefaultMagFilter = TextureMagFilter.Linear;
@@ -63,6 +64,10 @@ namespace Tetra
 			TexTarget = DefaultTarget;
 
 			createTexture (IntPtr.Zero);
+
+			if (TexTarget == TextureTarget.Texture2DMultisample)
+				return;
+			
 			configureTexParameters ();
 		}
 
@@ -79,8 +84,11 @@ namespace Tetra
 		{
 			GL.GenTextures(1, out texRef);
 			GL.BindTexture(TexTarget, texRef);
-			GL.TexImage2D(TexTarget, 0, InternalFormat, Width, Height, 0,
-				PixelFormat, PixelType, data);
+			if (TexTarget == TextureTarget.Texture2DMultisample)
+				GL.TexImage2DMultisample ((TextureTargetMultisample)TexTarget, NumSamples, InternalFormat, Width, Height, true);
+			else
+				GL.TexImage2D(TexTarget, 0, InternalFormat, Width, Height, 0,
+					PixelFormat, PixelType, data);
 		}
 		void configureTexParameters()
 		{
@@ -90,9 +98,10 @@ namespace Tetra
 			}else
 				GL.TexParameter(TexTarget, TextureParameterName.TextureMinFilter, (int)DefaultMinFilter);
 			GL.TexParameter(TexTarget, TextureParameterName.TextureMagFilter, (int)DefaultMagFilter);
-			GL.TexParameter(TexTarget, TextureParameterName.TextureWrapS, (int)DefaultWrapMode);
-			GL.TexParameter(TexTarget, TextureParameterName.TextureWrapT, (int)DefaultWrapMode);
-			GL.TexParameter(TexTarget, TextureParameterName.TextureWrapR, (int)DefaultWrapMode);
+//			GL.TexParameter(TexTarget, TextureParameterName.TextureWrapS, (int)DefaultWrapMode);
+//			GL.TexParameter(TexTarget, TextureParameterName.TextureWrapT, (int)DefaultWrapMode);
+//			if (TexTarget == TextureTarget.Texture3D || TexTarget == TextureTarget.TextureCubeMap)
+//				GL.TexParameter(TexTarget, TextureParameterName.TextureWrapR, (int)DefaultWrapMode);
 		}
 						
         public static implicit operator int(Texture t)
@@ -280,7 +289,26 @@ namespace Tetra
 
 			bmp.Dispose ();
 		}
+		static TextureTarget bindAndGetTexTargetFromId(int texId){
+			GL.BindTextures(0, 1,new int[]{texId});
+			GL.ActiveTexture(TextureUnit.Texture0);
+			int boundId = 0;
 
+			boundId = GL.GetInteger(GetPName.TextureBinding1D);
+			if (boundId == texId)
+				return TextureTarget.Texture1D;
+			boundId = GL.GetInteger(GetPName.TextureBinding2D);
+			if (boundId == texId)
+				return TextureTarget.Texture2D;
+			boundId = GL.GetInteger(GetPName.TextureBinding3D);
+			if (boundId == texId)
+				return TextureTarget.Texture3D;
+			boundId = GL.GetInteger(GetPName.TextureBinding2DMultisample);
+			if (boundId == texId)
+				return TextureTarget.Texture2DMultisample;
+
+			return TextureTarget.Texture2D;
+		}
 		public static void SaveTextureFromId(int texId, string path){
 			int depthSize, alphaSize, redSize, greenSize, blueSize;
 			int texW, texH;
@@ -288,21 +316,22 @@ namespace Tetra
 			PixelType pixType;
 			byte[] data;
 
-			GL.BindTexture (TextureTarget.Texture2D, texId);
-			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureWidth, out texW);
-			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureHeight, out texH);
-			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureDepthSize, out depthSize);
-			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureAlphaSize, out alphaSize);
-			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureRedSize, out redSize);
-			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureGreenSize, out greenSize);
-			GL.GetTexLevelParameter (TextureTarget.Texture2D, 0, GetTextureParameter.TextureBlueSize, out blueSize);
+			TextureTarget tt = bindAndGetTexTargetFromId (texId);
+
+			GL.GetTexLevelParameter (tt, 0, GetTextureParameter.TextureWidth, out texW);
+			GL.GetTexLevelParameter (tt, 0, GetTextureParameter.TextureHeight, out texH);
+			GL.GetTexLevelParameter (tt, 0, GetTextureParameter.TextureDepthSize, out depthSize);
+			GL.GetTexLevelParameter (tt, 0, GetTextureParameter.TextureAlphaSize, out alphaSize);
+			GL.GetTexLevelParameter (tt, 0, GetTextureParameter.TextureRedSize, out redSize);
+			GL.GetTexLevelParameter (tt, 0, GetTextureParameter.TextureGreenSize, out greenSize);
+			GL.GetTexLevelParameter (tt, 0, GetTextureParameter.TextureBlueSize, out blueSize);
 
 			if (depthSize > 0) {
 				pixFormat = OpenTK.Graphics.OpenGL.PixelFormat.DepthComponent;
 				pixType = PixelType.Float;
 				float[] df = new float[texW* texH];
-				GL.GetTexImage (TextureTarget.Texture2D, 0, pixFormat, pixType, df);
-				GL.BindTexture (TextureTarget.Texture2D, 0);
+				GL.GetTexImage (tt, 0, pixFormat, pixType, df);
+				GL.BindTexture (tt, 0);
 				data = new byte[texW * texH * 4];
 				float min = df.Min ();
 				float max = df.Max ();
@@ -318,10 +347,10 @@ namespace Tetra
 				pixFormat = OpenTK.Graphics.OpenGL.PixelFormat.Bgra;
 				pixType = PixelType.UnsignedByte;
 				data = new byte[texW * texH * 4];
-				GL.GetTexImage (TextureTarget.Texture2D, 0, pixFormat, pixType, data);
+				GL.GetTexImage (tt, 0, pixFormat, pixType, data);
 			}
 
-			GL.BindTexture (TextureTarget.Texture2D, 0);
+			GL.BindTexture (tt, 0);
 			data = imgHelpers.imgHelpers.flitY(data, 4*texW,texH);
 			Cairo.Surface bmp = new Cairo.ImageSurface(data, Cairo.Format.ARGB32, texW, texH, texW*4);
 			bmp.WriteToPng (path);
