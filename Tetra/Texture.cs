@@ -17,6 +17,7 @@ namespace Tetra
     [Serializable]
 	public class Texture : IDisposable
     {
+		public static TextureTarget DefaultTarget = TextureTarget.Texture2D;
 		public static TextureMinFilter DefaultMinFilter = TextureMinFilter.Linear;
 		public static TextureMagFilter DefaultMagFilter = TextureMagFilter.Linear;
 		public static TextureWrapMode DefaultWrapMode = TextureWrapMode.Clamp;
@@ -27,6 +28,7 @@ namespace Tetra
 
 		public static void ResetToDefaultLoadingParams()
 		{
+			DefaultTarget = TextureTarget.Texture2D;
 			DefaultMinFilter = TextureMinFilter.Linear;
 			DefaultMagFilter = TextureMagFilter.Linear;
 			DefaultWrapMode = TextureWrapMode.Clamp;
@@ -38,21 +40,34 @@ namespace Tetra
 
         public string MapPath;
 		public TextureTarget TexTarget = TextureTarget.Texture2D;
+		public PixelInternalFormat InternalFormat = PixelInternalFormat.Rgba;
+		public OpenTK.Graphics.OpenGL.PixelFormat PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat.Bgra;
+		public PixelType PixelType = PixelType.UnsignedByte;
         public uint texRef;
 		public int Width = -1;
 		public int Height = -1;
 		public int LayerCount = 0;
 
-		public Texture(int width, int height)
-		{
+		public Texture(int width, int height,
+			PixelInternalFormat internalFormat = PixelInternalFormat.Rgba,
+			OpenTK.Graphics.OpenGL.PixelFormat pixelFormat = OpenTK.Graphics.OpenGL.PixelFormat.Bgra,
+			PixelType pixelType = PixelType.UnsignedByte)
+		{			
 			Width = width;
 			Height = height;
+
+			InternalFormat = internalFormat;
+			PixelFormat = pixelFormat;
+			PixelType = pixelType;
+
+			TexTarget = DefaultTarget;
 
 			createTexture (IntPtr.Zero);
 			configureTexParameters ();
 		}
 
 		public Texture(){
+			TexTarget = DefaultTarget;
 		}
 		public void SetFilters(TextureMinFilter minFilter, TextureMagFilter magFilter){
 			GL.BindTexture(TexTarget, texRef);
@@ -64,8 +79,8 @@ namespace Tetra
 		{
 			GL.GenTextures(1, out texRef);
 			GL.BindTexture(TexTarget, texRef);
-			GL.TexImage2D(TexTarget, 0, PixelInternalFormat.Rgba, Width, Height, 0,
-				OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data);
+			GL.TexImage2D(TexTarget, 0, InternalFormat, Width, Height, 0,
+				PixelFormat, PixelType, data);
 		}
 		void configureTexParameters()
 		{
@@ -162,16 +177,16 @@ namespace Tetra
 							ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
 						tmp.TexTarget = TextureTarget.TextureCubeMapPositiveX + i;
-						GL.TexImage2D(tmp.TexTarget, 0, PixelInternalFormat.Rgba, bmp.Width, bmp.Height, 0,
-							OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmpdata.Scan0);															
+						GL.TexImage2D(tmp.TexTarget, 0, tmp.InternalFormat, bmp.Width, bmp.Height, 0,
+							tmp.PixelFormat, tmp.PixelType, bmpdata.Scan0);															
 						bmp.UnlockBits(bmpdata);
 					}
 					i++;
 				}
 				while(i<6){
 					tmp.TexTarget = TextureTarget.TextureCubeMapPositiveX + i;
-					GL.TexImage2D(tmp.TexTarget, 0, PixelInternalFormat.Rgba, tmp.Width, tmp.Height, 0,
-						OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, IntPtr.Zero);									
+					GL.TexImage2D(tmp.TexTarget, 0, tmp.InternalFormat, tmp.Width, tmp.Height, 0,
+						tmp.PixelFormat, tmp.PixelType, IntPtr.Zero);									
 
 					i++;
 				}
@@ -232,10 +247,9 @@ namespace Tetra
 
 				GL.GenTextures(1, out tmp.texRef);
 				GL.BindTexture(tmp.TexTarget, tmp.texRef);
-				IntPtr ptr = new IntPtr(0);
 				GL.TexImage3D(tmp.TexTarget, 0, 
-					PixelInternalFormat.Rgba, tmp.Width, tmp.Height, tmp.LayerCount, 0, 
-					OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, pointer);
+					tmp.InternalFormat, tmp.Width, tmp.Height, tmp.LayerCount, 0, 
+					tmp.PixelFormat, tmp.PixelType, pointer);
 
 				pinnedArray.Free();
 
@@ -257,8 +271,7 @@ namespace Tetra
 
 			byte[] data = new byte[Width*Height*4];
 
-			GL.GetTexImage (TexTarget, 0, 
-				OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data);
+			GL.GetTexImage (TexTarget, 0, PixelFormat, PixelType, data);
 
 			GL.BindTexture (TexTarget, 0);
 
