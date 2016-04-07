@@ -62,7 +62,30 @@ namespace Tetra.DynamicShading
 			Indices = _indices;
 			Positions = _positions;
 		}
+
+		public Mesh<MeshData> CreateQuad(float x, float y, float z, float width, float height, float TileX = 1f, float TileY = 1f)
+		{
+			return new Mesh<MeshData> (
+			new Vector3[] {
+				new Vector3 (x - width / 2, y + height / 2, z),
+				new Vector3 (x - width / 2, y - height / 2, z),
+				new Vector3 (x + width / 2, y + height / 2, z),
+				new Vector3 (x + width / 2, y - height / 2, z)},
+			new MeshData (new Vector2[] {
+				new Vector2 (0, TileY),
+				new Vector2 (0, 0),
+				new Vector2 (TileX, TileY),
+				new Vector2 (TileX, 0)},
+			new Vector3[] {
+				Vector3.UnitZ,
+				Vector3.UnitZ,
+				Vector3.UnitZ,
+				Vector3.UnitZ}),
+			new ushort[] { 0, 1, 2, 3 });
+
+		}
 	}
+
 	public class Mesh<T> : Mesh where T : struct
 	{
 		public T Datas;
