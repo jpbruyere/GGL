@@ -63,7 +63,7 @@ namespace Tetra.DynamicShading
 			Positions = _positions;
 		}
 
-		public Mesh<MeshData> CreateQuad(float x, float y, float z, float width, float height, float TileX = 1f, float TileY = 1f)
+		public static Mesh<MeshData> CreateQuad(float x, float y, float z, float width, float height, float TileX = 1f, float TileY = 1f)
 		{
 			return new Mesh<MeshData> (
 			new Vector3[] {

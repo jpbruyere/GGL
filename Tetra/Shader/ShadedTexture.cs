@@ -7,7 +7,8 @@ namespace Tetra
 	public class ShadedTexture : Shader
 	{
 		public static GGL.vaoMesh quad;
-		public static Matrix4 orthoMat;
+		public static Matrix4 orthoMat
+		= OpenTK.Matrix4.CreateOrthographicOffCenter (-0.5f, 0.5f, -0.5f, 0.5f, 1, -1);
 
 		protected int 	resolutionLocation;
 
@@ -21,7 +22,6 @@ namespace Tetra
 
 		static ShadedTexture(){
 			quad = new GGL.vaoMesh (0, 0, 0, 1, 1, 1, 1);
-			orthoMat = OpenTK.Matrix4.CreateOrthographicOffCenter(-0.5f, 0.5f, -0.5f, 0.5f, 1, -1);
 		}
 
 		public ShadedTexture (string vertResPath, string fragResPath = null, int _width = 256, int _height = 256, int initTex = 0)
