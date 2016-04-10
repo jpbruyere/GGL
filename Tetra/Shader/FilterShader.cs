@@ -26,7 +26,7 @@ namespace Tetra
 {
 	public class FilterShader : ShadedTexture
 	{
-		public FilterShader (string vertResPath, string fragResPath = null, int _width = 256, int _height = 256, int initTex = 0)
+		public FilterShader (string vertResPath, string fragResPath = null, int _width = 256, int _height = 256, Tetra.Texture initTex = null)
 			: base(vertResPath, fragResPath,_width,_height,initTex)
 		{
 			

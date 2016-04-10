@@ -133,6 +133,7 @@
     <EmbeddedResource Include="Shaders\GameLib\effect10.frag" />
     <EmbeddedResource Include="Shaders\GameLib\VertDisp.vert" />
     <EmbeddedResource Include="Shaders\GameLib\Texture.frag" />
+    <EmbeddedResource Include="Tetra\mstexsaver.frag" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\GameLib\classicnoise2D.frag" />

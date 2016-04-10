@@ -13,7 +13,8 @@ namespace Tetra
 		protected int 	resolutionLocation;
 
 		protected int width, height;
-		protected int tex, fbo;
+		protected Tetra.Texture tex;
+		protected int fbo;
 		protected bool clear = true;
 
 		protected DrawBuffersEnum[] drawBuffs;
@@ -24,7 +25,7 @@ namespace Tetra
 			quad = new GGL.vaoMesh (0, 0, 0, 1, 1, 1, 1);
 		}
 
-		public ShadedTexture (string vertResPath, string fragResPath = null, int _width = 256, int _height = 256, int initTex = 0)
+		public ShadedTexture (string vertResPath, string fragResPath = null, int _width = 256, int _height = 256, Tetra.Texture initTex = null)
 			:base(vertResPath, fragResPath)
 		{
 			if (_width < 0)
@@ -48,7 +49,7 @@ namespace Tetra
 			this.Disable ();
 		}
 
-		public virtual int OutputTex { get { return tex; } set { tex = value; }}
+		public virtual Tetra.Texture OutputTex { get { return tex; } set { tex = value; }}
 
 		public virtual void Update ()
 		{
@@ -63,8 +64,9 @@ namespace Tetra
 		{
 			drawBuffs = new DrawBuffersEnum[] {	DrawBuffersEnum.ColorAttachment0 };
 
-			if (!GL.IsTexture (tex))
-				tex = new Texture (width, height);
+			if (tex != null)
+				tex.Dispose();
+			tex = new Texture (width, height);
 			GL.GenFramebuffers(1, out fbo);
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
@@ -76,7 +78,7 @@ namespace Tetra
 				throw new Exception(GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer).ToString());
 			}
 
-			GL.BindFramebuffer(FramebufferTarget.FramebufferExt, 0);
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
 		}
 		protected void updateFbo()
@@ -115,8 +117,8 @@ namespace Tetra
 		{
 			base.Dispose ();
 
-			if (GL.IsTexture(tex))
-				GL.DeleteTexture (tex);
+			if (tex != null)
+				tex.Dispose ();
 			if (GL.IsFramebuffer(fbo))
 				GL.DeleteFramebuffer (fbo);
 		}
