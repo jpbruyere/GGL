@@ -82,6 +82,10 @@ namespace GGL
 			CreateVBOs ();
 			CreateVAOs ();
 		}
+		public void CreateBuffers(){
+			CreateVBOs ();
+			CreateVAOs ();
+		}
 		protected void CreateVBOs()
 		{
 			positionVboHandle = GL.GenBuffer();
@@ -205,22 +209,39 @@ namespace GGL
 			m1.Dispose ();
 			m2.Dispose ();
 
-			int offset = m1.positions.Length;
+			if (m1.positions == null) {
+				res.positions = m2.positions;
+				res.texCoords = m2.texCoords;
+				res.normals = m2.normals;
+				res.indices = m2.indices;
+			} else {
+				int offset = m1.positions.Length;
 
-			res.positions = new Vector3[m1.positions.Length + m2.positions.Length];
-			m1.positions.CopyTo (res.positions, 0);
-			m1.positions.CopyTo (res.positions, m1.positions.Length);
+				res.positions = new Vector3[m1.positions.Length + m2.positions.Length];
+				m1.positions.CopyTo (res.positions, 0);
+				m2.positions.CopyTo (res.positions, m1.positions.Length);
 
-			res.indices = new int[m1.indices.Length + m2.indices.Length];
-			m1.indices.CopyTo (res.indices, 0);
-			for (int i = 0; i < m2.indices.Length; i++)
-				res.indices [i + offset] = m2.indices [i] + offset;
+				if (m1.texCoords != null) {
+					res.texCoords = new Vector2[m1.texCoords.Length + m2.texCoords.Length];
+					m1.texCoords.CopyTo (res.texCoords, 0);
+					m2.texCoords.CopyTo (res.texCoords, m1.texCoords.Length);
+				}
 
-			//TODO: implement texCoord and normals addition
+				if (m1.normals != null) {
+					res.normals = new Vector3[m1.normals.Length + m2.normals.Length];
+					m1.normals.CopyTo (res.normals, 0);
+					m2.normals.CopyTo (res.normals, m1.normals.Length);
+				}
 
-			res.CreateVBOs ();
-			res.CreateVAOs ();
-
+				res.indices = new int[m1.indices.Length + m2.indices.Length];
+				m1.indices.CopyTo (res.indices, 0);
+				for (int i = 0; i < m2.indices.Length; i++) {
+					if (m2.indices [i] == int.MaxValue)
+						res.indices [i + m1.indices.Length] = int.MaxValue;
+					else
+						res.indices [i + m1.indices.Length] = m2.indices [i] + offset;
+				}
+			}
 			return res;
 		}
 
