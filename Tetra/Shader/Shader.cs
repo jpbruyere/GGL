@@ -240,7 +240,6 @@ namespace Tetra
 		}
 		public virtual void Enable(){
 			GL.UseProgram (pgmId);
-			GL.UniformMatrix4(mvpLocation, false, ref mvp);
 		}
 		public virtual void Disable(){
 			GL.UseProgram (0);
