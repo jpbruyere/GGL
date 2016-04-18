@@ -49,6 +49,9 @@ namespace Tetra
 		public int Width = -1;
 		public int Height = -1;
 		public int LayerCount = 0;
+		public TextureMinFilter MinFilter = TextureMinFilter.Linear;
+		public TextureMagFilter MagFilter = TextureMagFilter.Linear;
+		public int Samples = 1;
 
 		public Texture(int width, int height,
 			PixelInternalFormat internalFormat = PixelInternalFormat.Rgba,
@@ -90,7 +93,7 @@ namespace Tetra
 			GL.GenTextures(1, out texRef);
 			GL.BindTexture(TexTarget, texRef);
 			if (TexTarget == TextureTarget.Texture2DMultisample) {
-				GL.TexImage2DMultisample ((TextureTargetMultisample)TexTarget, NumSamples, InternalFormat, Width, Height, true);
+				GL.TexImage2DMultisample ((TextureTargetMultisample)TexTarget, Samples, InternalFormat, Width, Height, false);
 			}else
 				GL.TexImage2D(TexTarget, 0, InternalFormat, Width, Height, 0,
 					PixelFormat, PixelType, data);
@@ -502,10 +505,10 @@ namespace Tetra
 				float[] df = new float[Height* Width*4];
 				//data = new byte[Width * Height * (redSize + blueSize + greenSize + alphaSize)/8];
 				data = new byte[Width * Height*4];
-				GL.GetTexImage (TextureTarget.Texture2D, 0, PixelFormat, PixelType.Float, df);
-				for (int i = 0; i < df.Length; i++) {
-					data [i] = (byte)(df [i] *255f );
-				}
+				GL.GetTexImage (TextureTarget.Texture2D, 0, PixelFormat, PixelType.UnsignedByte, data);
+//				for (int i = 0; i < df.Length; i++) {
+//					data [i] = (byte)(df [i] *255f );
+//				}
 			}
 			GL.BindTexture (TextureTarget.Texture2D, 0);
 
