@@ -5,7 +5,7 @@ namespace GGL
 {
 	public static class glHelper
 	{
-		public static Vector4 UnProject(ref Matrix4 projection, Matrix4 view, int[] viewport, Vector2 mouse)
+		public static Vector4 UnProject(ref Matrix4 projection, ref Matrix4 view, int[] viewport, Vector2 mouse)
 		{
 			Vector4 vec;
 
@@ -29,6 +29,7 @@ namespace GGL
 
 			return vec;
 		}
+
 		public static Vector2 Project(
 			Vector3 pos, 
 			Matrix4 viewMatrix, 
