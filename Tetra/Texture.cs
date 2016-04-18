@@ -17,7 +17,7 @@ namespace Tetra
     [Serializable]
 	public class Texture : IDisposable
     {
-		public static int NumSamples = 4;
+		public static int NumSamples = 1;
 		public static TextureTarget DefaultTarget = TextureTarget.Texture2D;
 		public static TextureMinFilter DefaultMinFilter = TextureMinFilter.Linear;
 		public static TextureMagFilter DefaultMagFilter = TextureMagFilter.Linear;
@@ -26,6 +26,7 @@ namespace Tetra
 		public static bool FlipY = true;
 		/// <summary>Compressed formats must have a border of 0, so this is constant.</summary>
 		public static int Border = 0;
+		static Tetra.Shader msTexSaveShader;
 
 		public static void ResetToDefaultLoadingParams()
 		{
@@ -80,13 +81,17 @@ namespace Tetra
 			GL.TexParameter(TexTarget, TextureParameterName.TextureMagFilter, (int)magFilter);
 			GL.BindTexture(TexTarget, 0);
 		}
+		public void Create()
+		{
+			createTexture (IntPtr.Zero);
+		}
 		void createTexture(IntPtr data)
 		{
 			GL.GenTextures(1, out texRef);
 			GL.BindTexture(TexTarget, texRef);
-			if (TexTarget == TextureTarget.Texture2DMultisample)
+			if (TexTarget == TextureTarget.Texture2DMultisample) {
 				GL.TexImage2DMultisample ((TextureTargetMultisample)TexTarget, NumSamples, InternalFormat, Width, Height, true);
-			else
+			}else
 				GL.TexImage2D(TexTarget, 0, InternalFormat, Width, Height, 0,
 					PixelFormat, PixelType, data);
 		}
@@ -309,6 +314,74 @@ namespace Tetra
 
 			return TextureTarget.Texture2D;
 		}
+//		public static Texture RecreateTextureFromId(int texId){
+//			Texture tmp = new Texture ();
+//			tmp.texRef = texId;
+//			tmp.TexTarget = bindAndGetTexTargetFromId (texId);
+//
+//			int depthSize, stencilSize, alphaSize, redSize, greenSize, blueSize;
+//			int depthType, alphaType, redType, greenType, blueType;
+//
+//
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureWidth, out tmp.Width);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureHeight, out tmp.Height);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureDepthSize, out depthSize);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureAlphaSize, out alphaSize);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureRedSize, out redSize);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureGreenSize, out greenSize);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureBlueSize, out blueSize);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureDepthType, out depthType);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureAlphaType, out alphaType);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureRedType, out redType);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureGreenType, out greenType);
+//			GL.GetTexLevelParameter (tmp.TexTarget, 0, GetTextureParameter.TextureBlueType, out blueType);
+//
+//			string strInternalFormat = "";
+//
+//			if (depthType > 0) {
+//				tmp.PixelType = (PixelType)depthType;
+//
+//				strInternalFormat = "Depth";
+//				if (depthSize > 8)
+//					strInternalFormat += depthSize.ToString ();
+//				
+//				if (stencilSize > 0) {
+//					tmp.PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat.DepthStencil;
+//					strInternalFormat += "Stencil";
+//				} else {
+//					fbAttachment = FramebufferAttachment.DepthAttachment;
+//					strInternalFormat += "Component" + depthSize.ToString ();
+//
+//					if (PixelType == PixelType.Float)
+//						strInternalFormat += "f";
+//				}
+//			} else {
+//				//PixelType = (PixelType)redType;
+//
+//				if (redSize > 0)
+//					strInternalFormat += "R";
+//				if (greenSize > 0)
+//					strInternalFormat += "G";
+//				if (blueSize > 0)
+//					strInternalFormat += "B";
+//				if (alphaSize > 0)
+//					strInternalFormat += "A";
+//				if (redSize == greenSize && redSize == blueSize && redSize == alphaSize)
+//					strInternalFormat += redSize.ToString ();
+//
+//				if (PixelType == PixelType.Float)
+//					strInternalFormat += "f";
+//
+//				PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat.Bgra;	
+//			}
+//			if (!Enum.TryParse (strInternalFormat, true, out tmpInternalFormat)) {
+//				Debug.WriteLine ("unable to determine internal format: " + strInternalFormat);
+//				return;
+//			}
+//
+//			InternalFormat = tmpInternalFormat;	
+//
+//		}
 		public static void SaveTextureFromId(int texId, string path){
 			int depthSize, alphaSize, redSize, greenSize, blueSize;
 			int texW, texH;
@@ -356,8 +429,109 @@ namespace Tetra
 			bmp.WriteToPng (path);
 			bmp.Dispose ();			
 		}
+		public void SaveMSTextureTo(string path)
+		{
+			int tmpTex, fbo;
 
+			FramebufferAttachment fbAttachment = FramebufferAttachment.ColorAttachment0;
+			switch (PixelFormat) {
+			case OpenTK.Graphics.OpenGL.PixelFormat.DepthComponent:
+				fbAttachment = FramebufferAttachment.DepthAttachment;
+				break;
+			case OpenTK.Graphics.OpenGL.PixelFormat.DepthStencil:
+				fbAttachment = FramebufferAttachment.DepthStencilAttachment;
+				break;
+			}
+				
+			GL.GenTextures(1, out tmpTex);
+			GL.BindTexture(TextureTarget.Texture2D, tmpTex);
+			GL.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat, Width,Height, 0, PixelFormat, PixelType, IntPtr.Zero);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
 
+			GL.GenFramebuffers(1, out fbo);
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+			GL.FramebufferTexture2D (FramebufferTarget.Framebuffer, fbAttachment, TextureTarget.Texture2D, tmpTex, 0);
+
+			if (fbAttachment == FramebufferAttachment.DepthAttachment || fbAttachment == FramebufferAttachment.DepthStencilAttachment)
+				GL.DrawBuffer (DrawBufferMode.None);
+			else
+				GL.DrawBuffers (1, new DrawBuffersEnum[]{DrawBuffersEnum.ColorAttachment0} );
+
+			if (GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete)
+			{
+				throw new Exception(GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer).ToString());
+			}
+
+			GL.ClearColor (0f, 0f, 0f, 0f);
+			GL.Clear (ClearBufferMask.ColorBufferBit| ClearBufferMask.DepthBufferBit);
+
+			if (msTexSaveShader == null) {
+				msTexSaveShader = new Tetra.Shader (null, "#GGL.Tetra.mstexsaver.frag");
+				msTexSaveShader.MVP = Tetra.ShadedTexture.orthoMat;
+			}
+			msTexSaveShader.Enable ();
+
+			GL.ActiveTexture (TextureUnit.Texture0);
+			GL.BindTexture (TextureTarget.Texture2DMultisample, texRef);
+			GL.Disable (EnableCap.CullFace);
+			Tetra.ShadedTexture.quad.Render (PrimitiveType.TriangleStrip);
+
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+			GL.BindTexture (TextureTarget.Texture2DMultisample, 0);
+			GL.UseProgram (0);
+
+			GL.BindTexture (TextureTarget.Texture2D, tmpTex);
+			byte[] data;
+			if (PixelFormat == OpenTK.Graphics.OpenGL.PixelFormat.DepthComponent) {
+				getTexDatas<float> ();
+				float[] df = new float[Height* Width];
+				GL.GetTexImage (TextureTarget.Texture2D, 0, OpenTK.Graphics.OpenGL.PixelFormat.DepthComponent, PixelType.Float, df);
+				data = new byte[Width * Height * 4];
+				float min = df.Min ();
+				float max = df.Max ();
+				float diff = max - min;
+				for (int i = 0; i < df.Length; i++) {
+					byte b = (byte)((df [i] - min) / diff *255f);
+					data [i * 4] = b;
+					data [i * 4 + 1] = b;
+					data [i * 4 + 2] = b;
+					data [i * 4 + 3] = 255;
+				}
+			} else {
+				float[] df = new float[Height* Width*4];
+				//data = new byte[Width * Height * (redSize + blueSize + greenSize + alphaSize)/8];
+				data = new byte[Width * Height*4];
+				GL.GetTexImage (TextureTarget.Texture2D, 0, PixelFormat, PixelType.Float, df);
+				for (int i = 0; i < df.Length; i++) {
+					data [i] = (byte)(df [i] *255f );
+				}
+			}
+			GL.BindTexture (TextureTarget.Texture2D, 0);
+
+			data = imgHelpers.imgHelpers.flitY(data, 4*Width, Height);
+			Cairo.Surface bmp = new Cairo.ImageSurface(data, Cairo.Format.ARGB32, Width, Height, Width*4);
+			bmp.WriteToPng (path);
+			bmp.Dispose ();			
+
+			GL.DeleteFramebuffer (fbo);
+			GL.DeleteTexture (tmpTex);
+		}
+		void getTexDatas<T>(){
+			T[] raw = new T[Height * Width];
+			byte[] data = new byte[Height * Width * 4];
+			T min = raw.Min ();
+			T max = raw.Max ();
+			T diff = MiscUtil.Operator.Subtract (max, min);
+//			for (int i = 0; i < raw.Length; i++) {
+//				byte b = (byte)(MiscUtil.Operator.Divide (MiscUtil.Operator.Subtract (raw [i], min), diff));
+//				data [i * 4] = b;
+//				data [i * 4 + 1] = b;
+//				data [i * 4 + 2] = b;
+//				data [i * 4 + 3] = 255;
+//			}
+
+		}
 		#region IDisposable implementation
 
 		public void Dispose ()
