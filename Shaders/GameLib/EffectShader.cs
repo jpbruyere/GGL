@@ -99,7 +99,7 @@ namespace GameLib
 		{
 			base.Dispose ();
 			GL.DeleteTexture (tex);
-			GL.Ext.DeleteFramebuffer (fbo);
+			GL.DeleteFramebuffer (fbo);
 		}
 	}
 }

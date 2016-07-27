@@ -38,9 +38,9 @@ namespace GGL
 			int screenWidth, 
 			int screenHeight)
 		{
-			pos = Vector3.Transform(pos, modelMatrix);
-			pos = Vector3.Transform(pos, viewMatrix);
-			pos = Vector3.Transform(pos, projectionMatrix);
+			pos = pos.Transform (modelMatrix);
+			pos = pos.Transform (viewMatrix);
+			pos = pos.Transform (projectionMatrix);
 			pos.X /= pos.Z;
 			pos.Y /= pos.Z;
 			pos.X = (pos.X + 1) * screenWidth / 2;
@@ -54,7 +54,7 @@ namespace GGL
 			int screenWidth, 
 			int screenHeight)
 		{
-			pos = Vector3.Transform(pos, matrix);
+			pos = pos.Transform (matrix);
 			pos.X /= pos.Z;
 			pos.Y /= pos.Z;
 			pos.X = (pos.X + 1) * screenWidth / 2;

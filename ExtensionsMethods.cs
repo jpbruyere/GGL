@@ -40,4 +40,12 @@ namespace GGL
 		}
 	}
 }
-
+namespace OpenTK
+{
+	public static class ExtensionsMethods
+	{
+		public static Vector3 Transform(this Vector3 v, Matrix4 m){
+			return Vector4.Transform(new Vector4(v, 1), m).Xyz;			
+		}
+	}
+}
