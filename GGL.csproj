@@ -95,21 +95,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="atk-sharp">
-      <HintPath>$(SolutionDir)packages\GtkSharp.3.1.0\lib\net45\atk-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="cairo-sharp">
-      <HintPath>$(SolutionDir)packages\GtkSharp.3.1.0\lib\net45\cairo-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="gdk-sharp">
-      <HintPath>$(SolutionDir)packages\GtkSharp.3.1.0\lib\net45\gdk-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="gio-sharp">
-      <HintPath>$(SolutionDir)packages\GtkSharp.3.1.0\lib\net45\gio-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="glib-sharp">
-      <HintPath>$(SolutionDir)packages\GtkSharp.3.1.0\lib\net45\glib-sharp.dll</HintPath>
-    </Reference>
     <Reference Include="OpenTK">
       <HintPath>$(SolutionDir)packages\OpenTK.Next.1.2.2336.6514-pre\lib\net20\OpenTK.dll</HintPath>
     </Reference>
