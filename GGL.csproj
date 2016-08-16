@@ -94,11 +94,11 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
-	<Reference Include="cairo-sharp"/>
-	<Reference Include="gdk-sharp"/>
 	<Reference Include="gio-sharp"/>
+	<Reference Include="gdk-sharp"/>
 	<Reference Include="glib-sharp"/>
-    <Reference Include="OpenTK">
+	<Reference Include="cairo-sharp"/>
+	<Reference Include="OpenTK">
       <HintPath>$(SolutionDir)packages\OpenTK.Next.1.2.2336.6514-pre\lib\net20\OpenTK.dll</HintPath>
     </Reference>
   </ItemGroup>
