@@ -20,6 +20,8 @@
     <DelaySign>False</DelaySign>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>__linux__;TRACE;DEBUG</DefineConstants>
@@ -95,12 +97,12 @@
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
 	<Reference Include="gio-sharp"/>
-	<Reference Include="gdk-sharp"/>
-	<Reference Include="glib-sharp"/>
-	<Reference Include="cairo-sharp"/>
-	<Reference Include="OpenTK">
-      <HintPath>$(SolutionDir)packages\OpenTK.Next.1.2.2336.6514-pre\lib\net20\OpenTK.dll</HintPath>
-    </Reference>
+    <Reference Include="gdk-sharp"/>
+    <Reference Include="glib-sharp"/>
+    <Reference Include="cairo-sharp"/>
+    <Reference Include="OpenTK">
+    	<HintPath>..\..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
+     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaders\GameLib\" />

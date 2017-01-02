@@ -175,7 +175,7 @@ namespace GGL
 			GL.BindVertexArray(0);
 		}
 
-		public void Render(PrimitiveType _primitiveType){
+		public void Render(BeginMode _primitiveType){
 			GL.BindVertexArray(vaoHandle);
 			if (indices == null)
 				GL.DrawArrays (_primitiveType, 0, positions.Length);
@@ -184,13 +184,13 @@ namespace GGL
 					DrawElementsType.UnsignedInt, IntPtr.Zero);
 			GL.BindVertexArray (0);
 		}
-		public void Render(PrimitiveType _primitiveType, int[] _customIndices){
+		public void Render(BeginMode _primitiveType, int[] _customIndices){
 			GL.BindVertexArray(vaoHandle);
 			GL.DrawElements(_primitiveType, _customIndices.Length,
 				DrawElementsType.UnsignedInt, _customIndices);
 			GL.BindVertexArray (0);
 		}
-		public void Render(PrimitiveType _primitiveType, int instances){
+		public void Render(BeginMode _primitiveType, int instances){
 
 			GL.BindVertexArray(vaoHandle);
 			GL.DrawElementsInstanced(_primitiveType, indices.Length,

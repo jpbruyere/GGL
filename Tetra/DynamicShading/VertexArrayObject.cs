@@ -244,18 +244,18 @@ namespace Tetra.DynamicShading
 
 
 
-		public void Render(PrimitiveType _primitiveType){
+		public void Render(BeginMode _primitiveType){
 			foreach (VAOItem<U> item in Meshes)
 				Render (_primitiveType, item, 0, item.InstancedDatas.Length);
 		}
-		public void Render(PrimitiveType _primitiveType, int[] vaoItemIndexes){
+		public void Render(BeginMode _primitiveType, int[] vaoItemIndexes){
 			foreach (int i in vaoItemIndexes)
 				Render (_primitiveType, Meshes [i] as VAOItem<U>, 0, (Meshes[i] as VAOItem<U>).InstancedDatas.Length);
 		}
-		public void Render(PrimitiveType _primitiveType, VAOItem<U> item){
+		public void Render(BeginMode _primitiveType, VAOItem<U> item){
 			Render (_primitiveType, item, 0, item.InstancedDatas.Length);
 		}
-		public void Render(PrimitiveType _primitiveType, VAOItem<U> item, int firstInstance, int instancesCount){
+		public void Render(BeginMode _primitiveType, VAOItem<U> item, int firstInstance, int instancesCount){
 			GL.ActiveTexture (TextureUnit.Texture1);
 			GL.BindTexture (TextureTarget.Texture2D, item.NormalMapTexture);
 			GL.ActiveTexture (TextureUnit.Texture0);

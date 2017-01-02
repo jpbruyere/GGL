@@ -78,7 +78,7 @@ namespace GameLib
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
 			GL.ClearColor (0, 0, 0, 0);
 			GL.Clear (ClearBufferMask.ColorBufferBit);
-			quad.Render (PrimitiveType.TriangleStrip);
+			quad.Render (BeginMode.TriangleStrip);
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 		}
 		#endregion

@@ -478,7 +478,7 @@ namespace Tetra
 			GL.ActiveTexture (TextureUnit.Texture0);
 			GL.BindTexture (TextureTarget.Texture2DMultisample, texRef);
 			GL.Disable (EnableCap.CullFace);
-			Tetra.ShadedTexture.quad.Render (PrimitiveType.TriangleStrip);
+			Tetra.ShadedTexture.quad.Render (BeginMode.TriangleStrip);
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 			GL.BindTexture (TextureTarget.Texture2DMultisample, 0);

@@ -105,7 +105,7 @@ namespace Tetra
 		public void Render(){
 			shader.Enable();
 			GL.BindVertexArray(vaoHandle);
-			GL.DrawElements (PrimitiveType.Triangles, indices.Length,
+			GL.DrawElements (BeginMode.Triangles, indices.Length,
 				DrawElementsType.UnsignedShort, IntPtr.Zero);
 			GL.BindVertexArray(0);
 		}
