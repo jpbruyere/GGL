@@ -223,7 +223,7 @@ namespace Tetra.DynamicShading
 			}
 
 			int dataStructSize = Marshal.SizeOf (typeof(U));
-			int nbSubBuf = dataStructSize / 4;
+			int nbSubBuf = Math.Min(GL.GetInteger(GetPName.MaxVertexAttribs)-instanceBufferIndex, dataStructSize / 4);
 			GL.VertexBindingDivisor (instanceBufferIndex, 1);
 			for (int i = 0; i < nbSubBuf; i++) {
 				GL.EnableVertexAttribArray (instanceBufferIndex + i);
