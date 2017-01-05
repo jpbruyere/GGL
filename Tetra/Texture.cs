@@ -57,7 +57,7 @@ namespace Tetra
 			PixelInternalFormat internalFormat = PixelInternalFormat.Rgba,
 			OpenTK.Graphics.OpenGL.PixelFormat pixelFormat = OpenTK.Graphics.OpenGL.PixelFormat.Bgra,
 			PixelType pixelType = PixelType.UnsignedByte)
-		{			
+		{
 			Width = width;
 			Height = height;
 
@@ -71,7 +71,7 @@ namespace Tetra
 
 			if (TexTarget == TextureTarget.Texture2DMultisample)
 				return;
-			
+
 			configureTexParameters ();
 		}
 
@@ -111,14 +111,16 @@ namespace Tetra
 //			if (TexTarget == TextureTarget.Texture3D || TexTarget == TextureTarget.TextureCubeMap)
 //				GL.TexParameter(TexTarget, TextureParameterName.TextureWrapR, (int)DefaultWrapMode);
 		}
-						
+
         public static implicit operator int(Texture t)
-        { 
-			return t == null ? 0: (int)t.texRef; 
+        {
+			return t == null ? 0: (int)t.texRef;
         }
-			
+
 		public static Texture Load(string path)
 		{
+			if (string.IsNullOrEmpty (path))
+				return null;
 			Texture tmp = null;
 
 			try {
@@ -146,7 +148,7 @@ namespace Tetra
 					tmp.Height = data.Height;
 					tmp.createTexture (data.Scan0);
 
-					bitmap.UnlockBits(data);				
+					bitmap.UnlockBits(data);
 				}
 				stream.Dispose();
 				tmp.configureTexParameters ();
@@ -171,12 +173,12 @@ namespace Tetra
 				(int)TextureMinFilter.Linear);
 
 			int i = 0;
-			try {				
+			try {
 
 				foreach (string path in _mapPath) {
 					if (string.IsNullOrEmpty(path))
 						continue;
-					using (Stream fs = FileSystemHelpers.GetStreamFromPath (path)) {						
+					using (Stream fs = FileSystemHelpers.GetStreamFromPath (path)) {
 						Bitmap bmp = new Bitmap (fs);
 
 						if (tmp.Width < 0) {
@@ -186,7 +188,7 @@ namespace Tetra
 
 						if (tmp.Width != bmp.Width || tmp.Height != bmp.Height)
 							throw new Exception ("Different size for cube textures");
-						
+
 						if(FlipY)
 							bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
 
@@ -195,7 +197,7 @@ namespace Tetra
 
 						tmp.TexTarget = TextureTarget.TextureCubeMapPositiveX + i;
 						GL.TexImage2D(tmp.TexTarget, 0, tmp.InternalFormat, bmp.Width, bmp.Height, 0,
-							tmp.PixelFormat, tmp.PixelType, bmpdata.Scan0);															
+							tmp.PixelFormat, tmp.PixelType, bmpdata.Scan0);
 						bmp.UnlockBits(bmpdata);
 					}
 					i++;
@@ -203,7 +205,7 @@ namespace Tetra
 				while(i<6){
 					tmp.TexTarget = TextureTarget.TextureCubeMapPositiveX + i;
 					GL.TexImage2D(tmp.TexTarget, 0, tmp.InternalFormat, tmp.Width, tmp.Height, 0,
-						tmp.PixelFormat, tmp.PixelType, IntPtr.Zero);									
+						tmp.PixelFormat, tmp.PixelType, IntPtr.Zero);
 
 					i++;
 				}
@@ -226,12 +228,12 @@ namespace Tetra
 				LayerCount = _mapPath.Length
 			};
 
-			try {				
+			try {
 
 				foreach (string path in _mapPath) {
 					if (string.IsNullOrEmpty(path))
 						continue;
-					using (Stream fs = FileSystemHelpers.GetStreamFromPath (path)) {						
+					using (Stream fs = FileSystemHelpers.GetStreamFromPath (path)) {
 						Bitmap bmp = new Bitmap (fs);
 
 						if (tmp.Width < 0) {
@@ -264,8 +266,8 @@ namespace Tetra
 
 				GL.GenTextures(1, out tmp.texRef);
 				GL.BindTexture(tmp.TexTarget, tmp.texRef);
-				GL.TexImage3D(tmp.TexTarget, 0, 
-					tmp.InternalFormat, tmp.Width, tmp.Height, tmp.LayerCount, 0, 
+				GL.TexImage3D(tmp.TexTarget, 0,
+					tmp.InternalFormat, tmp.Width, tmp.Height, tmp.LayerCount, 0,
 					tmp.PixelFormat, tmp.PixelType, pointer);
 
 				pinnedArray.Free();
@@ -347,7 +349,7 @@ namespace Tetra
 //				strInternalFormat = "Depth";
 //				if (depthSize > 8)
 //					strInternalFormat += depthSize.ToString ();
-//				
+//
 //				if (stencilSize > 0) {
 //					tmp.PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat.DepthStencil;
 //					strInternalFormat += "Stencil";
@@ -375,14 +377,14 @@ namespace Tetra
 //				if (PixelType == PixelType.Float)
 //					strInternalFormat += "f";
 //
-//				PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat.Bgra;	
+//				PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat.Bgra;
 //			}
 //			if (!Enum.TryParse (strInternalFormat, true, out tmpInternalFormat)) {
 //				Debug.WriteLine ("unable to determine internal format: " + strInternalFormat);
 //				return;
 //			}
 //
-//			InternalFormat = tmpInternalFormat;	
+//			InternalFormat = tmpInternalFormat;
 //
 //		}
 		public static void SaveTextureFromId(int texId, string path){
@@ -430,7 +432,7 @@ namespace Tetra
 			data = imgHelpers.imgHelpers.flitY(data, 4*texW,texH);
 			Cairo.Surface bmp = new Cairo.ImageSurface(data, Cairo.Format.ARGB32, texW, texH, texW*4);
 			bmp.WriteToPng (path);
-			bmp.Dispose ();			
+			bmp.Dispose ();
 		}
 		public void SaveMSTextureTo(string path)
 		{
@@ -445,7 +447,7 @@ namespace Tetra
 				fbAttachment = FramebufferAttachment.DepthStencilAttachment;
 				break;
 			}
-				
+
 			GL.GenTextures(1, out tmpTex);
 			GL.BindTexture(TextureTarget.Texture2D, tmpTex);
 			GL.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat, Width,Height, 0, PixelFormat, PixelType, IntPtr.Zero);
@@ -515,7 +517,7 @@ namespace Tetra
 			data = imgHelpers.imgHelpers.flitY(data, 4*Width, Height);
 			Cairo.Surface bmp = new Cairo.ImageSurface(data, Cairo.Format.ARGB32, Width, Height, Width*4);
 			bmp.WriteToPng (path);
-			bmp.Dispose ();			
+			bmp.Dispose ();
 
 			GL.DeleteFramebuffer (fbo);
 			GL.DeleteTexture (tmpTex);

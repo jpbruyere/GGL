@@ -301,6 +301,9 @@ namespace GGL
 
 		public static vaoMesh Load(string fileName)
 		{
+			if (string.IsNullOrEmpty(fileName))
+				return null;
+
 			objPositions = new List<Vector3>();
 			objNormals = new List<Vector3>();
 			objTexCoords = new List<Vector2>();
