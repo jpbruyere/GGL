@@ -24,9 +24,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Tetra.DynamicShading
 {
+	[Serializable]
 	public struct MeshData
 	{
 		public Vector2[] TexCoords;
@@ -51,7 +53,7 @@ namespace Tetra.DynamicShading
 			Weights = _weights;
 		}
 	}
-
+	[Serializable]
 	public abstract class Mesh{
 		public string Name = "unamed";
 
@@ -88,18 +90,32 @@ namespace Tetra.DynamicShading
 		}
 
 	}
-
+	[Serializable]
 	public class Mesh<T> : Mesh where T : struct
 	{
 		public T Datas;
+		[NonSerialized]public int DuplicatedVerticesRemoved;
 
 		//public Dictionary<string, int[]> Indices;
 		public Mesh (Vector3[] _positions, T datas, ushort[] _indices)
 			: base(_positions, _indices)
 		{
 			Datas = datas;
+			DuplicatedVerticesRemoved = 0;
 		}
 
+		public void SaveAsBinary(string fileName){
+			using (FileStream ms = new FileStream (fileName, FileMode.Create)) {
+				BinaryFormatter formatter = new BinaryFormatter();
+				formatter.Serialize (ms, this);
+			}
+		}
+		public static Mesh<T> LoadBinary (string fileName){
+			using (FileStream fs = new FileStream (fileName, FileMode.Open)) {
+				BinaryFormatter formatter = new BinaryFormatter();
+				return (Mesh<T>)formatter.Deserialize (fs);
+			}
+		}
 		public static Mesh<T> Load (string fileName)
 		{
 			OBJLoadingCache obj = new OBJLoadingCache ();
@@ -186,9 +202,7 @@ namespace Tetra.DynamicShading
 
 			Mesh<T> tmp = new Mesh<T> (obj.lPositions.ToArray (), (T)dataTmp, obj.lIndices.ToArray ());
 			tmp.Name = name;
-			Console.WriteLine ("Loading '{0}'", fileName);
-			Console.WriteLine ("vertices: {0}\tindices: {1}", obj.lPositions.Count, obj.lIndices.Count);
-			Console.WriteLine ("duplicate vertices removed: {0}", obj.dupVertices);
+			tmp.DuplicatedVerticesRemoved = obj.dupVertices;
 			return tmp;
 		}
 
