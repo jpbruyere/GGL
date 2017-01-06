@@ -23,9 +23,10 @@ using OpenTK;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Reflection;
 
 namespace Tetra.DynamicShading
-{	
+{
 	public struct MeshData
 	{
 		public Vector2[] TexCoords;
@@ -50,6 +51,7 @@ namespace Tetra.DynamicShading
 			Weights = _weights;
 		}
 	}
+
 	public abstract class Mesh{
 		public string Name = "unamed";
 
@@ -84,6 +86,7 @@ namespace Tetra.DynamicShading
 			new ushort[] { 0, 1, 2, 3 });
 
 		}
+
 	}
 
 	public class Mesh<T> : Mesh where T : struct
@@ -97,6 +100,164 @@ namespace Tetra.DynamicShading
 			Datas = datas;
 		}
 
+		public static Mesh<T> Load (string fileName)
+		{
+			OBJLoadingCache obj = new OBJLoadingCache ();
+
+			string name = "unamed";
+
+			using (Stream stream = GGL.FileSystemHelpers.GetStreamFromPath (fileName)) {
+				using (StreamReader Reader = new StreamReader (stream)) {
+					System.Globalization.CultureInfo savedCulture = Thread.CurrentThread.CurrentCulture;
+					Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+
+					string line;
+					while ((line = Reader.ReadLine ()) != null) {
+						line = line.Trim (' ');
+						line = line.Replace ("  ", " ");
+
+						string[] parameters = line.Split (' ');
+
+						switch (parameters [0]) {
+						case "o":
+							name = parameters [1];
+							break;
+						case "p": // Point
+							break;
+						case "v": // Vertex
+							float x = float.Parse (parameters [1]);
+							float y = float.Parse (parameters [2]);
+							float z = float.Parse (parameters [3]);
+
+							obj.objPositions.Add (new Vector3 (x, y, z));
+							break;
+						case "vt": // TexCoord
+							float u = float.Parse (parameters [1]);
+							float v = float.Parse (parameters [2]);
+							obj.objTexCoords.Add (new Vector2 (u, v));
+							break;
+
+						case "vn": // Normal
+							float nx = float.Parse (parameters [1]);
+							float ny = float.Parse (parameters [2]);
+							float nz = float.Parse (parameters [3]);
+							obj.objNormals.Add (new Vector3 (nx, ny, nz));
+							break;
+
+						case "f":
+							switch (parameters.Length) {
+							case 4:
+
+								obj.ParseFaceParameter (parameters [1]);
+								obj.ParseFaceParameter (parameters [2]);
+								obj.ParseFaceParameter (parameters [3]);
+								break;
+
+							case 5:
+								obj.ParseFaceParameter (parameters [1]);
+								obj.ParseFaceParameter (parameters [2]);
+								obj.ParseFaceParameter (parameters [3]);
+								obj.ParseFaceParameter (parameters [4]);
+								break;
+							}
+							break;
+						}
+					}
+					Thread.CurrentThread.CurrentCulture = savedCulture;
+				}
+			}
+			object dataTmp = Activator.CreateInstance<T>();
+			foreach (FieldInfo fi in typeof(T).GetFields()) {
+
+				switch (fi.Name.ToLowerInvariant()) {
+				case "texcoords":
+					fi.SetValue (dataTmp, obj.lTexCoords.ToArray ());
+					break;
+				case "normals":
+					fi.SetValue (dataTmp, obj.lNormals.ToArray ());
+					break;
+				case "weights":
+					break;
+				default:
+					Console.WriteLine ("Unknown field '{0}' in Mesh datas '{1}", fi.Name, typeof(T).Name);
+					break;
+				}
+			}
+
+			Mesh<T> tmp = new Mesh<T> (obj.lPositions.ToArray (), (T)dataTmp, obj.lIndices.ToArray ());
+			tmp.Name = name;
+			Console.WriteLine ("Loading '{0}'", fileName);
+			Console.WriteLine ("vertices: {0}\tindices: {1}", obj.lPositions.Count, obj.lIndices.Count);
+			Console.WriteLine ("duplicate vertices removed: {0}", obj.dupVertices);
+			return tmp;
+		}
+
+		class OBJLoadingCache {
+			public List<Vector3> objPositions = new List<Vector3>();
+			public List<Vector3> objNormals = new List<Vector3>();
+			public List<Vector2> objTexCoords = new List<Vector2>();
+			public List<Vector3> lPositions = new List<Vector3>();
+			public List<Vector3> lNormals = new List<Vector3>();
+			public List<Vector2> lTexCoords = new List<Vector2>();
+			public List<ushort> lIndices = new List<ushort>();
+			public int dupVertices = 0;
+
+			public void ParseFaceParameter(string faceParameter)
+			{
+				Vector3 vertex = new Vector3();
+				Vector2 texCoord = new Vector2();
+				Vector3 normal = new Vector3();
+
+				string[] parameters = faceParameter.Split('/');
+
+				int vertexIndex = int.Parse(parameters[0]);
+				if (vertexIndex < 0) vertexIndex = objPositions.Count + vertexIndex;
+				else vertexIndex = vertexIndex - 1;
+				vertex = objPositions[vertexIndex];
+
+				if (parameters.Length > 1)
+				{
+					int texCoordIndex;
+					if (int.TryParse(parameters[1], out texCoordIndex))
+					{
+						if (texCoordIndex < 0) texCoordIndex = objTexCoords.Count + texCoordIndex;
+						else texCoordIndex = texCoordIndex - 1;
+						texCoord = objTexCoords[texCoordIndex];
+					}
+				}
+
+				if (parameters.Length > 2)
+				{
+					int normalIndex;
+					if (int.TryParse(parameters[2], out normalIndex))
+					{
+						if (normalIndex < 0) normalIndex = objNormals.Count + normalIndex;
+						else normalIndex = normalIndex - 1;
+						normal = objNormals[normalIndex];
+					}
+				}
+
+				//prevent duplicate vertex
+				for (int i = 0; i < lPositions.Count; i++) {
+					if (lPositions [i] != vertex)
+						continue;
+					if (lTexCoords [i] != texCoord)
+						continue;
+					if (lNormals [i] != normal)
+						continue;
+					lIndices.Add ((ushort)i);
+					dupVertices++;
+					return;
+				}
+
+				lPositions.Add(vertex);
+				lTexCoords.Add(texCoord);
+				lNormals.Add(normal);
+
+				lIndices.Add ((ushort)(lPositions.Count - 1));
+			}
+		}
+
 		#region implemented abstract members of Mesh
 
 		public override Type DataType {
@@ -105,6 +266,8 @@ namespace Tetra.DynamicShading
 
 		#endregion
 	}
+
+
 
 	#region .OBJ Loading
 	public static class OBJMeshLoader{
@@ -120,7 +283,7 @@ namespace Tetra.DynamicShading
 		static List<string> objGroups;
 		static List<string> objBones;
 
-		public static Mesh Load(string fileName)
+		public static Mesh<T> Load<T>(string fileName) where T : struct
 		{
 			objPositions = new List<Vector3>();
 			objNormals = new List<Vector3>();
@@ -148,7 +311,7 @@ namespace Tetra.DynamicShading
 						string[] parameters = line.Split (' ');
 
 						switch (parameters [0]) {
-						case "o":					
+						case "o":
 							name = parameters [1];
 							break;
 						case "p": // Point
@@ -228,7 +391,7 @@ namespace Tetra.DynamicShading
 					bones = objBones.ToArray ();
 				else
 					bones = objGroups.ToArray ();
-				
+
 				WeightedMeshData md;
 				md.Normals = lNormals.ToArray ();
 				md.TexCoords = lTexCoords.ToArray ();
@@ -264,8 +427,8 @@ namespace Tetra.DynamicShading
 			objWeights.Clear ();
 			lWeights.Clear ();
 
-			return tmp;
-		}			
+			return tmp as Mesh<T>;
+		}
 
 		static ushort ParseFaceParameter(string faceParameter)
 		{
@@ -301,7 +464,7 @@ namespace Tetra.DynamicShading
 					normal = objNormals[normalIndex];
 				}
 			}
-				
+
 			lPositions.Add(vertex);
 			lTexCoords.Add(texCoord);
 			lNormals.Add(normal);
@@ -310,7 +473,7 @@ namespace Tetra.DynamicShading
 
 			int index = lPositions.Count-1;
 			return (ushort)index;
-		}			
+		}
 	}
 	#endregion
 }

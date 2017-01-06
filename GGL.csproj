@@ -20,8 +20,6 @@
     <DelaySign>False</DelaySign>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>__linux__;TRACE;DEBUG</DefineConstants>
@@ -81,6 +79,7 @@
     <Compile Include="Tetra\Shader\FilterShader.cs" />
     <Compile Include="Tetra\DynamicShading\Shader.cs" />
     <Compile Include="Tetra\DynamicShading\ShaderProgram.cs" />
+    <Compile Include="Tetra\DynamicShading\MeshVAO.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -101,8 +100,8 @@
     <Reference Include="glib-sharp"/>
     <Reference Include="cairo-sharp"/>
     <Reference Include="OpenTK">
-    	<HintPath>..\..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
-     </Reference>
+      <HintPath>..\..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaders\GameLib\" />
