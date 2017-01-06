@@ -111,9 +111,9 @@ namespace Tetra.DynamicShading
 			}
 		}
 		public static Mesh<T> LoadBinary (string fileName){
-			using (FileStream fs = new FileStream (fileName, FileMode.Open)) {
+			using (Stream stream = GGL.FileSystemHelpers.GetStreamFromPath (fileName)) {
 				BinaryFormatter formatter = new BinaryFormatter();
-				return (Mesh<T>)formatter.Deserialize (fs);
+				return (Mesh<T>)formatter.Deserialize (stream);
 			}
 		}
 		public static Mesh<T> Load (string fileName)
