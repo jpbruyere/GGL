@@ -21,7 +21,7 @@ namespace Tetra
 		public static TextureTarget DefaultTarget = TextureTarget.Texture2D;
 		public static TextureMinFilter DefaultMinFilter = TextureMinFilter.Linear;
 		public static TextureMagFilter DefaultMagFilter = TextureMagFilter.Linear;
-		public static TextureWrapMode DefaultWrapMode = TextureWrapMode.Clamp;
+		public static TextureWrapMode DefaultWrapMode = TextureWrapMode.ClampToEdge;
 		public static bool GenerateMipMaps = true;
 		public static bool FlipY = true;
 		/// <summary>Compressed formats must have a border of 0, so this is constant.</summary>
@@ -33,7 +33,7 @@ namespace Tetra
 			DefaultTarget = TextureTarget.Texture2D;
 			DefaultMinFilter = TextureMinFilter.Linear;
 			DefaultMagFilter = TextureMagFilter.Linear;
-			DefaultWrapMode = TextureWrapMode.Clamp;
+			DefaultWrapMode = TextureWrapMode.ClampToEdge;
 			GenerateMipMaps = true;
 			FlipY = true;
 			int Border = 0;
