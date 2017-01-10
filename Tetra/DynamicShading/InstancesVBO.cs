@@ -39,7 +39,6 @@ namespace Tetra.DynamicShading
 		public InstancesVBO (U[] Datas) : this(){
 			InstancedDatas = Datas;
 			instancesDataTypeLengthInBytes = Marshal.SizeOf(typeof(U));
-			UpdateVBO ();
 		}
 
 		int minDirty=0,maxDirty=0;

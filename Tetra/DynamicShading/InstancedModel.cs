@@ -28,12 +28,17 @@ namespace Tetra.DynamicShading
 		public MeshPointer VAOPointer;
 		public InstancesVBO<T> Instances;
 		public int Diffuse;
+		protected bool SyncVBO = true;
 
 		public InstancedModel(MeshPointer vaoPointer){
 			VAOPointer = vaoPointer;
 		}
 
 		public T[] Datas { get { return Instances.InstancedDatas; }}
+		public void UpdateInstance(int index, T data){
+			Instances.UpdateInstance (index, data);
+			SyncVBO = true;
+		}
 
 		#region IDisposable implementation
 		public void Dispose ()

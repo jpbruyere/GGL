@@ -57,6 +57,8 @@ namespace GGL
         //public FieldInfo member;
         public Object AnimatedInstance;
 
+		#region CTOR
+		public Animation (){}
 		public Animation(Object instance, string _propertyName)
 		{
 			propertyName = _propertyName;
@@ -66,9 +68,10 @@ namespace GGL
 				getValue = (GetterDelegate)Delegate.CreateDelegate(typeof(GetterDelegate), instance, pi.GetGetMethod());
 				setValue = (SetterDelegate)Delegate.CreateDelegate(typeof(SetterDelegate), instance, pi.GetSetMethod());
 			} catch (Exception ex) {
-				
+				Debug.WriteLine (ex.ToString ());
 			}
 		}
+		#endregion
 
 		public static void StartAnimation(Animation a, int delayMs = 0, AnimationEventHandler OnEnd = null)
         {

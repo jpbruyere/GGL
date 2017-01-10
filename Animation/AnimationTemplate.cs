@@ -41,15 +41,17 @@ namespace GGL
 
 		#region CTOR
 		public Animation(Object instance, string _propertyName)
-			: base(instance, _propertyName)
 		{
+			propertyName = _propertyName;
+			AnimatedInstance = instance;
 			PropertyInfo pi = instance.GetType().GetProperty(propertyName);
 			getValue = (GetterDelegate)Delegate.CreateDelegate(typeof(GetterDelegate), instance, pi.GetGetMethod());
 			setValue = (SetterDelegate)Delegate.CreateDelegate(typeof(SetterDelegate), instance, pi.GetSetMethod());
 		}
 		public Animation(Object instance, string _propertyName, T Target, T step)
-			: base(instance, _propertyName)
 		{
+			propertyName = _propertyName;
+			AnimatedInstance = instance;
 			PropertyInfo pi = instance.GetType().GetProperty(propertyName);
 			getValue = (GetterDelegate)Delegate.CreateDelegate(typeof(GetterDelegate), instance, pi.GetGetMethod());
 			setValue = (SetterDelegate)Delegate.CreateDelegate(typeof(SetterDelegate), instance, pi.GetSetMethod());
@@ -64,7 +66,7 @@ namespace GGL
 				Step = (T)Convert.ChangeType (step, t);
 				zero = (T)Convert.ChangeType (0, t);
 			}else {
-				Step = (T)Activator.CreateInstance (typeof(T), new Object[] { step });			
+				Step = (T)Activator.CreateInstance (typeof(T), new Object[] { step });
 				zero = (T)Activator.CreateInstance (typeof(T), 0f);
 			}
 			T test = (T)Operator.SubtractAlternative (value, TargetValue);
