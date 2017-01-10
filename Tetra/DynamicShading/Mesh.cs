@@ -120,10 +120,6 @@ namespace Tetra.DynamicShading
 		{
 			if (string.IsNullOrEmpty (fileName))
 				return null;
-			if (!File.Exists (fileName)) {
-				Console.WriteLine ("Mesh loading: File not found '{0}'", fileName);
-				return null;
-			}
 			if (fileName.EndsWith (".bin", StringComparison.OrdinalIgnoreCase))
 				return LoadBinary (fileName);
 			else
