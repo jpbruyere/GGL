@@ -80,6 +80,9 @@
     <Compile Include="Tetra\DynamicShading\Shader.cs" />
     <Compile Include="Tetra\DynamicShading\ShaderProgram.cs" />
     <Compile Include="Tetra\DynamicShading\MeshVAO.cs" />
+    <Compile Include="Tetra\DynamicShading\InstancedVAO.cs" />
+    <Compile Include="Tetra\DynamicShading\InstancesVBO.cs" />
+    <Compile Include="Tetra\DynamicShading\MeshesGroup.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

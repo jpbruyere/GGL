@@ -5,7 +5,8 @@ using System.Xml.Serialization;
 using MiscUtil;
 
 namespace GGL
-{    
+{
+	[Serializable]
 	public struct Rectangle<T>
     {
 		#region private fields
@@ -132,15 +133,15 @@ namespace GGL
 		}
 		public bool ContainsOrIsEqual(Point<T> p)
         {
-			return (Operator.GreaterThanOrEqual(p.X, X) && 
-				Operator.LessThanOrEqual(p.X, this.Right) && 
-				Operator.GreaterThanOrEqual(p.Y, Y) && 
+			return (Operator.GreaterThanOrEqual(p.X, X) &&
+				Operator.LessThanOrEqual(p.X, this.Right) &&
+				Operator.GreaterThanOrEqual(p.Y, Y) &&
 				Operator.LessThanOrEqual(p.Y, this.Bottom)) ?
                 true : false;
         }
         public bool ContainsOrIsEqual(Rectangle<T> r)
         {
-			return Operator.GreaterThanOrEqual(r.TopLeft, this.TopLeft) && 
+			return Operator.GreaterThanOrEqual(r.TopLeft, this.TopLeft) &&
 				Operator.LessThanOrEqual(r.BottomRight, this.BottomRight) ? true : false;
         }
         public bool Intersect(Rectangle<T> r)
@@ -156,7 +157,7 @@ namespace GGL
 //        public Rectangle<T> Intersection(Rectangle<T> r)
 //        {
 //            Rectangle<T> result = new Rectangle<T>();
-//            
+//
 //            if (r.Left >= this.Left)
 //                result.Left = r.Left;
 //            else
@@ -210,25 +211,25 @@ namespace GGL
 		}
         public static bool operator ==(Rectangle<T> r1, Rectangle<T> r2)
         {
-			return Operator.Equal(r1.TopLeft, r2.TopLeft) && 
+			return Operator.Equal(r1.TopLeft, r2.TopLeft) &&
 				Operator.Equal(r1.Size, r2.Size) ? true : false;
         }
         public static bool operator !=(Rectangle<T> r1, Rectangle<T> r2)
         {
-			return Operator.Equal(r1.TopLeft, r2.TopLeft) && 
-				Operator.Equal(r1.Size, r2.Size) ? false : true;        
+			return Operator.Equal(r1.TopLeft, r2.TopLeft) &&
+				Operator.Equal(r1.Size, r2.Size) ? false : true;
 		}
         #endregion
 
-        
+
 
 		public static Rectangle<T> Zero
         {
-			get { return new Rectangle<T>(
-				(T) Convert.ChangeType(0, typeof(T)),
-				(T) Convert.ChangeType(0, typeof(T)),
-				(T) Convert.ChangeType(0, typeof(T)),
-				(T) Convert.ChangeType(0, typeof(T))); }
+			get { return new Rectangle<T> (
+					default(T),
+					default(T),
+					default(T),
+					default(T)); }
         }
 		public static Rectangle<T> Empty
         {

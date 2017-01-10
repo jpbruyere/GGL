@@ -14,7 +14,7 @@ using System.Reflection;
 namespace Tetra.DynamicShading
 {
 	/// <summary>
-	/// Single Mesh Vertex Array Object
+	/// Vertex Array Object
 	/// </summary>
 	public class MeshVAO<T> : IDisposable where T : struct
 	{
@@ -93,7 +93,7 @@ namespace Tetra.DynamicShading
 				GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 			}
 		}
-		protected void CreateVAOs()
+		protected virtual void CreateVAOs()
 		{
 			vaoHandle = GL.GenVertexArray();
 			GL.BindVertexArray(vaoHandle);
@@ -122,27 +122,30 @@ namespace Tetra.DynamicShading
 			GL.BindVertexArray(0);
 		}
 
+		public void Bind(){
+			GL.BindVertexArray (vaoHandle);
+		}
+		public void Unbind(){
+			GL.BindVertexArray (0);
+		}
 		public void Render(BeginMode _primitiveType){
-			GL.BindVertexArray(vaoHandle);
 			if (indicesCount == 0)
 				GL.DrawArrays (_primitiveType, 0, verticesCount);
 			else
 				GL.DrawElements(_primitiveType, indicesCount,
 					DrawElementsType.UnsignedShort, IntPtr.Zero);
-			GL.BindVertexArray (0);
 		}
 		public void Render(BeginMode _primitiveType, int[] _customIndices){
-			GL.BindVertexArray(vaoHandle);
 			GL.DrawElements(_primitiveType, _customIndices.Length,
 				DrawElementsType.UnsignedInt, _customIndices);
-			GL.BindVertexArray (0);
 		}
 		public void Render(BeginMode _primitiveType, int instances){
-
-			GL.BindVertexArray(vaoHandle);
 			GL.DrawElementsInstanced(_primitiveType, indicesCount,
 				DrawElementsType.UnsignedInt, IntPtr.Zero, instances);
-			GL.BindVertexArray (0);
+		}
+		public void Render(BeginMode _primitiveType, MeshPointer item){
+			GL.DrawElementsBaseVertex (_primitiveType, item.IndicesCount,
+				DrawElementsType.UnsignedShort, new IntPtr (item.Offset * sizeof(ushort)), item.BaseVertex);
 		}
 
 		#region IDisposable implementation

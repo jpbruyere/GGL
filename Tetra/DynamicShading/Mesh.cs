@@ -25,6 +25,7 @@ using System.IO;
 using System.Threading;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using GGL;
 
 namespace Tetra.DynamicShading
 {
@@ -62,6 +63,7 @@ namespace Tetra.DynamicShading
 
 		public abstract Type DataType { get; }
 
+		public Mesh (){}
 		public Mesh(Vector3[] _positions, ushort[] _indices){
 			Indices = _indices;
 			Positions = _positions;
@@ -95,7 +97,10 @@ namespace Tetra.DynamicShading
 	{
 		public T Datas;
 		[NonSerialized]public int DuplicatedVerticesRemoved;
+		public Rectangle<float> Bounds;
 
+		#region CTOR
+		public Mesh (){}
 		//public Dictionary<string, int[]> Indices;
 		public Mesh (Vector3[] _positions, T datas, ushort[] _indices)
 			: base(_positions, _indices)
@@ -103,6 +108,7 @@ namespace Tetra.DynamicShading
 			Datas = datas;
 			DuplicatedVerticesRemoved = 0;
 		}
+		#endregion
 
 		public void SaveAsBinary(string fileName){
 			using (FileStream ms = new FileStream (fileName, FileMode.Create)) {
@@ -110,13 +116,26 @@ namespace Tetra.DynamicShading
 				formatter.Serialize (ms, this);
 			}
 		}
-		public static Mesh<T> LoadBinary (string fileName){
+		public static Mesh<T> Load (string fileName)
+		{
+			if (string.IsNullOrEmpty (fileName))
+				return null;
+			if (!File.Exists (fileName)) {
+				Console.WriteLine ("Mesh loading: File not found '{0}'", fileName);
+				return null;
+			}
+			if (fileName.EndsWith (".bin", StringComparison.OrdinalIgnoreCase))
+				return LoadBinary (fileName);
+			else
+				return LoadOBJ (fileName);
+		}
+		static Mesh<T> LoadBinary (string fileName){
 			using (Stream stream = GGL.FileSystemHelpers.GetStreamFromPath (fileName)) {
 				BinaryFormatter formatter = new BinaryFormatter();
 				return (Mesh<T>)formatter.Deserialize (stream);
 			}
 		}
-		public static Mesh<T> Load (string fileName)
+		static Mesh<T> LoadOBJ (string fileName)
 		{
 			OBJLoadingCache obj = new OBJLoadingCache ();
 
@@ -144,6 +163,19 @@ namespace Tetra.DynamicShading
 							float x = float.Parse (parameters [1]);
 							float y = float.Parse (parameters [2]);
 							float z = float.Parse (parameters [3]);
+
+							if (x > obj.maxX)
+								obj.maxX = x;
+							if (x < obj.minX)
+								obj.minX = x;
+							if (y > obj.maxY)
+								obj.maxY = y;
+							if (y< obj.minY)
+								obj.minY = y;
+							if (z > obj.maxZ)
+								obj.maxZ = z;
+							if (z < obj.minZ)
+								obj.minZ = z;
 
 							obj.objPositions.Add (new Vector3 (x, y, z));
 							break;
@@ -203,10 +235,17 @@ namespace Tetra.DynamicShading
 			Mesh<T> tmp = new Mesh<T> (obj.lPositions.ToArray (), (T)dataTmp, obj.lIndices.ToArray ());
 			tmp.Name = name;
 			tmp.DuplicatedVerticesRemoved = obj.dupVertices;
+			tmp.Bounds = new Rectangle<float> (obj.minX, obj.minZ, obj.maxX - obj.minX, obj.maxZ - obj.minZ);
 			return tmp;
 		}
 
 		class OBJLoadingCache {
+			public float minX = float.MaxValue;
+			public float maxX = float.MinValue;
+			public float minY = float.MaxValue;
+			public float maxY = float.MinValue;
+			public float minZ = float.MaxValue;
+			public float maxZ = float.MinValue;
 			public List<Vector3> objPositions = new List<Vector3>();
 			public List<Vector3> objNormals = new List<Vector3>();
 			public List<Vector2> objTexCoords = new List<Vector2>();
