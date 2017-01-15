@@ -40,7 +40,7 @@ namespace GGL
 		}
 	}
 }
-namespace OpenTK
+namespace OpenTK.Extensions
 {
 	public static class ExtensionsMethods
 	{
