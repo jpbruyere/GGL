@@ -5,6 +5,9 @@ namespace GGL
 {
 	public static class glHelper
 	{
+		public static Vector3 Transform(this Vector3 v, Matrix4 m){
+			return Vector4.Transform(new Vector4(v, 1), m).Xyz;			
+		}
 		public static Vector4 UnProject(ref Matrix4 projection, ref Matrix4 view, int[] viewport, Vector2 mouse)
 		{
 			Vector4 vec;
