@@ -21,6 +21,7 @@
 using System;
 using OpenTK.Graphics.OpenGL;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace Tetra.DynamicShading
 {
@@ -41,7 +42,7 @@ namespace Tetra.DynamicShading
 			instancesDataTypeLengthInBytes = Marshal.SizeOf(typeof(U));
 		}
 
-		int minDirty=0,maxDirty=0;
+		int minDirty=int.MaxValue,maxDirty=0;
 
 		public void UpdateInstance(int index, U data){
 			if (index < minDirty)
@@ -49,6 +50,16 @@ namespace Tetra.DynamicShading
 			if (index > maxDirty)
 				maxDirty = index;
 			InstancedDatas [index] = data;
+		}
+		public void SetInstanceIsDirty(int index){
+			if (index < minDirty)
+				minDirty = index;
+			if (index > maxDirty)
+				maxDirty = index;
+		}
+		public void ResetDirtyState(){
+			minDirty = int.MaxValue;
+			maxDirty = 0;
 		}
 		public void AddInstance(U instData)
 		{
@@ -82,8 +93,23 @@ namespace Tetra.DynamicShading
 					new IntPtr (InstancedDatas.Length * instancesDataTypeLengthInBytes),
 					InstancedDatas, BufferUsageHint.DynamicDraw);
 				GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+				ResetDirtyState ();
 			}
 		}
+		public void UpdateVBOSubData()
+		{
+			if (InstancedDatas != null && minDirty <= maxDirty) {
+				GL.BindBuffer (BufferTarget.ArrayBuffer, VboId);
+				U[] subArr = InstancedDatas.ToList ().GetRange (minDirty, maxDirty - minDirty + 1).ToArray ();
+				GL.BufferSubData<U> (BufferTarget.ArrayBuffer,
+					new IntPtr ( minDirty * instancesDataTypeLengthInBytes),
+					new IntPtr ((maxDirty - minDirty + 1) * instancesDataTypeLengthInBytes),
+					subArr);
+				GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+				ResetDirtyState ();
+			}
+		}
+
 
 		#region IDisposable implementation
 		public void Dispose ()

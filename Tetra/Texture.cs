@@ -243,8 +243,11 @@ namespace Tetra
 							data = new byte[imgSizeInByte * tmp.LayerCount];
 						}
 
-						if (tmp.Width != bmp.Width || tmp.Height != bmp.Height)
-							throw new Exception ("Different size for image array");
+						if (tmp.Width != bmp.Width || tmp.Height != bmp.Height){
+							bmp = new Bitmap(bmp,tmp.Width,tmp.Height);
+							if (tmp.Width != bmp.Width || tmp.Height != bmp.Height)
+								throw new Exception ("Different size for image array");
+						}
 
 						if(FlipY)
 							bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);

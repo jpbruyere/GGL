@@ -75,25 +75,26 @@ namespace GGL
 
 		public static void StartAnimation(Animation a, int delayMs = 0, AnimationEventHandler OnEnd = null)
         {
-
-			Animation aa = null;
-			if (Animation.GetAnimation (a.AnimatedInstance, a.propertyName, ref aa)) {
-				aa.CancelAnimation ();
-			}
+			lock (AnimationList) {
+				Animation aa = null;
+				if (Animation.GetAnimation (a.AnimatedInstance, a.propertyName, ref aa)) {
+					aa.CancelAnimation ();
+				}
 //			if (a.AnimatedInstance is CardInstance) {
 //				if ((a.AnimatedInstance as CardInstance).Model.Name.StartsWith ("Spider"))
 // 					Debugger.Break ();
 //			}
-			//a.AnimationFinished += onAnimationFinished;
+				//a.AnimationFinished += onAnimationFinished;
 
-			a.AnimationFinished += OnEnd;
-			a.delayStartMs = delayMs + DelayMs;
+				a.AnimationFinished += OnEnd;
+				a.delayStartMs = delayMs + DelayMs;
 
 
-            if (a.delayStartMs > 0)
-                a.timer.Start();
+				if (a.delayStartMs > 0)
+					a.timer.Start ();
             
-			AnimationList.Add (a);
+				AnimationList.Add (a);
+			}
 
         }
 

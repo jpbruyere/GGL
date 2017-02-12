@@ -25,7 +25,7 @@ namespace GGL
 			initialComputations ();
 		}
 		protected virtual void initialComputations(){
-			Vector3 vPath = Start - End;
+			Vector3 vPath = End - Start;
 			vDir = Vector3.Normalize (vPath);
 			length = vPath.Length;
 		}

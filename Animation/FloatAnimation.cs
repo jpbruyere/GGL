@@ -83,7 +83,8 @@ namespace GGL
 			}
 
 			setValue(TargetValue);
-			AnimationList.Remove(this);
+			lock(AnimationList)
+				AnimationList.Remove(this);
 
 			RaiseAnimationFinishedEvent ();
 		}

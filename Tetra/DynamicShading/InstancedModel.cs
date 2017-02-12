@@ -40,6 +40,18 @@ namespace Tetra.DynamicShading
 			SyncVBO = true;
 		}
 
+		public int AddInstance (){
+			if (Instances == null)
+				Instances = new InstancesVBO<T> (new T[1]);
+			int idx = Instances.AddInstance ();
+			SyncVBO = true;
+			return idx;
+		}
+		public void RemoveInstance (int index){
+			Instances.RemoveInstance (index);
+			SyncVBO = true;
+		}
+
 		#region IDisposable implementation
 		public void Dispose ()
 		{
