@@ -36,10 +36,10 @@ namespace Tetra.DynamicShading
 		public InstancesVBO ()
 		{
 			VboId = GL.GenBuffer ();
+			instancesDataTypeLengthInBytes = Marshal.SizeOf(typeof(U));
 		}
 		public InstancesVBO (U[] Datas) : this(){
 			InstancedDatas = Datas;
-			instancesDataTypeLengthInBytes = Marshal.SizeOf(typeof(U));
 		}
 
 		int minDirty=int.MaxValue,maxDirty=0;
@@ -61,15 +61,24 @@ namespace Tetra.DynamicShading
 			minDirty = int.MaxValue;
 			maxDirty = 0;
 		}
-		public void AddInstance(U instData)
+		public int AddInstance(U instData)
 		{
+			if (InstancedDatas == null) {
+				InstancedDatas = new U[]{instData};
+				return 0;
+			}
 			U[] tmp = new U[InstancedDatas.Length + 1];
 			Array.Copy (InstancedDatas, tmp, InstancedDatas.Length);
 			tmp [InstancedDatas.Length] = instData;
 			InstancedDatas = tmp;
+			return InstancedDatas.Length - 1;
 		}
 		public int AddInstance()
 		{
+			if (InstancedDatas == null) {
+				InstancedDatas = new U[1];
+				return 0;
+			}
 			U[] tmp = new U[InstancedDatas.Length + 1];
 			Array.Copy (InstancedDatas, tmp, InstancedDatas.Length);
 			InstancedDatas = tmp;
@@ -102,8 +111,8 @@ namespace Tetra.DynamicShading
 				GL.BindBuffer (BufferTarget.ArrayBuffer, VboId);
 				U[] subArr = InstancedDatas.ToList ().GetRange (minDirty, maxDirty - minDirty + 1).ToArray ();
 				GL.BufferSubData<U> (BufferTarget.ArrayBuffer,
-					new IntPtr ( minDirty * instancesDataTypeLengthInBytes),
-					new IntPtr ((maxDirty - minDirty + 1) * instancesDataTypeLengthInBytes),
+					new IntPtr (minDirty * instancesDataTypeLengthInBytes),
+					new IntPtr (subArr.Length * instancesDataTypeLengthInBytes),
 					subArr);
 				GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 				ResetDirtyState ();

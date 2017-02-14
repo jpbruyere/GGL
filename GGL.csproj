@@ -20,11 +20,8 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Description>C# Rapid Open Widget</Description>
     <BaseAddress>4194304</BaseAddress>
-    <ReleaseVersion>0.5</ReleaseVersion>
     <OutputPath>$(SolutionDir)build\$(Configuration)</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)build\obj\$(Configuration)</IntermediateOutputPath>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -104,7 +101,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="cairo-sharp"/>
+    <Reference Include="cairo-sharp">
+      <Package>gtk-sharp-3.0</Package>
+    </Reference>
     <Reference Include="OpenTK">
       <HintPath>$(SolutionDir)packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
       <Package>opentk</Package>
@@ -137,6 +136,8 @@
     <EmbeddedResource Include="Shaders\GameLib\VertDisp.vert" />
     <EmbeddedResource Include="Shaders\GameLib\Texture.frag" />
     <EmbeddedResource Include="Tetra\mstexsaver.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\fire.frag" />
+    <EmbeddedResource Include="Shaders\GameLib\lightBalls.frag" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\GameLib\classicnoise2D.frag" />
