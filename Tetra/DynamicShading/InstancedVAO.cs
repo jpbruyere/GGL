@@ -22,6 +22,7 @@ using System;
 using OpenTK.Graphics.OpenGL;
 using System.Runtime.InteropServices;
 using OpenTK;
+using System.Reflection;
 
 namespace Tetra.DynamicShading
 {
@@ -39,21 +40,89 @@ namespace Tetra.DynamicShading
 				return;
 			CreateBuffers (_mesh);
 		}
-
 		protected override void CreateVAOs ()
 		{
 			base.CreateVAOs ();
 
 			GL.BindVertexArray(vaoHandle);
-			int dataStructSize = Marshal.SizeOf (typeof(U));
-			int nbSubBuf = Math.Min(GL.GetInteger(GetPName.MaxVertexAttribs)-InstanceAttributeStartingIndex, dataStructSize / 4);
 			GL.VertexBindingDivisor (InstanceAttributeStartingIndex, 1);
-			for (int i = 0; i < nbSubBuf; i++) {
-				GL.EnableVertexAttribArray (InstanceAttributeStartingIndex + i);
-				GL.VertexAttribBinding (InstanceAttributeStartingIndex+i, InstanceAttributeStartingIndex);
-				GL.VertexAttribFormat(InstanceAttributeStartingIndex+i, 4, VertexAttribType.Float, false, Vector4.SizeInBytes * i);
+
+			int vaPtr = InstanceAttributeStartingIndex;
+			int offset = 0;
+			foreach (FieldInfo fi in typeof(U).GetFields()) {
+				GL.EnableVertexAttribArray (vaPtr);
+				GL.VertexAttribBinding (vaPtr, InstanceAttributeStartingIndex);
+
+				VertexAttribute vAttrib = (VertexAttribute)fi.GetCustomAttribute (typeof(VertexAttribute));
+
+				if (vAttrib != null){
+
+					GL.VertexAttribFormat (vaPtr, vAttrib.NbComponents,getVATfromVAPT(vAttrib.PointerType), vAttrib.Normalized, offset);
+					offset += Marshal.SizeOf (fi.FieldType.GetElementType ()) * vAttrib.NbComponents;
+				}else {
+					if (fi.FieldType == typeof(Vector2)) {
+						GL.VertexAttribFormat (vaPtr, 2, VertexAttribType.Float, false, offset);
+						offset += Vector2.SizeInBytes;
+					} else if (fi.FieldType == typeof(Vector2h)) {
+						GL.VertexAttribFormat (vaPtr, 2, VertexAttribType.HalfFloat, false, offset);
+						offset += Vector2h.SizeInBytes;
+					} else if (fi.FieldType == typeof(Vector3)) {
+						GL.VertexAttribFormat (vaPtr, 3, VertexAttribType.Float, false, offset);
+						offset += Vector3.SizeInBytes;
+					} else if (fi.FieldType == typeof(Vector3h)) {
+						GL.VertexAttribFormat (vaPtr, 3, VertexAttribType.HalfFloat, false, offset);
+						offset += Vector3h.SizeInBytes;
+					} else if (fi.FieldType == typeof(Vector4)) {
+						GL.VertexAttribFormat (vaPtr, 4, VertexAttribType.Float, false, offset);
+						offset += Vector4.SizeInBytes;
+					}else if (fi.FieldType == typeof(Matrix4)) {
+						GL.VertexAttribFormat (vaPtr, 4, VertexAttribType.Float, false, offset);
+
+						for (int i = 1; i < 4; i++) {
+							offset += Vector4.SizeInBytes;
+							vaPtr++;
+							GL.EnableVertexAttribArray (vaPtr);
+							GL.VertexAttribBinding (vaPtr, InstanceAttributeStartingIndex);
+							GL.VertexAttribFormat (vaPtr, 4, VertexAttribType.Float, false, offset);
+						}
+
+						offset += Vector4.SizeInBytes;
+					}
+				}
+
+				vaPtr++;
 			}
+
 			GL.BindVertexArray(0);
+		}
+		static VertexAttribType getVATfromVAPT(VertexAttribPointerType vapt){
+			switch (vapt) {
+			case VertexAttribPointerType.Byte:
+				return VertexAttribType.Byte;
+			case VertexAttribPointerType.UnsignedByte:
+				return VertexAttribType.UnsignedByte;
+			case VertexAttribPointerType.Short:
+				return VertexAttribType.Short;
+			case VertexAttribPointerType.UnsignedShort:
+				return VertexAttribType.UnsignedShort;
+			case VertexAttribPointerType.Int:
+				return VertexAttribType.Int;
+			case VertexAttribPointerType.UnsignedInt:
+				return VertexAttribType.UnsignedInt;
+			case VertexAttribPointerType.Float:
+				return VertexAttribType.Float;
+			case VertexAttribPointerType.Double:
+				return VertexAttribType.Double;
+			case VertexAttribPointerType.HalfFloat:
+				return VertexAttribType.HalfFloat;
+			case VertexAttribPointerType.Fixed:
+				return VertexAttribType.Fixed;
+			case VertexAttribPointerType.UnsignedInt2101010Rev:
+				return VertexAttribType.UnsignedInt2101010Rev;
+			case VertexAttribPointerType.Int2101010Rev:
+				return VertexAttribType.Int2101010Rev;
+			}
+			return default(VertexAttribType);
 		}
 		public void Render(BeginMode _primitiveType, MeshPointer item, InstancesVBO<U> instancesBuff, int firstInstance, int instancesCount){
 			GL.BindVertexBuffer (InstanceAttributeStartingIndex, instancesBuff.VboId, (IntPtr)(firstInstance * InstancesDataTypeLengthInBytes), InstancesDataTypeLengthInBytes);

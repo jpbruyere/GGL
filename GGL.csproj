@@ -86,6 +86,7 @@
     <Compile Include="Tetra\DynamicShading\InstancesVBO.cs" />
     <Compile Include="Tetra\DynamicShading\MeshesGroup.cs" />
     <Compile Include="Tetra\DynamicShading\InstancedModel.cs" />
+    <Compile Include="Tetra\DynamicShading\VertexAttribute.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -104,6 +105,7 @@
     <Reference Include="cairo-sharp">
       <Package>gtk-sharp-3.0</Package>
     </Reference>
+    <Reference Include="cairo-sharp"/>
     <Reference Include="OpenTK">
       <HintPath>$(SolutionDir)packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
       <Package>opentk</Package>

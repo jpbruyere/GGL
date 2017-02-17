@@ -60,26 +60,16 @@ namespace Tetra.DynamicShading
 
 			for (int i = 0; i < DataFields.Length; i++) {
 				FieldInfo fi = DataFields [i];
-				Array vaoData = (Array)fi.GetValue (_mesh.Datas);
-				vboHandles[i] = GL.GenBuffer ();
-				GL.BindBuffer (BufferTarget.ArrayBuffer, vboHandles[i]);
 
-				if (fi.FieldType.GetElementType () == typeof(Vector2)) {
-					Vector2[] tmp = (Vector2[])(vaoData as object);
-					GL.BufferData<Vector2> (BufferTarget.ArrayBuffer,
-						new IntPtr (vaoData.Length * Vector2.SizeInBytes),
-						tmp, BufferUsageHint.StaticDraw);
-				} else if (fi.FieldType.GetElementType () == typeof(Vector3)) {
-					Vector3[] tmp = (Vector3[])(vaoData as object);
-					GL.BufferData<Vector3> (BufferTarget.ArrayBuffer,
-						new IntPtr (vaoData.Length * Vector3.SizeInBytes),
-						tmp, BufferUsageHint.StaticDraw);
-				} else if (fi.FieldType.GetElementType () == typeof(Vector4)) {
-					Vector4[] tmp = (Vector4[])(vaoData as object);
-					GL.BufferData<Vector4> (BufferTarget.ArrayBuffer,
-						new IntPtr (vaoData.Length * Vector4.SizeInBytes),
-						tmp, BufferUsageHint.StaticDraw);
-				}
+				Array vaoData = (Array)fi.GetValue (_mesh.Datas);
+				vboHandles [i] = GL.GenBuffer ();
+				GL.BindBuffer (BufferTarget.ArrayBuffer, vboHandles [i]);
+
+				GCHandle pinnedArray = GCHandle.Alloc(vaoData, GCHandleType.Pinned);
+				IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+				GL.BufferData (BufferTarget.ArrayBuffer,vaoData.Length * System.Runtime.InteropServices.Marshal.SizeOf (fi.FieldType.GetElementType ()),
+					pointer, BufferUsageHint.StaticDraw);
+				pinnedArray.Free();
 			}
 
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -106,12 +96,23 @@ namespace Tetra.DynamicShading
 			foreach (FieldInfo fi in typeof(T).GetFields()) {
 				GL.EnableVertexAttribArray (vaPtr);
 				GL.BindBuffer (BufferTarget.ArrayBuffer, vboHandles[vaPtr-1]);
-				if (fi.FieldType.GetElementType() == typeof(Vector2))
-					GL.VertexAttribPointer (vaPtr, 2, VertexAttribPointerType.Float, true, Vector2.SizeInBytes, 0);
-				else if (fi.FieldType.GetElementType() == typeof(Vector3))
-					GL.VertexAttribPointer (vaPtr, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
-				else if (fi.FieldType.GetElementType() == typeof(Vector4))
-					GL.VertexAttribPointer (vaPtr, 4, VertexAttribPointerType.Float, true, Vector4.SizeInBytes, 0);
+
+				VertexAttribute vAttrib = (VertexAttribute)fi.GetCustomAttribute (typeof(VertexAttribute));
+
+				if (vAttrib != null)
+					GL.VertexAttribPointer (vaPtr, vAttrib.NbComponents, vAttrib.PointerType, vAttrib.Normalized, 0, 0);
+				else {
+					if (fi.FieldType.GetElementType () == typeof(Vector2))
+						GL.VertexAttribPointer (vaPtr, 2, VertexAttribPointerType.Float, true, 0, 0);
+					else if (fi.FieldType.GetElementType () == typeof(Vector2h))
+						GL.VertexAttribPointer (vaPtr, 2, VertexAttribPointerType.HalfFloat, true, 0, 0);
+					else if (fi.FieldType.GetElementType () == typeof(Vector3))
+						GL.VertexAttribPointer (vaPtr, 3, VertexAttribPointerType.Float, true, 0, 0);
+					else if (fi.FieldType.GetElementType () == typeof(Vector3h))
+						GL.VertexAttribPointer (vaPtr, 3, VertexAttribPointerType.HalfFloat, true, 0, 0);
+					else if (fi.FieldType.GetElementType () == typeof(Vector4))
+						GL.VertexAttribPointer (vaPtr, 4, VertexAttribPointerType.Float, true, 0, 0);
+				}
 
 				vaPtr++;
 			}
