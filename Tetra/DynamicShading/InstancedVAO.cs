@@ -67,6 +67,10 @@ namespace Tetra.DynamicShading
 				DrawElementsType.UnsignedShort, new IntPtr(item.Offset*sizeof(ushort)),
 				instancesBuff.InstancedDatas.Length, item.BaseVertex);
 		}
+		public void Render(InstancedModel<U> im){
+			GL.BindTexture(TextureTarget.Texture2D,im.Diffuse);
+			Render (im.PrimitiveType, im.VAOPointer,im.Instances);
+		}
 	}
 }
 

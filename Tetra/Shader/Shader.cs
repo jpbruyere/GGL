@@ -124,7 +124,7 @@ namespace Tetra
 			RegisteredShaders.Add (this);			
 			Compile ();
 		}
-		public void Reload(){
+		public virtual void Reload(){
 			loadSourcesFiles ();
 			Compile ();
 		}

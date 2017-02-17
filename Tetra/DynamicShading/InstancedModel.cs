@@ -28,6 +28,8 @@ namespace Tetra.DynamicShading
 		public MeshPointer VAOPointer;
 		public InstancesVBO<T> Instances;
 		public int Diffuse;
+		public BeginMode PrimitiveType = BeginMode.Triangles;
+
 		protected bool SyncVBO = true;
 
 		public InstancedModel(MeshPointer vaoPointer){
