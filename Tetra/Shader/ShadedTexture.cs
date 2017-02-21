@@ -10,7 +10,7 @@ namespace Tetra
 		public static Matrix4 orthoMat
 		= OpenTK.Matrix4.CreateOrthographicOffCenter (-0.5f, 0.5f, -0.5f, 0.5f, 1, -1);
 
-		protected int 	resolutionLocation;
+		protected int 	resolutionLocation, timeLocation;
 
 		protected int width, height;
 		protected Tetra.Texture tex;
@@ -49,6 +49,7 @@ namespace Tetra
 			this.Disable ();
 		}
 
+		public float Time { set { GL.Uniform1 (timeLocation, value); }}
 		public virtual Tetra.Texture OutputTex { get { return tex; } set { tex = value; }}
 
 		public virtual void Update ()
@@ -57,7 +58,24 @@ namespace Tetra
 			updateFbo ();
 			this.Disable ();
 		}
+		public virtual void Update (float time)
+		{
+			this.Enable ();
+			Time = time;
+			updateFbo ();
+			this.Disable ();
+		}
+		public override void Reload ()
+		{
+			base.Reload ();
+			initFbo ();
 
+			this.Enable ();
+			GL.UniformMatrix4 (mvpLocation, false, ref orthoMat);
+			GL.Uniform2 (resolutionLocation, resolution);
+			this.Disable ();
+
+		}
 		#region FBO
 
 		protected virtual void initFbo()
@@ -66,7 +84,11 @@ namespace Tetra
 
 			if (tex != null)
 				tex.Dispose();
+
+			Texture.GenerateMipMaps = false;
 			tex = new Texture (width, height);
+			Texture.ResetToDefaultLoadingParams();
+
 			GL.GenFramebuffers(1, out fbo);
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
@@ -111,6 +133,7 @@ namespace Tetra
 		{
 			base.GetUniformLocations ();
 
+			timeLocation = GL.GetUniformLocation(pgmId, "time");
 			resolutionLocation = GL.GetUniformLocation(pgmId, "resolution");
 		}
 		public override void Dispose ()
