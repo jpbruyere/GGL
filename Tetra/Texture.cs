@@ -287,6 +287,50 @@ namespace Tetra
 
 			return tmp;
 		}
+		public void Add3DTextureLayer(string path){
+
+			int imgSizeInByte = Width * Height * 4;
+			byte[] oldData = new byte[imgSizeInByte * LayerCount];
+
+			GL.BindTexture (TexTarget, texRef);
+			GL.GetTexImage (TexTarget, 0, PixelFormat, PixelType, oldData);
+
+			byte[] newData = new byte[imgSizeInByte * (LayerCount + 1)];
+
+			Array.Copy (oldData, newData, oldData.Length);
+
+			using (Stream fs = FileSystemHelpers.GetStreamFromPath (path)) {
+				Bitmap bmp = new Bitmap (fs);
+
+				if (Width != bmp.Width || Height != bmp.Height){
+					bmp = new Bitmap (bmp, Width, Height);
+					if (Width != bmp.Width || Height != bmp.Height)
+						throw new Exception ("Different size for image array");
+				}
+
+				if(FlipY)
+					bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
+				BitmapData bmpdata = bmp.LockBits(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height),
+					ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+				Marshal.Copy(bmpdata.Scan0, newData, oldData.Length, imgSizeInByte);
+
+				bmp.UnlockBits(bmpdata);
+			}
+
+			LayerCount++;
+
+			GCHandle pinnedArray = GCHandle.Alloc(newData, GCHandleType.Pinned);
+			IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+
+			GL.TexImage3D(TexTarget, 0,
+				InternalFormat, Width, Height, LayerCount, 0,
+				PixelFormat, PixelType, newData);
+
+			pinnedArray.Free();
+			GL.BindTexture(TexTarget, 0);
+		}
 		public void Save(string file)
 		{
 			GL.BindTexture (TexTarget, texRef);
