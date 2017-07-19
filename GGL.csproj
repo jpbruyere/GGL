@@ -102,13 +102,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="cairo-sharp">
-      <Package>gtk-sharp-3.0</Package>
-    </Reference>
-    <Reference Include="cairo-sharp"/>
+    <Reference Include="Mono.Cairo" />
     <Reference Include="OpenTK">
-      <HintPath>$(SolutionDir)packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
-      <Package>opentk</Package>
+      <HintPath>..\..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
