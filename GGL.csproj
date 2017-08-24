@@ -102,7 +102,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Mono.Cairo" />
     <Reference Include="OpenTK">
       <HintPath>..\..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
     </Reference>
